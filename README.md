@@ -3,6 +3,8 @@
 ## Introduction
 A online revision of the classic game of Chess. The idea came from a [thread](https://www.reddit.com/r/leagueoflegends/comments/3yf3d3/chess_patch_11_notes_by_riot_games/) posted to Reddit that parodied the balance of a video game. However, the rules were so intriguing that I was interested in bringing it to life. 
 
+**THIS IS STILL A WORK IN PROGRESS**
+
 ## Quickstart
 
 ### Prerequisites 

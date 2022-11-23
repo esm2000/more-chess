@@ -39,7 +39,6 @@ const Row = (props) => {
             {
                 new Array(8).fill(0).map((_, i) => (
                     <Square key={i} row={props.row} col={i}/>
-                    // <p>{i}</p>
                 ))
             }
         </div>

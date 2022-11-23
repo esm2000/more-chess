@@ -1,0 +1,16 @@
+.square {
+    border-style: solid;
+    border-width: 0.03em;
+    border-color: white;
+    width: 5em;
+    height: 5em;
+    display: flex;
+    flex-direction: row;
+    padding: 0.5em;
+    justify-content: space-between;
+}
+
+.label {
+    margin: 0;
+    font-weight: 1000;
+}

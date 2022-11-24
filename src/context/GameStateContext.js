@@ -25,21 +25,29 @@ export function GameStateProvider({children}) {
         setGameState({...gameState, positionInPlay: positionInPlay})
     }
 
+    const setBoardState = (boardState) => {
+        setGameState({...gameState, boardState: boardState})
+    }
+
     const initGameState = {
         turnCount: 0,
-        positionInPlay: [null, null],
+        // positionInPlay: [null, null],
+        positionInPlay: [5, 0],
         boardState: [
             ["black_rook", "black_knight", "black_bishop", "black_queen", "black_king", "black_bishop", "black_king", "black_rook"],
             Array(8).fill("black_pawn"),
             Array(8).fill(null),
+            [null, "black_pawn", null, null, null, null, null, null],
             Array(8).fill(null),
-            Array(8).fill(null),
-            Array(8).fill(null),
+            ["white_knight", null, null, null, null, null, null, null],
             Array(8).fill("white_pawn"),
             ["white_rook", "white_knight", "white_bishop", "white_queen", "white_king", "white_bishop", "white_king", "white_rook"],
         ],
+        // possibleMoves: [],
+        possibleMoves: [[4, 0], [3, 0], [3, 1]],
         setTurnCount: setTurnCount,
-        setPositionInPlay: setPositionInPlay
+        setPositionInPlay: setPositionInPlay,
+        setBoardState: setBoardState
     }
     const [gameState, setGameState] = useState(initGameState);
 

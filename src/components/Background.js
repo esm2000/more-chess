@@ -50,12 +50,13 @@ const Square = (props) => {
             className="square"
         >
             <p 
-                style={{ color, opacity: col === 0 ? 1 : 0 }}
+                style={{ color, fontSize: "1vw", opacity: col === 0 ? 1 : 0 }}
                 className='label' >{row + 1}</p>
             <p 
                 style={{ 
                     color,
                     alignSelf: "flex-end",
+                    fontSize: "1vw",
                     opacity: row === 7 ? 1 : 0
                 }}
                 className='label'

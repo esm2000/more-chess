@@ -28,6 +28,16 @@ export function GameStateProvider({children}) {
     const initGameState = {
         turnCount: 0,
         positionInPlay: [null, null],
+        boardState: [
+            ["black_rook", "black_knight", "black_bishop", "black_queen", "black_king", "black_bishop", "black_king", "black_rook"],
+            Array(8).fill("black_pawn"),
+            Array(8).fill(null),
+            Array(8).fill(null),
+            Array(8).fill(null),
+            Array(8).fill(null),
+            Array(8).fill("white_pawn"),
+            ["white_rook", "white_knight", "white_bishop", "white_queen", "white_king", "white_bishop", "white_king", "white_rook"],
+        ],
         setTurnCount: setTurnCount,
         setPositionInPlay: setPositionInPlay
     }

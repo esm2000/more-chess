@@ -1,22 +1,23 @@
 .square {
-    border-style: solid;
-    border-width: 0.03em;
-    border-color: white;
-    width: 1.5em;
-    height: 1.5em;
+    width: 3vw; 
+    height: 3vw;
     display: flex;
     flex-direction: row;
-    padding: 0.5em;
+    padding: 0.35vw;
     justify-content: space-between;
 }
 
 .label {
     margin: 0;
     font-weight: 1000;
+    font-size: 1.5vw;
 }
 
 .piece {
     position: absolute;
-    width: 2.5em;
-    height: 2.5em;
+    width: 1.8vw;
+    padding: 0vw 0.85vw 0.55vw;
+    /* height ~= (2 * width) - padding-bottom */
+    height: 2.95vw;
+    margin: 0;
 }

@@ -45,7 +45,9 @@ const getPossibleCaptures = (boardState, possibleMoves) => {
 }
 
 const pickSide = (pieceName) => {
-    if (pieceName.includes("white")) {
+    if (pieceName.includes("neutral")) {
+        return "neutral"
+    } else if (pieceName.includes("white")) {
         return PLAYERS[0]
     }
 

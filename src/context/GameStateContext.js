@@ -1,10 +1,25 @@
 import { createContext, useContext, useEffect, useState } from "react"
+import { PLAYERS, getPossibleCaptures } from '../utility';
 
 const GameStateContext = createContext({
     turnCount: 0,
     positionInPlay: [null, null],
+    boardState: [
+        Array(8).fill(null),
+        Array(8).fill(null),
+        Array(8).fill(null),
+        Array(8).fill(null),
+        Array(8).fill(null),
+        Array(8).fill(null),
+        Array(8).fill(null),
+        Array(8).fill(null)
+    ],
+    possibleMoves: [],
+    possibleCaptures: [],
     setTurnCount: () => {},
-    setPositionInPlay: () => {}
+    setPositionInPlay: () => {},
+    setBoardState: () => {},
+    setPossibleCaptures: () => {}
 })
 
 export function GameStateContextData() {
@@ -22,11 +37,19 @@ export function GameStateProvider({children}) {
     }
 
     const setPositionInPlay = (positionInPlay) => {
-        setGameState({...gameState, positionInPlay: positionInPlay})
+        setGameState({
+            ...gameState, 
+            positionInPlay: positionInPlay,
+            possibleCaptures: getPossibleCaptures(gameState.boardState, gameState.possibleMoves)
+        })
     }
 
     const setBoardState = (boardState) => {
         setGameState({...gameState, boardState: boardState})
+    }
+
+    const setPossibleCaptures = (possibleCaptures) => {
+        setGameState({...gameState, possibleCaptures: possibleCaptures})
     }
 
     const initGameState = {
@@ -45,9 +68,11 @@ export function GameStateProvider({children}) {
         ],
         // possibleMoves: [],
         possibleMoves: [[4, 0], [3, 0], [3, 1]],
+        possibleCaptures: [],
         setTurnCount: setTurnCount,
         setPositionInPlay: setPositionInPlay,
-        setBoardState: setBoardState
+        setBoardState: setBoardState,
+        setPossibleCaptures: setPossibleCaptures
     }
     const [gameState, setGameState] = useState(initGameState);
 
@@ -55,8 +80,15 @@ export function GameStateProvider({children}) {
     
     const fetchGameState = () => {
         console.log("refresh")
-        // retrieve and then setGameState()
+        // retrieve gameState
+        
+        // and then setGameState()
         setGameState(initGameState)
+
+        // update any fields not obtained from backend
+        if (gameState.possibleMoves.length > 0) {
+            gameState.setPossibleCaptures(getPossibleCaptures(gameState.boardState, gameState.possibleMoves))
+        }
     }
 
     useEffect(() => {

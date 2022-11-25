@@ -6,42 +6,7 @@ import PossibleMove from './PossibleMove';
 
 import { GameStateContextData }  from '../context/GameStateContext';
 
-import { PLAYERS } from '../utility';
-
-const pickSide = (pieceName) => {
-    if (pieceName.includes("white")) {
-        return PLAYERS[0]
-    }
-
-    return PLAYERS[1]
-}
-
-const snakeToCamel = str =>
-  str.toLowerCase().replace(/([-_][a-z])/g, group =>
-    group
-      .toUpperCase()
-      .replace('-', '')
-      .replace('_', '')
-  );
-
-const getPossibleCaptures = (boardState, possibleMoves) => {
-    const possibleCaptures = []
-    const possibleMovesJSONString = JSON.stringify(possibleMoves)
-    let currPositionString
-
-    boardState.forEach((row, i) => {
-        row.forEach((piece, j) => {
-            if (piece) {
-                currPositionString = JSON.stringify([i, j])
-                if (pickSide(piece) === PLAYERS[1] && possibleMovesJSONString.includes(currPositionString)) {
-                    possibleCaptures.push([i, j]);
-                }
-            }
-        })
-    })
-
-    return possibleCaptures
-}
+import { PLAYERS, getPossibleCaptures, pickSide, snakeToCamel } from '../utility';
 
 const Board = () => {
     // positionInPlay used to figure out what piece is being moved by player
@@ -49,7 +14,7 @@ const Board = () => {
     const positionInPlay = gameState.positionInPlay
     const boardState = gameState.boardState
     const possibleMoves = gameState.possibleMoves
-    let possibleCaptures = getPossibleCaptures(boardState, possibleMoves)
+    const possibleCaptures = gameState.possibleCaptures
 
     console.log("boardState", boardState)
     console.log("possibleMoves", possibleMoves)

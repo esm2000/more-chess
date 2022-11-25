@@ -25,12 +25,17 @@ const Piece = (props) => {
         console.log("position in play")
     }
 
+    const pickClassName = () => {
+        if (props.side !== 'neutral') return 'regular_piece'
+        if (props.type.toLowerCase().includes('dragon')) return 'dragon_piece'
+    }
+
     return(
         <div>
             <img 
                 src={IMAGE_MAP[props.type]} 
                 alt={props.type} 
-                className='piece'
+                className={pickClassName()}
                 style={{
                     top: `${topPosition}vw`,
                     left: `${leftPosition}vw`

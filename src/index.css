@@ -13,13 +13,19 @@
     font-size: 1.5vw;
 }
 
-.piece {
+.regular_piece {
     position: absolute;
     width: 1.8vw;
     padding: 0vw 0.85vw 0.55vw;
     /* height ~= (2 * width) - padding-bottom */
     height: 2.95vw;
     margin: 0;
+}
+
+.dragon_piece {
+    position: absolute;
+    width: 3.5vw;
+    /* height: 2.225vw; */
 }
 
 .possible-move {

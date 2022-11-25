@@ -7,6 +7,7 @@ const IMAGE_MAP = {
     blackPawn: require("./assets/black_pawn.png"),
     blackQueen: require("./assets/black_queen.png"),
     blackRook: require("./assets/black_rook.png"),
+    neutralDragon: require("./assets/neutral_dragon.png"),
     whiteBishop: require('./assets/white_bishop.png'),
     whiteKing: require("./assets/white_king.png"),
     whiteKnight: require("./assets/white_knight.png"),
@@ -24,6 +25,32 @@ const LIGHT_WHITE_SQUARE_COLOR = "rgb(252, 255, 213)";
 const GREEN_SELECTED_SQUARE_COLOR = "rgb(182, 195, 63)";
 const WHITE_SELECTED_SQUARE_COLOR = "rgb(237, 255, 81)";
 const RED_SQUARE_COLOR = "rgb(186, 0, 0)"
+const BOSS_SQUARE_COLORS = {
+    "dragon": ["rgb(245, 175, 66)", "rgb(245, 221, 66)"]
+}
+
+const DRAGON_POSITION = [3, 7]
+const BOSS_POSITIONS = [DRAGON_POSITION]
+
+const getBossDangerZonePositions = () => {
+
+    const bossDangerZonePositions = {}
+    const dragonDangerZonePositions = []
+
+    BOSS_POSITIONS.forEach((boss_position) => {
+        dragonDangerZonePositions.push(boss_position)
+        dragonDangerZonePositions.push([boss_position[0] - 1, boss_position[1]])
+        dragonDangerZonePositions.push([boss_position[0] + 1, boss_position[1]])
+        dragonDangerZonePositions.push([boss_position[0] - 1, boss_position[1] - 1])
+        dragonDangerZonePositions.push([boss_position[0], boss_position[1] - 1])
+        dragonDangerZonePositions.push([boss_position[0] + 1, boss_position[1] - 1])
+    })
+    
+    bossDangerZonePositions["dragon"] = dragonDangerZonePositions
+    
+    return bossDangerZonePositions
+
+}
 
 const getPossibleCaptures = (boardState, possibleMoves) => {
     const possibleCaptures = []
@@ -67,6 +94,20 @@ const determineBackgroundColor = (row, col, positionInPlay, possibleCaptures) =>
     const currentPosition = [row, col]
     let green = GREEN_SQUARE_COLOR
     let white = WHITE_SQUARE_COLOR
+
+    const dangerZonePositions = getBossDangerZonePositions()
+
+    // if (dangerZonePositions["dragon"].length > 0) {
+    //     console.log("bossDangerZonePositions", bossDangerZonePositions)
+    // }
+    
+    for(const boss in dangerZonePositions) {
+        console.log("d", dangerZonePositions[boss])
+        if (dangerZonePositions[boss].some((danger_zone_position, i) => 
+            JSON.stringify(currentPosition) === JSON.stringify(danger_zone_position))) {
+            return (col + offset) % 2 === 0 ? BOSS_SQUARE_COLORS[boss][1] : BOSS_SQUARE_COLORS[boss][0]
+        }
+    }
 
     if(JSON.stringify(possibleCaptures).includes(JSON.stringify(currentPosition))) {
         return RED_SQUARE_COLOR

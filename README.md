@@ -100,3 +100,4 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 
 * Original concept by /u/Zaaptastic on /r/leagueoflegends
 * Piece assets by Dani Maccari - https://dani-maccari.itch.io/
+* Dragon asset by kukuchangmin - https://www.deviantart.com/kukuchangmin 

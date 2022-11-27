@@ -39,6 +39,7 @@ const Board = () => {
                                             energizeStacks={piece.energize_stacks}
                                             isStunned={piece.is_stunned}
                                             bishopDebuff={piece.bishop_debuff}
+                                            health={piece.health}
                                         />
                                     );
                                 }

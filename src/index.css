@@ -54,3 +54,21 @@
     margin: 0;
     opacity: 0.12;
 }
+
+/* For Firefox */
+progress::-moz-progress-bar {
+    background: red;
+    font-size: 0.25vh;
+}
+
+/* For Chrome or Safari */
+progress::-webkit-progress-value {
+    background: red;
+    font-size: 0.25vh;
+}
+
+/* For IE10 */
+progress {
+    background: red;
+    font-size: 0.25vh;
+}

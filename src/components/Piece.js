@@ -2,7 +2,7 @@ import React from 'react';
 
 import  { GameStateContextData }  from '../context/GameStateContext';
 
-import { PLAYERS, IMAGE_MAP } from '../utility';
+import { PLAYERS, IMAGE_MAP, MAX_BOSS_HEALTH } from '../utility';
 
 const Piece = (props) => {
     const gameState = GameStateContextData()
@@ -49,6 +49,16 @@ const Piece = (props) => {
                 }}
                 onClick={() => handlePieceClick()}
             />
+            {props.health ?
+                <progress 
+                    className={pickClassName()}
+                    value={props.health} 
+                    max={MAX_BOSS_HEALTH[pickClassName().replace("_piece", "")]}
+                    style={{
+                        top: `${topPosition + 3.25}vw`,
+                        left: `${leftPosition + 0.15}vw`
+                    }}
+                /> : null}
             {props.isStunned ?
                 <img
                     src={IMAGE_MAP['stunned']}

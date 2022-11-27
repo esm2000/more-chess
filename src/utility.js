@@ -50,6 +50,12 @@ const BOSS_POSITIONS = {
     "baron_nashor": BARON_NASHOR_POSITION
 }
 
+const MAX_BOSS_HEALTH = {
+    "dragon": 5,
+    "herald": 5,
+    "nashor": 10
+}
+
 const getBossDangerZonePositions = (isBaronActive) => {
 
     const bossDangerZonePositions = {}
@@ -175,6 +181,7 @@ export {
     PLAYERS, 
     IMAGE_MAP, 
     BARON_NASHOR_POSITION,
+    MAX_BOSS_HEALTH,
     getPossibleCaptures, 
     pickSide, 
     snakeToCamel, 

@@ -16,10 +16,6 @@ const Board = () => {
     const possibleMoves = gameState.possibleMoves
     const possibleCaptures = gameState.possibleCaptures
 
-    console.log("boardState", boardState)
-    console.log("possibleMoves", possibleMoves)
-    console.log("possibleCaptures", possibleCaptures)
-
     return(
         <div style={{position: 'relative'}}>
             <Background 
@@ -47,6 +43,7 @@ const Board = () => {
                                 if (!possibleCaptures.some((possibleCapture) => JSON.stringify(possibleMove).includes(JSON.stringify(possibleCapture))))
                                 return(
                                     <PossibleMove 
+                                        key={'pm' + possibleMove[0].toString() + possibleMove[1].toString()}
                                         row={possibleMove[0]}
                                         col={possibleMove[1]}
                                     />

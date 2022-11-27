@@ -22,12 +22,13 @@ const Piece = (props) => {
             }
             // TODO: add API call to update gameState.possibleMoves
         }
-        console.log("position in play")
     }
 
     const pickClassName = () => {
         if (props.side !== 'neutral') return 'regular_piece'
         if (props.type.toLowerCase().includes('dragon')) return 'dragon_piece'
+        if (props.type.toLowerCase().includes('herald')) return 'herald_piece'
+        if (props.type.toLowerCase().includes('nashor')) return 'nashor_piece'
     }
 
     return(

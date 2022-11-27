@@ -25,7 +25,16 @@
 .dragon_piece {
     position: absolute;
     width: 3.5vw;
-    /* height: 2.225vw; */
+}
+
+.nashor_piece {
+    position: absolute;
+    width: 3.5vw;
+}
+
+.herald_piece {
+    position: absolute;
+    width: 4vw;
 }
 
 .possible-move {

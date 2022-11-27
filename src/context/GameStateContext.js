@@ -61,7 +61,7 @@ export function GameStateProvider({children}) {
             Array(8).fill("black_pawn"),
             Array(8).fill(null),
             [null, null, null, "black_pawn", null, null, null, "neutral_dragon"],
-            Array(8).fill(null),
+            ["neutral_baron_nashor", null, null, null, null, null, null, null],
             [null, null, "white_knight", null, null, null, null, null],
             Array(8).fill("white_pawn"),
             ["white_rook", "white_knight", "white_bishop", "white_queen", "white_king", "white_bishop", "white_king", "white_rook"],
@@ -79,7 +79,6 @@ export function GameStateProvider({children}) {
     const [refreshInterval, setRefreshInterval] = useState(3000);
     
     const fetchGameState = () => {
-        console.log("refresh")
         // retrieve gameState
         
         // and then setGameState()

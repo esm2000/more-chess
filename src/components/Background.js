@@ -3,17 +3,18 @@ import '../index.css';
 
 import setPositionInPlay, { GameStateContextData }  from '../context/GameStateContext';
 
-import { determineBackgroundColor, determineColor } from '../utility';
+import { determineBackgroundColor, determineColor, BARON_NASHOR_POSITION } from '../utility';
 
 const Square = (props) => {
     const row = props.row
     const col = props.col
     const gameState = GameStateContextData();
+    const isBaronActive = gameState.boardState[BARON_NASHOR_POSITION[0]][BARON_NASHOR_POSITION[1]] === "neutral_baron_nashor"
     const positionInPlay = gameState.positionInPlay
     const possibleCaptures = gameState.possibleCaptures
 
-    const backgroundColor = determineBackgroundColor(row, col, positionInPlay, possibleCaptures)
-    const color = determineColor(row, col)
+    const backgroundColor = determineBackgroundColor(row, col, positionInPlay, possibleCaptures, isBaronActive)
+    const color = determineColor(row, col, isBaronActive)
 
     return (
         <div 

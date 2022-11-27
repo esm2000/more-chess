@@ -31,11 +31,17 @@ const Piece = (props) => {
         if (props.type.toLowerCase().includes('nashor')) return 'nashor_piece'
     }
 
+    const image_src = props.pawnBuff ? props.type + `${props.pawnBuff + 1}` : props.type
+
+    if (props.type.includes("Pawn")) {
+        console.log(image_src)
+    }
+
     return(
         <div>
             <img 
-                src={IMAGE_MAP[props.type]} 
-                alt={props.type} 
+                src={IMAGE_MAP[image_src]} 
+                alt={image_src} 
                 className={pickClassName()}
                 style={{
                     top: `${topPosition}vw`,

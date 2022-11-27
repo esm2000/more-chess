@@ -5,6 +5,8 @@ const IMAGE_MAP = {
     blackKing: require("./assets/black_king.png"),
     blackKnight: require("./assets/black_knight.png"),
     blackPawn: require("./assets/black_pawn.png"),
+    blackPawn2: require("./assets/black_pawn_2.png"),
+    blackPawn3: require("./assets/black_pawn_3.png"),
     blackQueen: require("./assets/black_queen.png"),
     blackRook: require("./assets/black_rook.png"),
     neutralDragon: require("./assets/neutral_dragon.png"),
@@ -14,6 +16,8 @@ const IMAGE_MAP = {
     whiteKing: require("./assets/white_king.png"),
     whiteKnight: require("./assets/white_knight.png"),
     whitePawn: require("./assets/white_pawn.png"),
+    whitePawn2: require("./assets/white_pawn_2.png"),
+    whitePawn3: require("./assets/white_pawn_3.png"),
     whiteQueen: require("./assets/white_queen.png"),
     whiteRook: require("./assets/white_rook.png"),
 }
@@ -86,7 +90,7 @@ const getPossibleCaptures = (boardState, possibleMoves) => {
         row.forEach((piece, j) => {
             if (piece) {
                 currPositionString = JSON.stringify([i, j])
-                if (pickSide(piece) === PLAYERS[1] && possibleMovesJSONString.includes(currPositionString)) {
+                if (pickSide(piece.type) === PLAYERS[1] && possibleMovesJSONString.includes(currPositionString)) {
                     possibleCaptures.push([i, j]);
                 }
             }

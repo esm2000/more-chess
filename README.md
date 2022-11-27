@@ -70,7 +70,7 @@ For millennia White side players have had the advantage in winrate over their Bl
 * Black players now start the game with a pawn on d6 instead of d7.
 
 #### Neutral Objectives
-As part of our attempt to quicken the pace of games, a few neutral objectives are being added to the board so that players are more inclined to break mid game gridlocks.
+As part of an attempt to quicken the pace of games, a few neutral objectives are being added to the board so that players are more inclined to break mid game gridlocks.
 
 These objectives take the form of neutral pieces that can be captured. This occurs by bringing a piece's hitpoint to 0. Moving a unit adjacent or on top of the neutral piece removes 1 hitpoint. However, pieces that spend more than 1 turn adjacent or on top of a neutral piece are immediately destroyed.
 
@@ -101,3 +101,5 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * Original concept by /u/Zaaptastic on /r/leagueoflegends
 * Piece assets by Dani Maccari - https://dani-maccari.itch.io/
 * Dragon asset by kukuchangmin - https://www.deviantart.com/kukuchangmin 
+* Board Herald asset by u/Hamzilla15 on /r/leagueoflegends - https://www.reddit.com/r/leagueoflegends/comments/6qvj71/did_some_pixel_art_of_baron_nashor_for_the_pixel/
+* Baron Nashor asset by ThumbsDown - https://thumbz-down.tumblr.com/post/122327767691/baron-nashor-from-league-of-legends-i-did-a-while

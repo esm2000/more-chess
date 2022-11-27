@@ -29,12 +29,13 @@ const Board = () => {
                                 if (piece) {  
                                     return (
                                         <Piece
-                                            side={pickSide(piece)}
+                                            side={pickSide(piece.type)}
                                             key={[row, col]}
                                             row={row} 
                                             col={col}
                                             inPlay={positionInPlay[0] === row && positionInPlay[1] === col} 
-                                            type={snakeToCamel(piece)}
+                                            type={snakeToCamel(piece.type)}
+                                            pawnBuff={piece.pawn_buff}
                                         />
                                     );
                                 }

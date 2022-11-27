@@ -37,6 +37,14 @@
     width: 4vw;
 }
 
+.captured_piece {
+    width: 3vw;
+}
+
+.neutral_captured_piece {
+    width: 5.5vw;
+}
+
 .possible-move {
     position: absolute;
     width: 1.5vw;

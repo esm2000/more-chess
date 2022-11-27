@@ -16,10 +16,12 @@ const GameStateContext = createContext({
     ],
     possibleMoves: [],
     possibleCaptures: [],
+    capturedPieces: [],
     setTurnCount: () => {},
     setPositionInPlay: () => {},
     setBoardState: () => {},
-    setPossibleCaptures: () => {}
+    setPossibleCaptures: () => {},
+    setCapturedPieces: () => {}
 })
 
 export function GameStateContextData() {
@@ -52,14 +54,18 @@ export function GameStateProvider({children}) {
         setGameState({...gameState, possibleCaptures: possibleCaptures})
     }
 
+    const setCapturedPieces = (capturedPieces) => {
+        setGameState({...gameState, capturedPieces: capturedPieces})
+    }
+
     const initGameState = {
         turnCount: 0,
         // positionInPlay: [null, null],
         positionInPlay: [5, 2],
         boardState: [
             ["black_rook", "black_knight", "black_bishop", "black_queen", "black_king", "black_bishop", "black_king", "black_rook"],
-            Array(8).fill("black_pawn"),
-            Array(8).fill(null),
+            ["black_pawn", "black_pawn", "black_pawn", null, "black_pawn", "black_pawn", "black_pawn", "black_pawn"],
+            [null, null, null, "black_pawn", null, null, null, null],
             [null, null, null, "black_pawn", null, null, null, "neutral_dragon"],
             ["neutral_baron_nashor", null, null, null, null, null, null, null],
             [null, null, "white_knight", null, null, null, null, null],
@@ -69,10 +75,15 @@ export function GameStateProvider({children}) {
         // possibleMoves: [],
         possibleMoves: [[4, 2], [3, 2], [3, 3]],
         possibleCaptures: [],
+        capturedPieces: {
+            [PLAYERS[0]]: ["black_pawn", "black_rook", "neutral_board_herald"],
+            [PLAYERS[1]]: ["white_bishop", "neutral_dragon", "neutral_baron_nashor"]
+        }, 
         setTurnCount: setTurnCount,
         setPositionInPlay: setPositionInPlay,
         setBoardState: setBoardState,
-        setPossibleCaptures: setPossibleCaptures
+        setPossibleCaptures: setPossibleCaptures,
+        setCapturedPieces: setCapturedPieces
     }
     const [gameState, setGameState] = useState(initGameState);
 

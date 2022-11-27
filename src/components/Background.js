@@ -23,7 +23,7 @@ const Square = (props) => {
         >
             <p 
                 style={{ color, fontSize: "1vw", opacity: col === 0 ? 1 : 0 }}
-                className='label' >{row + 1}</p>
+                className='label' >{8-row}</p>
             <p 
                 style={{ 
                     color,

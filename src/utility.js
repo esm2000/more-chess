@@ -114,6 +114,10 @@ const snakeToCamel = str =>
       .replace('_', '')
   );
 
+const capitalizeFirstLetter = (string) =>  {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 const determineBackgroundColor = (row, col, positionInPlay, possibleCaptures, isBaronActive) => {
     const offset = row % 2
     const currentPosition = [row, col]
@@ -169,5 +173,6 @@ export {
     pickSide, 
     snakeToCamel, 
     determineBackgroundColor,
-    determineColor 
+    determineColor, 
+    capitalizeFirstLetter
 };

@@ -5,10 +5,13 @@ const Buff = (props) => {
 
     const topPosition = props.row * 3.8
     const leftPosition = props.col * 3.7
+    console.log("buff hide", props.hide)
 
     return(
         <div>
-            <img 
+            {props.hide ? 
+                null
+            : <img 
                 src={IMAGE_MAP[props.type]} 
                 alt={props.type} 
                 className='regular_piece'
@@ -18,6 +21,7 @@ const Buff = (props) => {
                     left: `${leftPosition}vw`
                 }}
             />
+            }
         </div>
     );
 }

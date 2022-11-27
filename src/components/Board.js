@@ -63,6 +63,7 @@ const Board = () => {
             }
             {swordInTheStonePosition ? 
                 <Buff
+                    hide={boardState[swordInTheStonePosition[0]][swordInTheStonePosition[1]] ? true : false}
                     type='swordInTheStone'
                     row={swordInTheStonePosition[0]} 
                     col={swordInTheStonePosition[1]}

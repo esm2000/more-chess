@@ -70,7 +70,7 @@ export function GameStateProvider({children}) {
             [{"type":"neutral_baron_nashor"}, null, null, null, null, null, null, null],
             [null, null, {"type":"white_knight"}, null, null, null, null, null],
             Array(8).fill({"type":"white_pawn", "pawn_buff": 2}),
-            [{"type":"white_rook", "is_stunned": true}, {"type":"white_knight", "is_stunned": true}, {"type":"white_bishop", "energize_stacks": 50}, {"type":"white_queen"}, {"type":"white_king"}, {"type":"white_bishop", "energize_stacks": 15}, {"type":"white_king"}, {"type":"white_rook"}],
+            [{"type":"white_rook", "is_stunned": true}, {"type":"white_knight", "is_stunned": true}, {"type":"white_bishop", "energize_stacks": 50}, {"type":"white_queen"}, {"type":"white_king"}, {"type":"white_bishop", "energize_stacks": 15}, {"type":"white_king", "bishop_debuff": 1}, {"type":"white_rook", "bishop_debuff": 2}],
         ],
         // possibleMoves: [],
         possibleMoves: [[4, 2], [3, 2], [3, 3]],

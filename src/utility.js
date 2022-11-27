@@ -20,7 +20,8 @@ const IMAGE_MAP = {
     whitePawn3: require("./assets/white_pawn_3.png"),
     whiteQueen: require("./assets/white_queen.png"),
     whiteRook: require("./assets/white_rook.png"),
-    stunned: require("./assets/stunned.png")
+    stunned: require("./assets/stunned.png"),
+    bishopDebuff: require("./assets/bishop_debuff.png")
 }
 
 const GREEN_SQUARE_COLOR = "rgb(100, 133, 68)";

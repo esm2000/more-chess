@@ -73,7 +73,23 @@ const Piece = (props) => {
                     }}
                 >
                     {props.energizeStacks}
-                </p> : null}
+                </p> : null
+            }
+            {props.bishopDebuff ?
+                Array.from({length: props.bishopDebuff}, (_, i) => i + 1).map((count) => {
+                    return(
+                    <img 
+                        src={IMAGE_MAP['bishopDebuff']}
+                        className={pickClassName()}
+                        style={{
+                            width: '1vw',
+                            height: '1vw',
+                            top: `${topPosition}vw`,
+                            left: `${leftPosition - 1.75 + (count * 1.2)}vw`
+                        }}
+                    />);
+                }): null
+            }
         </div>
     );
 }

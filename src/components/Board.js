@@ -38,6 +38,7 @@ const Board = () => {
                                             pawnBuff={piece.pawn_buff}
                                             energizeStacks={piece.energize_stacks}
                                             isStunned={piece.is_stunned}
+                                            bishopDebuff={piece.bishop_debuff}
                                         />
                                     );
                                 }

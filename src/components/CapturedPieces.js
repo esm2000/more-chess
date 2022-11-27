@@ -10,9 +10,10 @@ const CapturedPieces = (props) => {
     return(
         <div>
             <h2 style={{marginBottom: "0"}}>{capitalizeFirstLetter(props.side)}'s Captured Pieces</h2>
-            {capturedPieces.map((capturedPiece) => {
+            {capturedPieces.map((capturedPiece, i) => {
                 return(
                     <img 
+                        key={capturedPiece + `-${i}`}
                         src={IMAGE_MAP[snakeToCamel(capturedPiece)]} 
                         alt={capturedPiece} 
                         className={capturedPiece.includes('neutral') ? 'neutral_captured_piece': 'captured_piece'}

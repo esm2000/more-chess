@@ -12,8 +12,9 @@ const Square = (props) => {
     const isBaronActive = gameState.boardState[BARON_NASHOR_POSITION[0]][BARON_NASHOR_POSITION[1]] === "neutral_baron_nashor"
     const positionInPlay = gameState.positionInPlay
     const possibleCaptures = gameState.possibleCaptures
+    const swordInTheStonePosition = gameState.swordInTheStonePosition
 
-    const backgroundColor = determineBackgroundColor(row, col, positionInPlay, possibleCaptures, isBaronActive)
+    const backgroundColor = determineBackgroundColor(row, col, positionInPlay, possibleCaptures, isBaronActive, swordInTheStonePosition)
     const color = determineColor(row, col, isBaronActive)
 
     return (

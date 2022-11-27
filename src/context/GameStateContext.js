@@ -17,11 +17,13 @@ const GameStateContext = createContext({
     possibleMoves: [],
     possibleCaptures: [],
     capturedPieces: [],
+    SwordInTheStonePosition: null,
     setTurnCount: () => {},
     setPositionInPlay: () => {},
     setBoardState: () => {},
     setPossibleCaptures: () => {},
-    setCapturedPieces: () => {}
+    setCapturedPieces: () => {},
+    setSwordInTheStonePosition: () => {}
 })
 
 export function GameStateContextData() {
@@ -58,6 +60,10 @@ export function GameStateProvider({children}) {
         setGameState({...gameState, capturedPieces: capturedPieces})
     }
 
+    const setSwordInTheStonePosition = (swordInTheStonePosition) => {
+        setGameState({...gameState, swordInTheStonePosition: swordInTheStonePosition})
+    }
+
     const initGameState = {
         turnCount: 0,
         // positionInPlay: [null, null],
@@ -79,11 +85,13 @@ export function GameStateProvider({children}) {
             [PLAYERS[0]]: ["black_pawn", "black_rook", "neutral_board_herald"],
             [PLAYERS[1]]: ["white_bishop", "neutral_dragon", "neutral_baron_nashor"]
         }, 
+        swordInTheStonePosition: [4, 5],
         setTurnCount: setTurnCount,
         setPositionInPlay: setPositionInPlay,
         setBoardState: setBoardState,
         setPossibleCaptures: setPossibleCaptures,
-        setCapturedPieces: setCapturedPieces
+        setCapturedPieces: setCapturedPieces,
+        setSwordInTheStonePosition: setSwordInTheStonePosition
     }
     const [gameState, setGameState] = useState(initGameState);
 

@@ -3,6 +3,7 @@ import React from 'react';
 import Background from './Background';
 import Piece from './Piece';
 import PossibleMove from './PossibleMove';
+import Buff from './Buff';
 
 import { GameStateContextData }  from '../context/GameStateContext';
 
@@ -15,6 +16,7 @@ const Board = () => {
     const boardState = gameState.boardState
     const possibleMoves = gameState.possibleMoves
     const possibleCaptures = gameState.possibleCaptures
+    const swordInTheStonePosition = gameState.swordInTheStonePosition
 
     return(
         <div style={{position: 'relative'}}>
@@ -58,6 +60,13 @@ const Board = () => {
                         
                     )
                 })
+            }
+            {swordInTheStonePosition ? 
+                <Buff
+                    type='swordInTheStone'
+                    row={swordInTheStonePosition[0]} 
+                    col={swordInTheStonePosition[1]}
+                /> : null
             }
         </div>
     );

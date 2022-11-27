@@ -21,7 +21,8 @@ const IMAGE_MAP = {
     whiteQueen: require("./assets/white_queen.png"),
     whiteRook: require("./assets/white_rook.png"),
     stunned: require("./assets/stunned.png"),
-    bishopDebuff: require("./assets/bishop_debuff.png")
+    bishopDebuff: require("./assets/bishop_debuff.png"),
+    swordInTheStone: require("./assets/sword_in_the_stone.png")
 }
 
 const GREEN_SQUARE_COLOR = "rgb(100, 133, 68)";
@@ -39,6 +40,7 @@ const BOSS_SQUARE_COLORS = {
     "board_herald": ["rgb(79, 22, 144)", "rgb(134, 73, 203)"],
     "baron_nashor": ["rgb(45, 13, 81)", "rgb(97, 61, 138)"]
 }
+const LIGHT_BLUE_SQUARE_COLOR = "rgb(102, 216, 242)"
 
 const DRAGON_POSITION = [3, 7]
 const BOARD_HERALD_POSITION = [4, 0]
@@ -130,7 +132,7 @@ const capitalizeFirstLetter = (string) =>  {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-const determineBackgroundColor = (row, col, positionInPlay, possibleCaptures, isBaronActive) => {
+const determineBackgroundColor = (row, col, positionInPlay, possibleCaptures, isBaronActive, swordInTheStonePosition) => {
     const offset = row % 2
     const currentPosition = [row, col]
     let green = GREEN_SQUARE_COLOR
@@ -138,15 +140,19 @@ const determineBackgroundColor = (row, col, positionInPlay, possibleCaptures, is
 
     const dangerZonePositions = getBossDangerZonePositions(isBaronActive)
     
+    if(JSON.stringify(possibleCaptures).includes(JSON.stringify(currentPosition))) {
+        return RED_SQUARE_COLOR
+    }
+
+    if (swordInTheStonePosition && swordInTheStonePosition[0] === row && swordInTheStonePosition[1] === col) {
+        return LIGHT_BLUE_SQUARE_COLOR
+    }
+
     for(const boss in dangerZonePositions) {
         if (dangerZonePositions[boss].some((danger_zone_position, i) => 
             JSON.stringify(currentPosition) === JSON.stringify(danger_zone_position))) {
             return (col + offset) % 2 === 0 ? BOSS_SQUARE_COLORS[boss][1] : BOSS_SQUARE_COLORS[boss][0]
         }
-    }
-
-    if(JSON.stringify(possibleCaptures).includes(JSON.stringify(currentPosition))) {
-        return RED_SQUARE_COLOR
     }
 
     if (

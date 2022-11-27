@@ -33,10 +33,6 @@ const Piece = (props) => {
 
     const image_src = props.pawnBuff ? props.type + `${props.pawnBuff + 1}` : props.type
 
-    if (props.type.includes("Pawn")) {
-        console.log(image_src)
-    }
-
     return(
         <div>
             <img 

@@ -10,7 +10,7 @@ const Piece = (props) => {
     const leftPosition = props.col * 3.7
 
     const handlePieceClick = () => {
-        if (props.side === PLAYERS[0]) {
+        if (props.side === PLAYERS[0] && !props.isStunned) {
             
             if(
                 gameState.positionInPlay.toString() === [null, null].toString() || 
@@ -49,6 +49,17 @@ const Piece = (props) => {
                 }}
                 onClick={() => handlePieceClick()}
             />
+            {props.isStunned ?
+                <img
+                    src={IMAGE_MAP['stunned']}
+                    alt='stunned'
+                    className={pickClassName()}
+                    style={{
+                        top: `${topPosition}vw`,
+                        left: `${leftPosition - 0.3}vw`,
+                        width: '2.5vw'
+                    }}
+                /> : null}
             {props.energizeStacks ? 
                 <p 
                     className={pickClassName()}

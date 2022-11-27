@@ -37,6 +37,7 @@ const Board = () => {
                                             type={snakeToCamel(piece.type)}
                                             pawnBuff={piece.pawn_buff}
                                             energizeStacks={piece.energize_stacks}
+                                            isStunned={piece.is_stunned}
                                         />
                                     );
                                 }

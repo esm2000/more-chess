@@ -36,6 +36,7 @@ const Board = () => {
                                             inPlay={positionInPlay[0] === row && positionInPlay[1] === col} 
                                             type={snakeToCamel(piece.type)}
                                             pawnBuff={piece.pawn_buff}
+                                            energizeStacks={piece.energize_stacks}
                                         />
                                     );
                                 }

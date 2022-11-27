@@ -49,6 +49,20 @@ const Piece = (props) => {
                 }}
                 onClick={() => handlePieceClick()}
             />
+            {props.energizeStacks ? 
+                <p 
+                    className={pickClassName()}
+                    style={{
+                        top: `${topPosition + 2.55}vw`,
+                        left: `${leftPosition - 0.75}vw`,
+                        fontWeight: 'bold',
+                        background: '-webkit-linear-gradient(white, blue)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent'
+                    }}
+                >
+                    {props.energizeStacks}
+                </p> : null}
         </div>
     );
 }

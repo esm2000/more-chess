@@ -55,6 +55,15 @@
     opacity: 0.12;
 }
 
+.board-and-rules-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.rules {
+    margin: 3vw;
+}
+
 /* For Firefox */
 progress::-moz-progress-bar {
     background: red;
@@ -77,78 +86,82 @@ progress {
 @media screen and (max-width: 1024px) 
               and (orientation: portrait) {
     .square {
-        width: 9vw; 
-        height: 9vw;
+        width: 6vw; 
+        height: 6vw;
         display: flex;
         flex-direction: row;
-        padding: 1.05vw;
+        padding: 0.70vw;
         justify-content: space-between;
     }
 
     .label {
         margin: 0;
         font-weight: 1000;
-        font-size: 4.5vw;
+        font-size: 3vw;
     }
     
     .regular_piece {
         position: absolute;
-        width: 5.4vw;
-        padding: 0vw 2.55vw 1.65vw;
+        width: 3.6vw;
+        padding: 0vw 1.70vw 1.1vw;
         /* height ~= (2 * width) - padding-bottom */
-        height: 8.85vw;
+        height: 5.9vw;
         margin: 0;
     }
     
     .dragon_piece {
         position: absolute;
-        width: 10.5vw;
+        width: 7vw;
     }
     
     .nashor_piece {
         position: absolute;
-        width: 10.5vw;
+        width: 7vw;
     }
     
     .herald_piece {
         position: absolute;
-        width: 12vw;
+        width: 8vw;
     }
     
     .captured_piece {
-        width: 6vw;
+        width: 4vw;
     }
     
     .neutral_captured_piece {
-        width: 11vw;
+        width: 5.5vw;
     }
     
     .possible-move {
         position: absolute;
-        width: 4.5vw;
-        padding: 3.3vw 3.3vw 0;
+        width: 3vw;
+        padding: 2.2vw 2.2vw 0;
         /* padding: 0.55vw 0.85vw 0.55vw; */
-        height: 4.5vw;
+        height: 3vw;
         margin: 0;
-        opacity: 0.36;
+        opacity: 0.24;
+    }
+    .board-and-rules-container {
+        display: flex;
+        flex-direction: column;
     }
     
     /* For Firefox */
     progress::-moz-progress-bar {
         background: red;
-        font-size: 0.75vw;
+        font-size: 0.5vw;
     }
     
     /* For Chrome or Safari */
     progress::-webkit-progress-value {
         background: red;
-        font-size: 0.75vw;
+        font-size: 0.5vw;
     }
     
     /* For IE10 */
     progress {
         background: red;
-        font-size: 0.75vw;
+        font-size: 0.5vw;
     }
     
 }

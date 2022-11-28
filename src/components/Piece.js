@@ -6,9 +6,8 @@ import { PLAYERS, IMAGE_MAP, MAX_BOSS_HEALTH } from '../utility';
 
 const Piece = (props) => {
     const gameState = GameStateContextData()
-    const topPosition = props.row * 3.7 * (gameState.isMobile ? 3: 1)
-    const leftPosition = props.col * 3.7 * (gameState.isMobile ? 3: 1)
-    console.log("isMobile", gameState.isMobile)
+    const topPosition = props.row * 3.7 * (gameState.isMobile ? 2: 1)
+    const leftPosition = props.col * 3.7 * (gameState.isMobile ? 2: 1)
 
     const handlePieceClick = () => {
         if (props.side === PLAYERS[0] && !props.isStunned) {
@@ -52,8 +51,8 @@ const Piece = (props) => {
                     value={props.health} 
                     max={MAX_BOSS_HEALTH[pickClassName().replace("_piece", "")]}
                     style={{
-                        top: `${topPosition + (3.25 * (gameState.isMobile ? 3: 1)) }vw`,
-                        left: `${leftPosition + (0.15 * (gameState.isMobile ? 3: 1))}vw`
+                        top: `${topPosition + (3.25 * (gameState.isMobile ? 2: 1)) }vw`,
+                        left: `${leftPosition + (0.15 * (gameState.isMobile ? 2: 1))}vw`
                     }}
                 /> : null}
             {props.isStunned ?
@@ -63,21 +62,21 @@ const Piece = (props) => {
                     className={pickClassName()}
                     style={{
                         top: `${topPosition}vw`,
-                        left: `${leftPosition - (0.3 * (gameState.isMobile ? 3: 1))}vw`,
-                        width: gameState.isMobile ? '7.5vw': '2.5vw'
+                        left: `${leftPosition - (0.3 * (gameState.isMobile ? 2: 1))}vw`,
+                        width: gameState.isMobile ? '5vw': '2.5vw'
                     }}
                 /> : null}
             {props.energizeStacks ? 
                 <p 
                     className={pickClassName()}
                     style={{
-                        top: `${topPosition + (2.55 * (gameState.isMobile ? 3: 1))}vw`,
-                        left: `${leftPosition - (0.75 * (gameState.isMobile ? 3: 1))}vw`,
+                        top: `${topPosition + (2.55 * (gameState.isMobile ? 2: 1))}vw`,
+                        left: `${leftPosition - (0.75 * (gameState.isMobile ? 2: 1))}vw`,
                         fontWeight: 'bold',
                         background: '-webkit-linear-gradient(white, blue)',
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
-                        fontSize: gameState.isMobile ? '3.6vw': '1.2vw'
+                        fontSize: gameState.isMobile ? '2.4vw': '1.2vw'
                     }}
                 >
                     {props.energizeStacks}
@@ -90,10 +89,10 @@ const Piece = (props) => {
                         src={IMAGE_MAP['bishopDebuff']}
                         className={pickClassName()}
                         style={{
-                            width: gameState.isMobile ? '3vw': '1vw',
-                            height: gameState.isMobile ? '3vw': '1vw',
+                            width: gameState.isMobile ? '2vw': '1vw',
+                            height: gameState.isMobile ? '2vw': '1vw',
                             top: `${topPosition}vw`,
-                            left: `${leftPosition - (gameState.isMobile ? 5.25: 1.75) + (count * (gameState.isMobile ? 3.6: 1.2))}vw`
+                            left: `${leftPosition - (gameState.isMobile ? 3.5: 1.75) + (count * (gameState.isMobile ? 3.6: 1.2))}vw`
                         }}
                     />);
                 }): null

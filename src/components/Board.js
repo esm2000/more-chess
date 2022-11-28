@@ -4,6 +4,9 @@ import Background from './Background';
 import Piece from './Piece';
 import PossibleMove from './PossibleMove';
 import Buff from './Buff';
+import CapturedPieces from './CapturedPieces';
+import HUD from './HUD';
+
 
 import { GameStateContextData }  from '../context/GameStateContext';
 
@@ -19,57 +22,67 @@ const Board = () => {
     const swordInTheStonePosition = gameState.swordInTheStonePosition
 
     return(
-        <div style={{position: 'relative'}}>
-            <Background 
-                possibleCaptures={possibleCaptures}
+        <div>
+            <CapturedPieces 
+                side={PLAYERS[0]}
             />
-            {
-                boardState.map((pieceRow, row) => {
-                    return (
-                        <div>
-                            {pieceRow.map((piece, col) => {
-                                if (piece) {  
-                                    return (
-                                        <Piece
-                                            side={pickSide(piece.type)}
-                                            key={[row, col]}
-                                            row={row} 
-                                            col={col}
-                                            inPlay={positionInPlay[0] === row && positionInPlay[1] === col} 
-                                            type={snakeToCamel(piece.type)}
-                                            pawnBuff={piece.pawn_buff}
-                                            energizeStacks={piece.energize_stacks}
-                                            isStunned={piece.is_stunned}
-                                            bishopDebuff={piece.bishop_debuff}
-                                            health={piece.health}
+            <div style={{position: 'relative'}}>
+                <Background 
+                    possibleCaptures={possibleCaptures}
+                />
+                {
+                    boardState.map((pieceRow, row) => {
+                        return (
+                            <div>
+                                {pieceRow.map((piece, col) => {
+                                    if (piece) {  
+                                        return (
+                                            <Piece
+                                                side={pickSide(piece.type)}
+                                                key={[row, col]}
+                                                row={row} 
+                                                col={col}
+                                                inPlay={positionInPlay[0] === row && positionInPlay[1] === col} 
+                                                type={snakeToCamel(piece.type)}
+                                                pawnBuff={piece.pawn_buff}
+                                                energizeStacks={piece.energize_stacks}
+                                                isStunned={piece.is_stunned}
+                                                bishopDebuff={piece.bishop_debuff}
+                                                health={piece.health}
+                                            />
+                                        );
+                                    }
+                                })}
+                                {possibleMoves.map((possibleMove, index) => {
+                                    if (!possibleCaptures.some((possibleCapture) => JSON.stringify(possibleMove).includes(JSON.stringify(possibleCapture))))
+                                    return(
+                                        <PossibleMove 
+                                            key={'pm' + possibleMove[0].toString() + possibleMove[1].toString()}
+                                            row={possibleMove[0]}
+                                            col={possibleMove[1]}
                                         />
                                     );
-                                }
-                            })}
-                            {possibleMoves.map((possibleMove, index) => {
-                                if (!possibleCaptures.some((possibleCapture) => JSON.stringify(possibleMove).includes(JSON.stringify(possibleCapture))))
-                                return(
-                                    <PossibleMove 
-                                        key={'pm' + possibleMove[0].toString() + possibleMove[1].toString()}
-                                        row={possibleMove[0]}
-                                        col={possibleMove[1]}
-                                    />
-                                );
-                            })}
-                        </div>
-                        
-                    )
-                })
-            }
-            {swordInTheStonePosition ? 
-                <Buff
-                    hide={boardState[swordInTheStonePosition[0]][swordInTheStonePosition[1]] ? true : false}
-                    type='swordInTheStone'
-                    row={swordInTheStonePosition[0]} 
-                    col={swordInTheStonePosition[1]}
-                /> : null
-            }
+                                })}
+                            </div>
+                            
+                        )
+                    })
+                }
+                {swordInTheStonePosition ? 
+                    <Buff
+                        hide={boardState[swordInTheStonePosition[0]][swordInTheStonePosition[1]] ? true : false}
+                        type='swordInTheStone'
+                        row={swordInTheStonePosition[0]} 
+                        col={swordInTheStonePosition[1]}
+                    /> : null
+                }
+            </div>
+            <HUD />
+            <CapturedPieces 
+                side={PLAYERS[1]}
+            />
         </div>
+        
     );
 }
 

@@ -9,7 +9,7 @@ const Rules = () => {
         <div
             className="rules"
         >
-            <h1>Rules</h1>
+            <h3>Rules</h3>
         </div>
     );
 }

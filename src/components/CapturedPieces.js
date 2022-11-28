@@ -9,7 +9,7 @@ const CapturedPieces = (props) => {
 
     return(
         <div>
-            <h2 style={{marginBottom: "0"}}>{capitalizeFirstLetter(props.side)}'s Captured Pieces</h2>
+            <h3 style={{marginBottom: "0"}}>{capitalizeFirstLetter(props.side)}'s Captured Pieces</h3>
             {capturedPieces.map((capturedPiece, i) => {
                 return(
                     <img 

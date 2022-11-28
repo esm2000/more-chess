@@ -4,8 +4,8 @@ import  { GameStateContextData }  from '../context/GameStateContext';
 
 const PossibleMove = (props) => {
     const gameState = GameStateContextData()
-    const topPosition = props.row * 3.7
-    const leftPosition = props.col * 3.7
+    const topPosition = props.row * 3.7 * (gameState.isMobile ? 3: 1)
+    const leftPosition = props.col * 3.7 * (gameState.isMobile ? 3: 1)
 
     return(
         <div>

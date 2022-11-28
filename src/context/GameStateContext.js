@@ -18,12 +18,14 @@ const GameStateContext = createContext({
     possibleCaptures: [],
     capturedPieces: [],
     SwordInTheStonePosition: null,
+    isMobile: false,
     setTurnCount: () => {},
     setPositionInPlay: () => {},
     setBoardState: () => {},
     setPossibleCaptures: () => {},
     setCapturedPieces: () => {},
-    setSwordInTheStonePosition: () => {}
+    setSwordInTheStonePosition: () => {},
+    setIsMobile: () => {}
 })
 
 export function GameStateContextData() {
@@ -64,6 +66,10 @@ export function GameStateProvider({children}) {
         setGameState({...gameState, swordInTheStonePosition: swordInTheStonePosition})
     }
 
+    const setIsMobile = (isMobile) => {
+        setGameState({...gameState, isMobile: isMobile})
+    }
+
     const initGameState = {
         turnCount: 0,
         // positionInPlay: [null, null],
@@ -86,12 +92,14 @@ export function GameStateProvider({children}) {
             [PLAYERS[1]]: ["white_bishop", "neutral_dragon", "neutral_baron_nashor"]
         }, 
         swordInTheStonePosition: [4, 5],
+        isMobile: window.matchMedia("(max-width: 1024px)").matches && window.matchMedia("(orientation: portrait)").matches,
         setTurnCount: setTurnCount,
         setPositionInPlay: setPositionInPlay,
         setBoardState: setBoardState,
         setPossibleCaptures: setPossibleCaptures,
         setCapturedPieces: setCapturedPieces,
-        setSwordInTheStonePosition: setSwordInTheStonePosition
+        setSwordInTheStonePosition: setSwordInTheStonePosition,
+        setIsMobile: setIsMobile
     }
     const [gameState, setGameState] = useState(initGameState);
 
@@ -109,6 +117,10 @@ export function GameStateProvider({children}) {
         }
     }
 
+    const updateIsMobile = () => {
+        setIsMobile(window.matchMedia("(max-width: 1024px)").matches && window.matchMedia("(orientation: portrait)").matches)
+    }
+
     useEffect(() => {
         // uncomment when backend is finished and remove uncommented fetchGameState() call
         // // setting refreshInterval to null can be used in a pause
@@ -118,6 +130,7 @@ export function GameStateProvider({children}) {
         //     return () => clearInterval(interval)
         // }
         fetchGameState()
+        window.addEventListener('resize', updateIsMobile)
     }, [initGameState.turnCount])
 
     return(

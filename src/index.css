@@ -38,11 +38,11 @@
 }
 
 .captured_piece {
-    width: 3vw;
+    width: 2vw;
 }
 
 .neutral_captured_piece {
-    width: 5.5vw;
+    width: 3.66vw;
 }
 
 .possible-move {
@@ -58,17 +58,97 @@
 /* For Firefox */
 progress::-moz-progress-bar {
     background: red;
-    font-size: 0.25vh;
+    font-size: 0.25vw;
 }
 
 /* For Chrome or Safari */
 progress::-webkit-progress-value {
     background: red;
-    font-size: 0.25vh;
+    font-size: 0.25vw;
 }
 
 /* For IE10 */
 progress {
     background: red;
-    font-size: 0.25vh;
+    font-size: 0.25vw;
+}
+
+/* For Mobile */
+@media screen and (max-width: 1024px) 
+              and (orientation: portrait) {
+    .square {
+        width: 9vw; 
+        height: 9vw;
+        display: flex;
+        flex-direction: row;
+        padding: 1.05vw;
+        justify-content: space-between;
+    }
+
+    .label {
+        margin: 0;
+        font-weight: 1000;
+        font-size: 4.5vw;
+    }
+    
+    .regular_piece {
+        position: absolute;
+        width: 5.4vw;
+        padding: 0vw 2.55vw 1.65vw;
+        /* height ~= (2 * width) - padding-bottom */
+        height: 8.85vw;
+        margin: 0;
+    }
+    
+    .dragon_piece {
+        position: absolute;
+        width: 10.5vw;
+    }
+    
+    .nashor_piece {
+        position: absolute;
+        width: 10.5vw;
+    }
+    
+    .herald_piece {
+        position: absolute;
+        width: 12vw;
+    }
+    
+    .captured_piece {
+        width: 6vw;
+    }
+    
+    .neutral_captured_piece {
+        width: 11vw;
+    }
+    
+    .possible-move {
+        position: absolute;
+        width: 4.5vw;
+        padding: 3.3vw 3.3vw 0;
+        /* padding: 0.55vw 0.85vw 0.55vw; */
+        height: 4.5vw;
+        margin: 0;
+        opacity: 0.36;
+    }
+    
+    /* For Firefox */
+    progress::-moz-progress-bar {
+        background: red;
+        font-size: 0.75vw;
+    }
+    
+    /* For Chrome or Safari */
+    progress::-webkit-progress-value {
+        background: red;
+        font-size: 0.75vw;
+    }
+    
+    /* For IE10 */
+    progress {
+        background: red;
+        font-size: 0.75vw;
+    }
+    
 }

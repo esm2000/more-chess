@@ -1,11 +1,11 @@
 import React from 'react';
 import { IMAGE_MAP } from '../utility';
+import  { GameStateContextData }  from '../context/GameStateContext';
 
 const Buff = (props) => {
-
-    const topPosition = props.row * 3.8
-    const leftPosition = props.col * 3.7
-    console.log("buff hide", props.hide)
+    const gameState = GameStateContextData()
+    const topPosition = props.row * 3.8 * (gameState.isMobile ? 3: 1)
+    const leftPosition = props.col * 3.7 * (gameState.isMobile ? 3: 1)
 
     return(
         <div>

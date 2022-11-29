@@ -25,7 +25,9 @@ const IMAGE_MAP = {
     swordInTheStone: require("./assets/sword_in_the_stone.png"),
     centerOfBoard: require("./assets/rules/center_of_board.png"),
     blackStart: require("./assets/rules/black_start.png"),
-    neutralCombat: require("./assets/rules/neutral_combat.gif")
+    neutralCombat1: require("./assets/rules/neutral_combat1.gif"),
+    neutralCombat2: require("./assets/rules/neutral_combat2.gif")
+
 }
 
 const GREEN_SQUARE_COLOR = "rgb(100, 133, 68)";

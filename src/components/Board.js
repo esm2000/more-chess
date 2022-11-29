@@ -20,9 +20,10 @@ const Board = () => {
     const possibleMoves = gameState.possibleMoves
     const possibleCaptures = gameState.possibleCaptures
     const swordInTheStonePosition = gameState.swordInTheStonePosition
+    const isMobile = gameState.isMobile
 
     return(
-        <div>
+        <div style={gameState.isMobile ? {display: "block", margin: "auto"}: null}>
             <CapturedPieces 
                 side={PLAYERS[0]}
             />

@@ -64,6 +64,12 @@
     margin: 3vw;
 }
 
+.rules-image {
+    margin: "auto";
+    height: 7.5vw;
+    display: "block";
+}
+
 /* For Firefox */
 progress::-moz-progress-bar {
     background: red;
@@ -141,9 +147,16 @@ progress {
         margin: 0;
         opacity: 0.24;
     }
+
     .board-and-rules-container {
         display: flex;
         flex-direction: column;
+    }
+
+    .rules-image {
+        display: "block";
+        margin: "auto";
+        height: 15vw;
     }
     
     /* For Firefox */

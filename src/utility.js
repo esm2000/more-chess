@@ -1,34 +1,36 @@
 const PLAYERS = ["white", "black"]
 
 const IMAGE_MAP = {
-    blackBishop: require('./assets/black_bishop.png'),
-    blackKing: require("./assets/black_king.png"),
-    blackKnight: require("./assets/black_knight.png"),
-    blackPawn: require("./assets/black_pawn.png"),
-    blackPawn2: require("./assets/black_pawn_2.png"),
-    blackPawn3: require("./assets/black_pawn_3.png"),
-    blackQueen: require("./assets/black_queen.png"),
-    blackRook: require("./assets/black_rook.png"),
-    neutralDragon: require("./assets/neutral_dragon.png"),
-    neutralBaronNashor: require('./assets/neutral_baron_nashor.gif'),
-    neutralBoardHerald: require('./assets/neutral_board_herald.png'),
-    whiteBishop: require('./assets/white_bishop.png'),
-    whiteKing: require("./assets/white_king.png"),
-    whiteKnight: require("./assets/white_knight.png"),
-    whitePawn: require("./assets/white_pawn.png"),
-    whitePawn2: require("./assets/white_pawn_2.png"),
-    whitePawn3: require("./assets/white_pawn_3.png"),
-    whiteQueen: require("./assets/white_queen.png"),
-    whiteRook: require("./assets/white_rook.png"),
-    stunned: require("./assets/stunned.png"),
-    bishopDebuff: require("./assets/bishop_debuff.png"),
-    swordInTheStone: require("./assets/sword_in_the_stone.png")
+    blackBishop: require('./assets/pieces/black_bishop.png'),
+    blackKing: require("./assets/pieces/black_king.png"),
+    blackKnight: require("./assets/pieces/black_knight.png"),
+    blackPawn: require("./assets/pieces/black_pawn.png"),
+    blackPawn2: require("./assets/pieces/black_pawn_2.png"),
+    blackPawn3: require("./assets/pieces/black_pawn_3.png"),
+    blackQueen: require("./assets/pieces/black_queen.png"),
+    blackRook: require("./assets/pieces/black_rook.png"),
+    neutralDragon: require("./assets/pieces/neutral_dragon.png"),
+    neutralBaronNashor: require('./assets/pieces/neutral_baron_nashor.gif'),
+    neutralBoardHerald: require('./assets/pieces/neutral_board_herald.png'),
+    whiteBishop: require('./assets/pieces/white_bishop.png'),
+    whiteKing: require("./assets/pieces/white_king.png"),
+    whiteKnight: require("./assets/pieces/white_knight.png"),
+    whitePawn: require("./assets/pieces/white_pawn.png"),
+    whitePawn2: require("./assets/pieces/white_pawn_2.png"),
+    whitePawn3: require("./assets/pieces/white_pawn_3.png"),
+    whiteQueen: require("./assets/pieces/white_queen.png"),
+    whiteRook: require("./assets/pieces/white_rook.png"),
+    stunned: require("./assets/statuses/stunned.png"),
+    bishopDebuff: require("./assets/statuses/bishop_debuff.png"),
+    swordInTheStone: require("./assets/sword_in_the_stone.png"),
+    centerOfBoard: require("./assets/rules/center_of_board.png"),
+    blackStart: require("./assets/rules/black_start.png")
 }
 
 const GREEN_SQUARE_COLOR = "rgb(100, 133, 68)";
 const WHITE_SQUARE_COLOR = "rgb(230, 233, 198)";
-const DARK_GREEN_SQUARE_COLOR = "rgb(67, 90, 45)";
-const DARK_WHITE_SQUARE_COLOR = "rgb(182, 185, 160)";
+const DARK_GREEN_SQUARE_COLOR = "rgb(48, 64, 32)";
+const DARK_WHITE_SQUARE_COLOR = "rgb(140, 143, 124)";
 const LIGHT_GREEN_SQUARE_COLOR = "rgb(162, 215, 109)";
 const LIGHT_WHITE_SQUARE_COLOR = "rgb(252, 255, 213)";
 const GREEN_SELECTED_SQUARE_COLOR = "rgb(182, 195, 63)";
@@ -58,28 +60,42 @@ const MAX_BOSS_HEALTH = {
     "nashor": 10
 }
 
-const getBossDangerZonePositions = (isBaronActive) => {
+const getBossDangerZonePositions = (isDragonActive, isHeraldActive, isBaronActive) => {
 
     const bossDangerZonePositions = {}
     const DangerZonePositions = []
 
-    !isBaronActive ? delete BOSS_POSITIONS.baron_nashor : delete BOSS_POSITIONS.board_herald
+    const CURRENT_BOSS_POSITIONS = {}
+    
+    if (isDragonActive) {
+        CURRENT_BOSS_POSITIONS["dragon"] = BOSS_POSITIONS.dragon
+    } 
+    
+    if (isHeraldActive) {
+        CURRENT_BOSS_POSITIONS["board_herald"] = BOSS_POSITIONS.board_herald
+    }
+    
+    if (isBaronActive) {
+        CURRENT_BOSS_POSITIONS["baron_nashor"] = BOSS_POSITIONS.baron_nashor
+    } 
 
-    for (let boss in BOSS_POSITIONS) {
-        DangerZonePositions.push(BOSS_POSITIONS[boss])
-        DangerZonePositions.push([BOSS_POSITIONS[boss][0] - 1, BOSS_POSITIONS[boss][1]])
-        DangerZonePositions.push([BOSS_POSITIONS[boss][0] + 1, BOSS_POSITIONS[boss][1]])
+    console.log("CURRENT BOSS POSITIONS", CURRENT_BOSS_POSITIONS)
+
+    for (let boss in CURRENT_BOSS_POSITIONS) {
+        DangerZonePositions.push(CURRENT_BOSS_POSITIONS[boss])
+        DangerZonePositions.push([CURRENT_BOSS_POSITIONS[boss][0] - 1, CURRENT_BOSS_POSITIONS[boss][1]])
+        DangerZonePositions.push([CURRENT_BOSS_POSITIONS[boss][0] + 1, CURRENT_BOSS_POSITIONS[boss][1]])
 
         if (boss === "dragon") {
-            DangerZonePositions.push([BOSS_POSITIONS[boss][0] - 1, BOSS_POSITIONS[boss][1] - 1])
-            DangerZonePositions.push([BOSS_POSITIONS[boss][0], BOSS_POSITIONS[boss][1] - 1])
-            DangerZonePositions.push([BOSS_POSITIONS[boss][0] + 1, BOSS_POSITIONS[boss][1] - 1])
+            DangerZonePositions.push([CURRENT_BOSS_POSITIONS[boss][0] - 1, CURRENT_BOSS_POSITIONS[boss][1] - 1])
+            DangerZonePositions.push([CURRENT_BOSS_POSITIONS[boss][0], CURRENT_BOSS_POSITIONS[boss][1] - 1])
+            DangerZonePositions.push([CURRENT_BOSS_POSITIONS[boss][0] + 1, CURRENT_BOSS_POSITIONS[boss][1] - 1])
         }
 
         if (boss.includes("nashor") || boss.includes("herald")) {
-            DangerZonePositions.push([BOSS_POSITIONS[boss][0] - 1, BOSS_POSITIONS[boss][1] + 1])
-            DangerZonePositions.push([BOSS_POSITIONS[boss][0], BOSS_POSITIONS[boss][1] + 1])
-            DangerZonePositions.push([BOSS_POSITIONS[boss][0] + 1, BOSS_POSITIONS[boss][1] + 1])
+            DangerZonePositions.push([CURRENT_BOSS_POSITIONS[boss][0] - 1, CURRENT_BOSS_POSITIONS[boss][1] + 1])
+            DangerZonePositions.push([CURRENT_BOSS_POSITIONS[boss][0], CURRENT_BOSS_POSITIONS[boss][1] + 1])
+            DangerZonePositions.push([CURRENT_BOSS_POSITIONS[boss][0] + 1, CURRENT_BOSS_POSITIONS[boss][1] + 1])
         }
         
 
@@ -132,13 +148,13 @@ const capitalizeFirstLetter = (string) =>  {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-const determineBackgroundColor = (row, col, positionInPlay, possibleCaptures, isBaronActive, swordInTheStonePosition) => {
+const determineBackgroundColor = (row, col, positionInPlay, possibleCaptures, isDragonActive, isHeraldActive, isBaronActive, swordInTheStonePosition) => {
     const offset = row % 2
     const currentPosition = [row, col]
     let green = GREEN_SQUARE_COLOR
     let white = WHITE_SQUARE_COLOR
 
-    const dangerZonePositions = getBossDangerZonePositions(isBaronActive)
+    const dangerZonePositions = getBossDangerZonePositions(isDragonActive, isHeraldActive, isBaronActive)
     
     if(JSON.stringify(possibleCaptures).includes(JSON.stringify(currentPosition))) {
         return RED_SQUARE_COLOR
@@ -163,15 +179,20 @@ const determineBackgroundColor = (row, col, positionInPlay, possibleCaptures, is
         green = GREEN_SELECTED_SQUARE_COLOR
         white = WHITE_SELECTED_SQUARE_COLOR
     }
+
+    if ([[3, 3], [4, 3], [3, 4], [4, 4]].toString().includes([row, col].toString())) {
+        green = DARK_GREEN_SQUARE_COLOR
+        white = DARK_WHITE_SQUARE_COLOR
+    }
     
     return (col + offset) % 2 === 0 ? white : green
 }
 
-const determineColor = (row, col, isBaronActive) => {
+const determineColor = (row, col, isDragonActive, isHeraldActive, isBaronActive) => {
     const offset = row % 2
     const currentPosition = [row, col]
 
-    const dangerZonePositions = getBossDangerZonePositions(isBaronActive)
+    const dangerZonePositions = getBossDangerZonePositions(isDragonActive, isHeraldActive, isBaronActive)
     
     for(const boss in dangerZonePositions) {
         if (dangerZonePositions[boss].some((danger_zone_position, i) => 
@@ -186,6 +207,8 @@ const determineColor = (row, col, isBaronActive) => {
 export { 
     PLAYERS, 
     IMAGE_MAP, 
+    DRAGON_POSITION,
+    BOARD_HERALD_POSITION,
     BARON_NASHOR_POSITION,
     MAX_BOSS_HEALTH,
     getPossibleCaptures, 

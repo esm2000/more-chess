@@ -66,7 +66,7 @@ const Piece = (props) => {
                         width: gameState.isMobile ? '5vw': '2.5vw'
                     }}
                 /> : null}
-            {props.energizeStacks ? 
+            {props.energizeStacks || props.energizeStacks === 0 ? 
                 <p 
                     className={pickClassName()}
                     style={{

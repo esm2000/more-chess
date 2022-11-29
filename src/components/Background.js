@@ -3,19 +3,27 @@ import '../index.css';
 
 import setPositionInPlay, { GameStateContextData }  from '../context/GameStateContext';
 
-import { determineBackgroundColor, determineColor, BARON_NASHOR_POSITION } from '../utility';
+import { determineBackgroundColor, determineColor, DRAGON_POSITION, BOARD_HERALD_POSITION, BARON_NASHOR_POSITION } from '../utility';
+
+const isBossActive = (boardState, bossPosition, bossType) => {
+    return !boardState[bossPosition[0]][bossPosition[1]] ? 
+        false :
+    boardState[bossPosition[0]][bossPosition[1]].type === bossType
+}
 
 const Square = (props) => {
     const row = props.row
     const col = props.col
     const gameState = GameStateContextData();
-    const isBaronActive = gameState.boardState[BARON_NASHOR_POSITION[0]][BARON_NASHOR_POSITION[1]] === "neutral_baron_nashor"
+    const isDragonActive = isBossActive(gameState.boardState, DRAGON_POSITION, "neutral_dragon")
+    const isHeraldActive = isBossActive(gameState.boardState, BOARD_HERALD_POSITION, "neutral_board_herald")
+    const isBaronActive = isBossActive(gameState.boardState, BARON_NASHOR_POSITION, "neutral_baron_nashor")
     const positionInPlay = gameState.positionInPlay
     const possibleCaptures = gameState.possibleCaptures
     const swordInTheStonePosition = gameState.swordInTheStonePosition
 
-    const backgroundColor = determineBackgroundColor(row, col, positionInPlay, possibleCaptures, isBaronActive, swordInTheStonePosition)
-    const color = determineColor(row, col, isBaronActive)
+    const backgroundColor = determineBackgroundColor(row, col, positionInPlay, possibleCaptures, isDragonActive, isHeraldActive, isBaronActive, swordInTheStonePosition)
+    const color = determineColor(row, col, isDragonActive, isHeraldActive, isBaronActive)
 
     return (
         <div 

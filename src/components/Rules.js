@@ -8,6 +8,7 @@ const Rules = () => {
     const gameState = GameStateContextData()
     const boardState = gameState.boardState
     const positionInPlay = gameState.positionInPlay
+    const isMobile = gameState.isMobile
 
     return(
         <div
@@ -16,7 +17,9 @@ const Rules = () => {
             <h2>Rules</h2>
             {
                 !positionInPlay[0] && !positionInPlay[1] ? 
-                    <GeneralRules />
+                    <GeneralRules 
+                        isMobile={isMobile}
+                    />
                 : null
             }
         </div>

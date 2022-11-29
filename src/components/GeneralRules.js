@@ -4,7 +4,7 @@ import { GameStateContextData } from '../context/GameStateContext';
 import { IMAGE_MAP } from '../utility';
 
 
-const GeneralRules = () => {
+const GeneralRules = (props) => {
     const [toggleDragonRules, setToggleDragonRules] = useState(false)
     const [toggleHeraldRules, setToggleHeraldRules] = useState(false)
     const [toggleNashorRules, setToggleNashorRules] = useState(false)
@@ -29,7 +29,11 @@ const GeneralRules = () => {
 
     // for some reason margin auto doesn't work if we 
     // use a class and declare it in index.css
-    const imageStyle = {height: "7.5vw", display: "block", margin: "auto"}
+    const imageStyle = {
+        height: props.isMobile ? "15vw": "7.5vw", 
+        display: "block", 
+        margin: "auto"
+    }
 
     return(
         <div>

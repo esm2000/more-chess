@@ -78,7 +78,7 @@ export function GameStateProvider({children}) {
             [[{"type":"black_rook"}], [{"type":"black_knight"}], [{"type":"black_bishop", "energize_stacks": 0}], [{"type":"black_queen"}], [{"type":"black_king"}], [{"type":"black_bishop", "energize_stacks": 100}], [{"type":"black_king"}], [{"type":"black_rook"}]],
             [[{"type":"black_pawn", "pawn_buff": 1}], [{"type":"black_pawn", "pawn_buff": 1}], [{"type":"black_pawn", "pawn_buff": 1}], null, [{"type":"black_pawn", "pawn_buff": 1}], [{"type":"black_pawn", "pawn_buff": 1}], [{"type":"black_pawn", "pawn_buff": 1}], [{"type":"black_pawn", "pawn_buff": 1}]],
             [null, null, null, [{"type":"black_pawn", "pawn_buff": 1}], null, null, null, null],
-            [null, null, null, [{"type":"black_pawn", "pawn_buff": 1}], null, null, null, [{"type":"neutral_dragon", "health": 3}, {"type":"white_knight"}]],
+            [null, null, null, [{"type":"black_pawn", "pawn_buff": 1}], null, null, null, [{"type":"neutral_dragon", "health": 4}]],
             [[{"type":"neutral_baron_nashor", "health": 10}], null, null, null, null, null, null, null],
             [null, null, [{"type":"white_knight"}], null, null, null, null, null],
             Array(8).fill([{"type":"white_pawn", "pawn_buff": 2}]),

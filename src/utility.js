@@ -24,7 +24,8 @@ const IMAGE_MAP = {
     bishopDebuff: require("./assets/statuses/bishop_debuff.png"),
     swordInTheStone: require("./assets/sword_in_the_stone.png"),
     centerOfBoard: require("./assets/rules/center_of_board.png"),
-    blackStart: require("./assets/rules/black_start.png")
+    blackStart: require("./assets/rules/black_start.png"),
+    neutralCombat: require("./assets/rules/neutral_combat.gif")
 }
 
 const GREEN_SQUARE_COLOR = "rgb(100, 133, 68)";

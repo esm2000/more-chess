@@ -8,7 +8,7 @@ import { determineBackgroundColor, determineColor, DRAGON_POSITION, BOARD_HERALD
 const isBossActive = (boardState, bossPosition, bossType) => {
     return !boardState[bossPosition[0]][bossPosition[1]] ? 
         false :
-    boardState[bossPosition[0]][bossPosition[1]].type === bossType
+    boardState[bossPosition[0]][bossPosition[1]].some((piece) => piece.type === bossType)
 }
 
 const Square = (props) => {

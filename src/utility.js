@@ -79,8 +79,6 @@ const getBossDangerZonePositions = (isDragonActive, isHeraldActive, isBaronActiv
         CURRENT_BOSS_POSITIONS["baron_nashor"] = BOSS_POSITIONS.baron_nashor
     } 
 
-    console.log("CURRENT BOSS POSITIONS", CURRENT_BOSS_POSITIONS)
-
     for (let boss in CURRENT_BOSS_POSITIONS) {
         DangerZonePositions.push(CURRENT_BOSS_POSITIONS[boss])
         DangerZonePositions.push([CURRENT_BOSS_POSITIONS[boss][0] - 1, CURRENT_BOSS_POSITIONS[boss][1]])
@@ -113,12 +111,14 @@ const getPossibleCaptures = (boardState, possibleMoves) => {
     let currPositionString
 
     boardState.forEach((row, i) => {
-        row.forEach((piece, j) => {
-            if (piece) {
-                currPositionString = JSON.stringify([i, j])
-                if (pickSide(piece.type) === PLAYERS[1] && possibleMovesJSONString.includes(currPositionString)) {
-                    possibleCaptures.push([i, j]);
-                }
+        row.forEach((piece_array, j) => {
+            if (piece_array) {
+                piece_array.forEach((piece) => {
+                    currPositionString = JSON.stringify([i, j])
+                    if (pickSide(piece.type) === PLAYERS[1] && possibleMovesJSONString.includes(currPositionString)) {
+                        possibleCaptures.push([i, j]);
+                    }
+                })
             }
         })
     })
@@ -127,6 +127,7 @@ const getPossibleCaptures = (boardState, possibleMoves) => {
 }
 
 const pickSide = (pieceName) => {
+    console.log(pieceName)
     if (pieceName.includes("neutral")) {
         return "neutral"
     } else if (pieceName.includes("white")) {

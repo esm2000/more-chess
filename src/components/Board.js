@@ -35,23 +35,26 @@ const Board = () => {
                     boardState.map((pieceRow, row) => {
                         return (
                             <div>
-                                {pieceRow.map((piece, col) => {
-                                    if (piece) {  
-                                        return (
-                                            <Piece
-                                                side={pickSide(piece.type)}
-                                                key={[row, col]}
-                                                row={row} 
-                                                col={col}
-                                                inPlay={positionInPlay[0] === row && positionInPlay[1] === col} 
-                                                type={snakeToCamel(piece.type)}
-                                                pawnBuff={piece.pawn_buff}
-                                                energizeStacks={piece.energize_stacks}
-                                                isStunned={piece.is_stunned}
-                                                bishopDebuff={piece.bishop_debuff}
-                                                health={piece.health}
-                                            />
-                                        );
+                                {pieceRow.map((piece_array, col) => {
+                                    if (piece_array) {  
+                                        return(
+                                            piece_array.map((piece) => {
+                                                return (
+                                                    <Piece
+                                                        side={pickSide(piece.type)}
+                                                        key={[row, col]}
+                                                        row={row} 
+                                                        col={col}
+                                                        inPlay={positionInPlay[0] === row && positionInPlay[1] === col} 
+                                                        type={snakeToCamel(piece.type)}
+                                                        pawnBuff={piece.pawn_buff}
+                                                        energizeStacks={piece.energize_stacks}
+                                                        isStunned={piece.is_stunned}
+                                                        bishopDebuff={piece.bishop_debuff}
+                                                        health={piece.health}
+                                                    />
+                                                );
+                                        }));
                                     }
                                 })}
                                 {possibleMoves.map((possibleMove, index) => {

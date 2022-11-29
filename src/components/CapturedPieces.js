@@ -6,7 +6,8 @@ import { IMAGE_MAP, snakeToCamel, capitalizeFirstLetter } from '../utility';
 const CapturedPieces = (props) => {
     const gameState = GameStateContextData()
     const capturedPieces = gameState.capturedPieces[props.side]
-
+    const capturePointAdvantage = gameState.capturePointAdvantage
+    
     return(
         <div>
             <h3 style={{marginBottom: "0"}}>{capitalizeFirstLetter(props.side)}'s Captured Pieces</h3>
@@ -21,6 +22,11 @@ const CapturedPieces = (props) => {
                 );
                 
             })}
+            {
+                capturePointAdvantage?.[0] === props.side ?
+                    <p>Capture Point Advantage: {capturePointAdvantage[1]}</p>
+                : null
+            }
         </div>
     );
 }

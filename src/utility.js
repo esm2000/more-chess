@@ -130,7 +130,6 @@ const getPossibleCaptures = (boardState, possibleMoves) => {
 }
 
 const pickSide = (pieceName) => {
-    console.log(pieceName)
     if (pieceName.includes("neutral")) {
         return "neutral"
     } else if (pieceName.includes("white")) {

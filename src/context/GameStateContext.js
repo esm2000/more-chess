@@ -19,13 +19,15 @@ const GameStateContext = createContext({
     capturedPieces: [],
     SwordInTheStonePosition: null,
     isMobile: false,
+    capturePointAdvantage: null,
     setTurnCount: () => {},
     setPositionInPlay: () => {},
     setBoardState: () => {},
     setPossibleCaptures: () => {},
     setCapturedPieces: () => {},
     setSwordInTheStonePosition: () => {},
-    setIsMobile: () => {}
+    setIsMobile: () => {},
+    setCapturePointAdvantage: () => {}
 })
 
 export function GameStateContextData() {
@@ -70,6 +72,10 @@ export function GameStateProvider({children}) {
         setGameState({...gameState, isMobile: isMobile})
     }
 
+    const setCapturePointAdvantage = (capturePointAdvantage) => {
+        setGameState({...gameState, capturePointAdvantage: capturePointAdvantage})
+    }
+
     const initGameState = {
         turnCount: 0,
         // positionInPlay: [null, null],
@@ -93,13 +99,15 @@ export function GameStateProvider({children}) {
         }, 
         swordInTheStonePosition: [4, 5],
         isMobile: window.matchMedia("(max-width: 1024px)").matches && window.matchMedia("(orientation: portrait)").matches,
+        capturePointAdvantage: ["black", 4],
         setTurnCount: setTurnCount,
         setPositionInPlay: setPositionInPlay,
         setBoardState: setBoardState,
         setPossibleCaptures: setPossibleCaptures,
         setCapturedPieces: setCapturedPieces,
         setSwordInTheStonePosition: setSwordInTheStonePosition,
-        setIsMobile: setIsMobile
+        setIsMobile: setIsMobile,
+        setCapturePointAdvantage: setCapturePointAdvantage
     }
     const [gameState, setGameState] = useState(initGameState);
 

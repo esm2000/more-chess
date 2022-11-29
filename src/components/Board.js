@@ -25,7 +25,7 @@ const Board = () => {
     return(
         <div style={gameState.isMobile ? {display: "block", margin: "auto"}: null}>
             <CapturedPieces 
-                side={PLAYERS[0]}
+                side={PLAYERS[1]}
             />
             <div style={{position: 'relative'}}>
                 <Background 
@@ -83,7 +83,7 @@ const Board = () => {
             </div>
             <HUD />
             <CapturedPieces 
-                side={PLAYERS[1]}
+                side={PLAYERS[0]}
             />
         </div>
         

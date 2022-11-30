@@ -13,39 +13,58 @@ const PawnRules = (props) => {
 
     const h4Style = {
         position: "relative", 
-        top: "1vw" 
+        top: props.isMobile ? "2vw": "1vw"
+    }
+
+    const imageStyle = {
+        height: props.isMobile ? "12vw": "6vw",
+        margin: props.isMobile ? "0 12vw": "0 6vw"
     }
 
     return(
         <div>
             <h3>Pawns</h3>
-            <div display="flex">
+            <div>
                 <img
                     src={IMAGE_MAP["whitePawn"]}
                     style={pieceImageStyle}
                 />
-                <h4 style={{...h4Style, left: "1vw"}}>Normal</h4>
+                <h4 style={{...h4Style, left: props.isMobile ? "2vw": "1vw"}}>Normal</h4>
             </div>
             <ul>
-                <li>Moves forward one square (except first move with pawn can be two squares)</li>
+                <li>Moves forward one square (except first move can be two squares)</li>
                 <li>Captures diagonally one square at a time</li>
             </ul>
-            <div display="flex">
+            <div style={{display: "flex"}}>
+                <img
+                    src={IMAGE_MAP["normalPawnMovement"]}
+                    style={imageStyle}
+                />
+                <img
+                    src={IMAGE_MAP["normalPawnCombat"]}
+                    style={imageStyle}
+                />
+            </div>
+            <div>
                 <img
                     src={IMAGE_MAP["whitePawn2"]}
                     style={pieceImageStyle}
                 />
-                <h4 style={{...h4Style, left: "0.8vw"}}>Buff after getting 2+ capture point advantage</h4>
+                <h4 style={{...h4Style, left: props.isMobile ? "1.6vw": "0.8vw"}}>Buff after getting 2+ capture point advantage</h4>
             </div>
             <ul>
                 <li>Can also capture enemy pawns directly in front of them</li>
             </ul>
-            <div display="flex">
+            <img
+                src={IMAGE_MAP["buffedPawnCombat"]}
+                style={{...imageStyle}}
+            />
+            <div>
                 <img
                     src={IMAGE_MAP["whitePawn3"]}
                     style={pieceImageStyle}
                 />
-                <h4 style={{...h4Style, left: "0.6vw"}}>Buff after getting 3+ capture point advantage</h4>
+                <h4 style={{...h4Style, left: props.isMobile ? "1.2vw": "0.6vw"}}>Buff after getting 3+ capture point advantage</h4>
             </div>
             <ul>
                 <li>Cannot get captured by enemy pawns</li>

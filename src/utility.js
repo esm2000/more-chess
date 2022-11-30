@@ -26,7 +26,10 @@ const IMAGE_MAP = {
     centerOfBoard: require("./assets/rules/center_of_board.png"),
     blackStart: require("./assets/rules/black_start.png"),
     neutralCombat1: require("./assets/rules/neutral_combat1.gif"),
-    neutralCombat2: require("./assets/rules/neutral_combat2.gif")
+    neutralCombat2: require("./assets/rules/neutral_combat2.gif"),
+    normalPawnMovement: require("./assets/rules/normal_pawn_movement.gif"),
+    normalPawnCombat: require("./assets/rules/normal_pawn_combat.gif"),
+    buffedPawnCombat: require("./assets/rules/buff1_pawn_combat.gif")
 
 }
 

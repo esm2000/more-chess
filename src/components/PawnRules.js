@@ -18,7 +18,8 @@ const PawnRules = (props) => {
 
     const imageStyle = {
         height: props.isMobile ? "12vw": "6vw",
-        margin: props.isMobile ? "0 12vw": "0 6vw"
+        display: "block", 
+        margin: "auto"
     }
 
     return(
@@ -31,10 +32,8 @@ const PawnRules = (props) => {
                 />
                 <h4 style={{...h4Style, left: props.isMobile ? "2vw": "1vw"}}>Normal</h4>
             </div>
-            <ul>
-                <li>Moves forward one square (except first move can be two squares)</li>
-                <li>Captures diagonally one square at a time</li>
-            </ul>
+                <p>Moves forward one square (except first move can be two squares)</p>
+                <p>Captures diagonally one square at a time</p>
             <div style={{display: "flex"}}>
                 <img
                     src={IMAGE_MAP["normalPawnMovement"]}
@@ -52,9 +51,7 @@ const PawnRules = (props) => {
                 />
                 <h4 style={{...h4Style, left: props.isMobile ? "1.6vw": "0.8vw"}}>Buff after getting 2+ capture point advantage</h4>
             </div>
-            <ul>
-                <li>Can also capture enemy pawns directly in front of them</li>
-            </ul>
+                <p>Can also capture enemy pawns directly in front of them</p>
             <img
                 src={IMAGE_MAP["buffedPawnCombat"]}
                 style={{...imageStyle}}
@@ -66,9 +63,7 @@ const PawnRules = (props) => {
                 />
                 <h4 style={{...h4Style, left: props.isMobile ? "1.2vw": "0.6vw"}}>Buff after getting 3+ capture point advantage</h4>
             </div>
-            <ul>
-                <li>Cannot get captured by enemy pawns</li>
-            </ul>
+                <p>Cannot get captured by enemy pawns</p>
         </div>
     );
 }

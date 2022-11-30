@@ -5,6 +5,7 @@ import { IMAGE_MAP } from '../utility';
 import GeneralRules from './GeneralRules';
 import PawnRules from './PawnRules';
 import KnightRules from './KnightRules';
+import RookRules from './RookRules';
 
 const Rules = () => {
     const gameState = GameStateContextData()
@@ -37,6 +38,15 @@ const Rules = () => {
                 (positionInPlay[0] || positionInPlay[0] === 0) && (positionInPlay[1] || positionInPlay[1] === 0) ?
                     boardState?.[positionInPlay[0]]?.[positionInPlay[1]]?.some((piece) => piece.type.includes("knight")) ?
                     <KnightRules 
+                        isMobile={isMobile}
+                    />
+                    : null
+                : null
+            }
+            {
+                (positionInPlay[0] || positionInPlay[0] === 0) && (positionInPlay[1] || positionInPlay[1] === 0) ?
+                    boardState?.[positionInPlay[0]]?.[positionInPlay[1]]?.some((piece) => piece.type.includes("rook")) ?
+                    <RookRules 
                         isMobile={isMobile}
                     />
                     : null

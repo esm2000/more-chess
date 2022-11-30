@@ -31,7 +31,10 @@ const IMAGE_MAP = {
     normalPawnCombat: require("./assets/rules/normal_pawn_combat.gif"),
     buffedPawnCombat: require("./assets/rules/buff1_pawn_combat.gif"),
     knightMovement: require("./assets/rules/knight_movement.png"),
-    knightLimits: require("./assets/rules/knight_limits.png")
+    knightLimits: require("./assets/rules/knight_limits.png"),
+    rookMovementTurn0: require("./assets/rules/rook_movement_turn_0.png"),
+    rookMovementTurn15: require("./assets/rules/rook_movement_turn_15.png"),
+    rookMovementTurn20: require("./assets/rules/rook_movement_turn_20.png")
 }
 
 const GREEN_SQUARE_COLOR = "rgb(100, 133, 68)";
@@ -178,18 +181,18 @@ const determineBackgroundColor = (row, col, positionInPlay, possibleCaptures, is
         }
     }
 
-    if (
-        positionInPlay.toString() !== [null, null].toString() &&
-        positionInPlay[0] === row &&
-        positionInPlay[1] == col
-    ) {
-        green = GREEN_SELECTED_SQUARE_COLOR
-        white = WHITE_SELECTED_SQUARE_COLOR
-    }
-
     if ([[3, 3], [4, 3], [3, 4], [4, 4]].toString().includes([row, col].toString())) {
         green = DARK_GREEN_SQUARE_COLOR
         white = DARK_WHITE_SQUARE_COLOR
+    }
+
+    if (
+        positionInPlay.toString() !== [null, null].toString() &&
+        positionInPlay[0] === row &&
+        positionInPlay[1] === col
+    ) {
+        green = GREEN_SELECTED_SQUARE_COLOR
+        white = WHITE_SELECTED_SQUARE_COLOR
     }
     
     return (col + offset) % 2 === 0 ? white : green

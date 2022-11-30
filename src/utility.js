@@ -29,8 +29,9 @@ const IMAGE_MAP = {
     neutralCombat2: require("./assets/rules/neutral_combat2.gif"),
     normalPawnMovement: require("./assets/rules/normal_pawn_movement.gif"),
     normalPawnCombat: require("./assets/rules/normal_pawn_combat.gif"),
-    buffedPawnCombat: require("./assets/rules/buff1_pawn_combat.gif")
-
+    buffedPawnCombat: require("./assets/rules/buff1_pawn_combat.gif"),
+    knightMovement: require("./assets/rules/knight_movement.png"),
+    knightLimits: require("./assets/rules/knight_limits.png")
 }
 
 const GREEN_SQUARE_COLOR = "rgb(100, 133, 68)";

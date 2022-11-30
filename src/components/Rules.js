@@ -6,6 +6,7 @@ import GeneralRules from './GeneralRules';
 import PawnRules from './PawnRules';
 import KnightRules from './KnightRules';
 import RookRules from './RookRules';
+import BishopRules from './BishopRules';
 
 const Rules = () => {
     const gameState = GameStateContextData()
@@ -38,6 +39,15 @@ const Rules = () => {
                 (positionInPlay[0] || positionInPlay[0] === 0) && (positionInPlay[1] || positionInPlay[1] === 0) ?
                     boardState?.[positionInPlay[0]]?.[positionInPlay[1]]?.some((piece) => piece.type.includes("knight")) ?
                     <KnightRules 
+                        isMobile={isMobile}
+                    />
+                    : null
+                : null
+            }
+            {
+                (positionInPlay[0] || positionInPlay[0] === 0) && (positionInPlay[1] || positionInPlay[1] === 0) ?
+                    boardState?.[positionInPlay[0]]?.[positionInPlay[1]]?.some((piece) => piece.type.includes("bishop")) ?
+                    <BishopRules 
                         isMobile={isMobile}
                     />
                     : null

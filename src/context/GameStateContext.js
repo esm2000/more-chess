@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react"
-import { PLAYERS, getPossibleCaptures } from '../utility';
+import { PLAYERS } from '../utility';
 
 const GameStateContext = createContext({
     turnCount: 0,
@@ -45,10 +45,11 @@ export function GameStateProvider({children}) {
     }
 
     const setPositionInPlay = (positionInPlay) => {
+        // TODO API Call where you update the game via API and get the response to update possibleCaptures
         setGameState({
             ...gameState, 
             positionInPlay: positionInPlay,
-            possibleCaptures: getPossibleCaptures(gameState.boardState, gameState.possibleMoves)
+            // possibleCaptures: getPossibleCaptures(gameState.boardState, gameState.possibleMoves)
         })
     }
 
@@ -92,7 +93,7 @@ export function GameStateProvider({children}) {
         ],
         // possibleMoves: [],
         possibleMoves: [[4, 2], [3, 2], [3, 3]],
-        possibleCaptures: [],
+        possibleCaptures: [[3, 3]],
         capturedPieces: {
             [PLAYERS[0]]: ["black_pawn", "black_rook", "neutral_board_herald"],
             [PLAYERS[1]]: ["white_bishop", "neutral_dragon", "neutral_baron_nashor"]
@@ -119,10 +120,6 @@ export function GameStateProvider({children}) {
         // and then setGameState()
         setGameState(initGameState)
 
-        // update any fields not obtained from backend
-        if (gameState.possibleMoves.length > 0) {
-            gameState.setPossibleCaptures(getPossibleCaptures(gameState.boardState, gameState.possibleMoves))
-        }
     }
 
     const updateIsMobile = () => {

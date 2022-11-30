@@ -34,7 +34,11 @@ const IMAGE_MAP = {
     knightLimits: require("./assets/rules/knight_limits.png"),
     rookMovementTurn0: require("./assets/rules/rook_movement_turn_0.png"),
     rookMovementTurn15: require("./assets/rules/rook_movement_turn_15.png"),
-    rookMovementTurn20: require("./assets/rules/rook_movement_turn_20.png")
+    rookMovementTurn20: require("./assets/rules/rook_movement_turn_20.png"),
+    bishopMovement: require("./assets/rules/bishop_movement.png"),
+    bishopStacksMovement: require("./assets/rules/bishop_stacks_movement.gif"),
+    bishopStacksCapture: require("./assets/rules/bishop_stacks_capture.gif"),
+    bishopEnergizedCapture: require("./assets/rules/bishop_energized_capture.gif")
 }
 
 const GREEN_SQUARE_COLOR = "rgb(100, 133, 68)";
@@ -115,27 +119,6 @@ const getBossDangerZonePositions = (isDragonActive, isHeraldActive, isBaronActiv
 
 }
 
-const getPossibleCaptures = (boardState, possibleMoves) => {
-    const possibleCaptures = []
-    const possibleMovesJSONString = JSON.stringify(possibleMoves)
-    let currPositionString
-
-    boardState.forEach((row, i) => {
-        row.forEach((piece_array, j) => {
-            if (piece_array) {
-                piece_array.forEach((piece) => {
-                    currPositionString = JSON.stringify([i, j])
-                    if (pickSide(piece.type) === PLAYERS[1] && possibleMovesJSONString.includes(currPositionString)) {
-                        possibleCaptures.push([i, j]);
-                    }
-                })
-            }
-        })
-    })
-
-    return possibleCaptures
-}
-
 const pickSide = (pieceName) => {
     if (pieceName.includes("neutral")) {
         return "neutral"
@@ -166,6 +149,10 @@ const determineBackgroundColor = (row, col, positionInPlay, possibleCaptures, is
 
     const dangerZonePositions = getBossDangerZonePositions(isDragonActive, isHeraldActive, isBaronActive)
     
+    if (row === 3 && col === 6) {
+        console.log("possibleCaptures", possibleCaptures)
+        console.log("currentPosition", currentPosition)
+    }
     if(JSON.stringify(possibleCaptures).includes(JSON.stringify(currentPosition))) {
         return RED_SQUARE_COLOR
     }
@@ -221,7 +208,6 @@ export {
     BOARD_HERALD_POSITION,
     BARON_NASHOR_POSITION,
     MAX_BOSS_HEALTH,
-    getPossibleCaptures, 
     pickSide, 
     snakeToCamel, 
     determineBackgroundColor,

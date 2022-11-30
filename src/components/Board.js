@@ -10,7 +10,7 @@ import HUD from './HUD';
 
 import { GameStateContextData }  from '../context/GameStateContext';
 
-import { PLAYERS, getPossibleCaptures, pickSide, snakeToCamel } from '../utility';
+import { PLAYERS, pickSide, snakeToCamel } from '../utility';
 
 const Board = () => {
     // positionInPlay used to figure out what piece is being moved by player

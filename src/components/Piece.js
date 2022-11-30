@@ -97,6 +97,51 @@ const Piece = (props) => {
                     />);
                 }): null
             }
+            {
+                // TODO: add onClick functions that make API calls to capture or spare piece
+                props.bishopDebuff === 3 && props.side === PLAYERS[1]?
+                <div>
+                    <button
+                        className={pickClassName()}
+                        style={{
+                            top: `${(topPosition + 0.75) * (gameState.isMobile ? 2: 1)}vw`,
+                            left: `${(leftPosition + 0.5) * (gameState.isMobile ? 2: 1)}vw`,
+                            borderRadius: `${0.4 * (gameState.isMobile ? 2: 1)}vw`,
+                            padding: `${0.15 * (gameState.isMobile ? 2: 1)}vw`,
+                            height: `${1.25 * (gameState.isMobile ? 2: 1)}vw`,
+                            width: `${3 * (gameState.isMobile ? 2: 1)}vw`,
+                            fontSize: `${0.5 * (gameState.isMobile ? 2: 1)}em`,
+                            positon: "absolute",
+                            textAlign: "center",
+                            textDecoration: "none",
+                            outline: "none",
+                            borderColor: "#63bbf2",
+                            color: "white",
+                            backgroundColor: "#24a0ed",
+                        }}
+                    >Capture</button>
+                    <button
+                        className={pickClassName()}
+                        style={{
+                            top: `${(topPosition + 2.25) * (gameState.isMobile ? 2: 1)}vw`,
+                            left: `${(leftPosition + 0.5) * (gameState.isMobile ? 2: 1)}vw`,
+                            borderRadius: `${0.4 * (gameState.isMobile ? 2: 1)}vw`,
+                            padding: `${0.15 * (gameState.isMobile ? 2: 1)}vw`,
+                            height: `${1.25 * (gameState.isMobile ? 2: 1)}vw`,
+                            width: `${3 * (gameState.isMobile ? 2: 1)}vw`,
+                            fontSize: `${0.5 * (gameState.isMobile ? 2: 1)}em`,
+                            positon: "absolute",
+                            textAlign: "center",
+                            textDecoration: "none",
+                            outline: "none",
+                            borderColor: "#ff4040",
+                            color: "white",
+                            backgroundColor: "#fd0e35",
+                        }}
+                    >Spare</button>
+                </div>
+                : null
+            }
         </div>
     );
 }

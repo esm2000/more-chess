@@ -142,6 +142,21 @@ const Piece = (props) => {
                 </div>
                 : null
             }
+            {props.checkProtection ?
+                Array.from({length: props.checkProtection}, (_, i) => i + 1).map((count) => {
+                    return(
+                    <img 
+                        src={IMAGE_MAP['checkProtection']}
+                        className={pickClassName()}
+                        style={{
+                            width: gameState.isMobile ? '2.3vw': '1.15vw',
+                            height: gameState.isMobile ? '2.3vw': '1.15vw',
+                            top: `${topPosition}vw`,
+                            left: `${leftPosition - (gameState.isMobile ? 3.5: 1.75) + (count * (gameState.isMobile ? 3.6: 1.2))}vw`
+                        }}
+                    />);
+                }): null
+            }
         </div>
     );
 }

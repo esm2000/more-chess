@@ -23,6 +23,7 @@ const IMAGE_MAP = {
     stunned: require("./assets/statuses/stunned.png"),
     bishopDebuff: require("./assets/statuses/bishop_debuff.png"),
     swordInTheStone: require("./assets/sword_in_the_stone.png"),
+    checkProtection: require("./assets/statuses/check_protection.png"),
     centerOfBoard: require("./assets/rules/center_of_board.png"),
     blackStart: require("./assets/rules/black_start.png"),
     neutralCombat1: require("./assets/rules/neutral_combat1.gif"),

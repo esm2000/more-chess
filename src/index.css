@@ -1,3 +1,19 @@
+@font-face {
+    font-family: "Default";   /*Can be any text*/
+    src: local("Retro Gaming"),
+      url("./fonts/Retro\ Gaming.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Title";   /*Can be any text*/
+    src: local("04B_30"),
+      url("./fonts/04B_30__.TTF") format("truetype");
+}
+
+.title {
+    font-family: "Title"
+}
+
 .square {
     width: 3vw; 
     height: 3vw;
@@ -58,6 +74,7 @@
 .board-and-rules-container {
     display: flex;
     flex-direction: row;
+    font-family: "Default";
 }
 
 .rules {

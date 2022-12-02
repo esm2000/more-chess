@@ -103,3 +103,4 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * Dragon asset by kukuchangmin - https://www.deviantart.com/kukuchangmin 
 * Board Herald asset by u/Hamzilla15 on /r/leagueoflegends - https://www.reddit.com/r/leagueoflegends/comments/6qvj71/did_some_pixel_art_of_baron_nashor_for_the_pixel/
 * Baron Nashor asset by ThumbsDown - https://thumbz-down.tumblr.com/post/122327767691/baron-nashor-from-league-of-legends-i-did-a-while
+* Title Font by Yuji Oshimoto - http://www.o4.jp.org 

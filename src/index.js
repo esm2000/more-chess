@@ -1,14 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import "./fonts/Retro\ Gaming.ttf";
+import "./fonts/04B_30__.TTF"
 
 import { GameStateProvider } from './context/GameStateContext';
 
 import Board from './components/Board';
-import HUD from './components/HUD';
-import CapturedPieces from './components/CapturedPieces';
 import Rules from './components/Rules';
-import { PLAYERS } from './utility';
+import Title from './components/Title';
 
 
  
@@ -21,6 +21,7 @@ class App extends React.Component {
         return (
             <div>
                 <GameStateProvider>
+                    <Title />
                     <div className='board-and-rules-container'>
                         <Board />
                         <Rules />

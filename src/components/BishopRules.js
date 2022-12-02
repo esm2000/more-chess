@@ -39,7 +39,15 @@ const BishopRules = (props) => {
                 />
             </ul>
             <p>Threatening to capture a piece applies a debuff at the end of a bishops's turn to that piece. On third hit of debuff, a bishop may immediately capture the enemy piece</p>
-            <p style={{fontWeight: "bold"}}>Can be captured by landing on any square adjacent to it</p>
+            <img
+                src={IMAGE_MAP["bishopDebuffEx"]}
+                style={imageStyle}
+            />
+            <p style={{fontWeight: "bold", color: "red"}}>Can be captured by landing on any square adjacent to it</p>
+            <img
+                src={IMAGE_MAP["bishopCapture"]}
+                style={imageStyle}
+            />
         </div>
     );
 }

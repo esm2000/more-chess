@@ -40,7 +40,9 @@ const IMAGE_MAP = {
     bishopStacksCapture: require("./assets/rules/bishop_stacks_capture.gif"),
     bishopEnergizedCapture: require("./assets/rules/bishop_energized_capture.gif"),
     bishopDebuffEx: require("./assets/rules/bishop_debuff.gif"),
-    bishopCapture: require("./assets/rules/bishop_capture.gif")
+    bishopCapture: require("./assets/rules/bishop_capture.gif"),
+    queenMovement: require("./assets/rules/queen_movement.png"),
+    queenStun: require("./assets/rules/queen_stun.gif")
 }
 
 const GREEN_SQUARE_COLOR = "rgb(100, 133, 68)";

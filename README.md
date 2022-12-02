@@ -47,7 +47,7 @@ Rooks have long abused their ability to control an entire file, or row of square
 * Rooks movement and capture range now scales with game length. It begins at 3 and gains 1 maximum movement and capture range every 5 turns after the 10th turn of the game.
 
 #### Queens
-Queens have long been a strong piece and because of the dyanamic gameplay they offer they're being buffed. They are flashy and interesting to watch competitively and therefore deserve additional power to shine even brighter.
+Queens have long been a strong piece and because of the dynamic gameplay they offer they're being buffed.
 
 * If a Queen moves but does not capture an enemy piece, it instead stuns all enemy pieces adjacent to it for 1 turn.
 * Additionally, Queens now reset on kills and assists. If a Queen captures a piece and is not in danger of being capture herself afterward, she gains the ability to move or capture again. Assists are defined as being able to capture a piece, but allowing another unit to last hit it instead.

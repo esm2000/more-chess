@@ -43,7 +43,9 @@ const IMAGE_MAP = {
     bishopDebuffEx: require("./assets/rules/bishop_debuff.gif"),
     bishopCapture: require("./assets/rules/bishop_capture.gif"),
     queenMovement: require("./assets/rules/queen_movement.png"),
-    queenStun: require("./assets/rules/queen_stun.gif")
+    queenStun: require("./assets/rules/queen_stun.gif"),
+    kingMovement: require("./assets/rules/king_movement.png"),
+    kingSwordInStoneCheckProtection: require("./assets/rules/sword_in_stone_check_protection.gif")
 }
 
 const GREEN_SQUARE_COLOR = "rgb(100, 133, 68)";
@@ -213,6 +215,7 @@ export {
     BOARD_HERALD_POSITION,
     BARON_NASHOR_POSITION,
     MAX_BOSS_HEALTH,
+    LIGHT_BLUE_SQUARE_COLOR,
     pickSide, 
     snakeToCamel, 
     determineBackgroundColor,

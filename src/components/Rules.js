@@ -8,6 +8,7 @@ import KnightRules from './KnightRules';
 import RookRules from './RookRules';
 import BishopRules from './BishopRules';
 import QueenRules from './QueenRules';
+import KingRules from './KingRules';
 
 const Rules = () => {
     const gameState = GameStateContextData()
@@ -67,6 +68,15 @@ const Rules = () => {
                 (positionInPlay[0] || positionInPlay[0] === 0) && (positionInPlay[1] || positionInPlay[1] === 0) ?
                     boardState?.[positionInPlay[0]]?.[positionInPlay[1]]?.some((piece) => piece.type.includes("queen")) ?
                     <QueenRules 
+                        isMobile={isMobile}
+                    />
+                    : null
+                : null
+            }
+            {
+                (positionInPlay[0] || positionInPlay[0] === 0) && (positionInPlay[1] || positionInPlay[1] === 0) ?
+                    boardState?.[positionInPlay[0]]?.[positionInPlay[1]]?.some((piece) => piece.type.includes("king")) ?
+                    <KingRules 
                         isMobile={isMobile}
                     />
                     : null

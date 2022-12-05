@@ -145,3 +145,10 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * rudimentary EASY enemy AI (chooses random moves from possible moves)
 * ADVANCED enemy AI that plays perfectly as possible
 * MEDIUM enemy AI that is a combination of EASY and ADVANCED AIs
+
+##### Production-Ready Development
+* Get off of SQLite and move to a database more sutiable for production
+* Restructure project for deployment
+* Dockerize project with Dockerfile
+* Create a Kubernetes deployment script and a configuration file
+* Deploy

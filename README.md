@@ -4,6 +4,7 @@
 A online revision of the classic game of Chess. The idea came from a [thread](https://www.reddit.com/r/leagueoflegends/comments/3yf3d3/chess_patch_11_notes_by_riot_games/) posted to Reddit that parodied the balance of a video game. However, the rules were so intriguing that I was interested in bringing it to life. 
 
 **THIS IS STILL A WORK IN PROGRESS**
+Roadmap is includd in its own section below
 
 ## Quickstart
 
@@ -104,3 +105,43 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * Board Herald asset by u/Hamzilla15 on /r/leagueoflegends - https://www.reddit.com/r/leagueoflegends/comments/6qvj71/did_some_pixel_art_of_baron_nashor_for_the_pixel/
 * Baron Nashor asset by ThumbsDown - https://thumbz-down.tumblr.com/post/122327767691/baron-nashor-from-league-of-legends-i-did-a-while
 * Title Font by Yuji Oshimoto - http://www.o4.jp.org 
+
+#### Roadmap
+
+##### Frontend
+* board ✅
+* rudimentary GameStateContext to be built further upon ✅
+* white and black players ✅
+* neutral monsters ✅
+* captured pieces ✅
+* piece status effects ✅
+* health points for neutral monsters
+* sword in stone buff ✅
+* rules on click ✅
+* pixel font ✅
+* ensure that pieces + monsters can be on same square ✅
+* win + loss screen
+* checkmate protection status effect
+* win and loss screens
+* shop (with light/normal green square for shop square)
+
+##### Backend 
+* placeholder sqlite database
+* fastAPI 
+    - POST game (creates gameState object, along with other game oriented information as seen in GameStateContext.js)
+    - GET game 
+    - DELETE game
+    - PATCH game (only an API endpoint that allows for updates to gamestate object)
+    - POST endpoint to facilitate buying pieces\
+* hook up endpoints to backend (at this stage enemy pieces incapable of moving)
+* expand PATCH game with game logic, MUST BE DEVELOPED WITH pytest unit tests 
+    - getPossibleMoves() (ignore buff logic for now)
+        - getPossibleMovesForPawn()
+        - getPossibleMovesForKnignt()
+        - getPossibleMovesForBishop()
+        - getPossibleMovesForRook()
+        - getPossibleMovesForQueen()
+        - getPossibleMovesForKing() - to determine check and checkmate will possible involve looping through every enemy piece's getPossibleMoves()
+* rudimentary EASY enemy AI (chooses random moves from possible moves)
+* ADVANCED enemy AI that plays perfectly as possible
+* MEDIUM enemy AI that is a combination of EASY and ADVANCED AIs

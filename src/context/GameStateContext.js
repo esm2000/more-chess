@@ -20,6 +20,8 @@ const GameStateContext = createContext({
     SwordInTheStonePosition: null,
     isMobile: false,
     capturePointAdvantage: null,
+    playerVictory: false,
+    playerDefeat: false,
     setTurnCount: () => {},
     setPositionInPlay: () => {},
     setBoardState: () => {},
@@ -27,7 +29,9 @@ const GameStateContext = createContext({
     setCapturedPieces: () => {},
     setSwordInTheStonePosition: () => {},
     setIsMobile: () => {},
-    setCapturePointAdvantage: () => {}
+    setCapturePointAdvantage: () => {},
+    setPlayerVictory: () => {},
+    setPlayerDefeat: () => {}
 })
 
 export function GameStateContextData() {
@@ -77,6 +81,14 @@ export function GameStateProvider({children}) {
         setGameState({...gameState, capturePointAdvantage: capturePointAdvantage})
     }
 
+    const setPlayerVictory = (playerVictory) => {
+        setGameState({...gameState, playerVictory: playerVictory})
+    }
+
+    const setPlayerDefeat = (playerDefeat) => {
+        setGameState({...gameState, playerDefeat: playerDefeat})
+    }
+
     const initGameState = {
         turnCount: 0,
         // positionInPlay: [null, null],
@@ -101,6 +113,8 @@ export function GameStateProvider({children}) {
         swordInTheStonePosition: [4, 5],
         isMobile: window.matchMedia("(max-width: 1024px)").matches && window.matchMedia("(orientation: portrait)").matches,
         capturePointAdvantage: ["black", 4],
+        playerVictory: false,
+        playerDefeat: false,
         setTurnCount: setTurnCount,
         setPositionInPlay: setPositionInPlay,
         setBoardState: setBoardState,
@@ -108,7 +122,9 @@ export function GameStateProvider({children}) {
         setCapturedPieces: setCapturedPieces,
         setSwordInTheStonePosition: setSwordInTheStonePosition,
         setIsMobile: setIsMobile,
-        setCapturePointAdvantage: setCapturePointAdvantage
+        setCapturePointAdvantage: setCapturePointAdvantage,
+        setPlayerVictory: setPlayerVictory,
+        setPlayerDefeat: setPlayerDefeat
     }
     const [gameState, setGameState] = useState(initGameState);
 

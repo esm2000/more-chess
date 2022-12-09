@@ -6,6 +6,8 @@ import PossibleMove from './PossibleMove';
 import Buff from './Buff';
 import CapturedPieces from './CapturedPieces';
 import HUD from './HUD';
+import Victory from './Victory';
+import Defeat from './Defeat';
 
 
 import { GameStateContextData }  from '../context/GameStateContext';
@@ -21,9 +23,11 @@ const Board = () => {
     const possibleCaptures = gameState.possibleCaptures
     const swordInTheStonePosition = gameState.swordInTheStonePosition
     const isMobile = gameState.isMobile
+    const playerVictory = gameState.playerVictory
+    const playerDefeat = gameState.playerDefeat
 
     return(
-        <div style={gameState.isMobile ? {display: "block", margin: "auto"}: null}>
+        <div style={isMobile ? {display: "block", margin: "auto"}: null}>
             <CapturedPieces 
                 side={PLAYERS[1]}
             />
@@ -80,6 +84,10 @@ const Board = () => {
                         row={swordInTheStonePosition[0]} 
                         col={swordInTheStonePosition[1]}
                     /> : null
+                }
+                {playerVictory ?
+                    <Victory isMobile={isMobile}/> : playerDefeat ?
+                    <Defeat isMobile={isMobile}/> : null
                 }
             </div>
             <HUD />

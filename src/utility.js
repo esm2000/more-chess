@@ -45,7 +45,9 @@ const IMAGE_MAP = {
     queenMovement: require("./assets/rules/queen_movement.png"),
     queenStun: require("./assets/rules/queen_stun.gif"),
     kingMovement: require("./assets/rules/king_movement.png"),
-    kingSwordInStoneCheckProtection: require("./assets/rules/sword_in_stone_check_protection.gif")
+    kingSwordInStoneCheckProtection: require("./assets/rules/sword_in_stone_check_protection.gif"),
+    victory: require("./assets/victory.png"),
+    defeat: require("./assets/defeat.png")
 }
 
 const GREEN_SQUARE_COLOR = "rgb(100, 133, 68)";

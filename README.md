@@ -122,7 +122,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * pixel font ✅
 * ensure that pieces + monsters can be on same square ✅
 * win + loss screens ✅
-* checkmate protection status effect
+* checkmate protection status effect ✅
 * shop (with light/normal green square for shop square)
 
 ##### Backend 

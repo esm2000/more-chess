@@ -66,6 +66,8 @@ const BOSS_SQUARE_COLORS = {
     "baron_nashor": ["rgb(45, 13, 81)", "rgb(97, 61, 138)"]
 }
 const LIGHT_BLUE_SQUARE_COLOR = "rgb(102, 216, 242)"
+const WHITE_SHOP_SQUARE_COLOR = "rgb(51, 171, 55)"
+const BLACK_SHOP_SQUARE_COLOR = "rgb(171, 51, 51)"
 
 const DRAGON_POSITION = [3, 7]
 const BOARD_HERALD_POSITION = [4, 0]
@@ -158,10 +160,6 @@ const determineBackgroundColor = (row, col, positionInPlay, possibleCaptures, is
 
     const dangerZonePositions = getBossDangerZonePositions(isDragonActive, isHeraldActive, isBaronActive)
     
-    if (row === 3 && col === 6) {
-        console.log("possibleCaptures", possibleCaptures)
-        console.log("currentPosition", currentPosition)
-    }
     if(JSON.stringify(possibleCaptures).includes(JSON.stringify(currentPosition))) {
         return RED_SQUARE_COLOR
     }
@@ -180,6 +178,11 @@ const determineBackgroundColor = (row, col, positionInPlay, possibleCaptures, is
     if ([[3, 3], [4, 3], [3, 4], [4, 4]].toString().includes([row, col].toString())) {
         green = DARK_GREEN_SQUARE_COLOR
         white = DARK_WHITE_SQUARE_COLOR
+    }
+
+    if ([[0, 4], [7, 4]].toString().includes([row, col].toString())) {
+        green = WHITE_SHOP_SQUARE_COLOR
+        white = BLACK_SHOP_SQUARE_COLOR
     }
 
     if (

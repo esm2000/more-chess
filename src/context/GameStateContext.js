@@ -31,7 +31,8 @@ const GameStateContext = createContext({
     setIsMobile: () => {},
     setCapturePointAdvantage: () => {},
     setPlayerVictory: () => {},
-    setPlayerDefeat: () => {}
+    setPlayerDefeat: () => {},
+    setGoldCount: () => {}
 })
 
 export function GameStateContextData() {
@@ -89,6 +90,10 @@ export function GameStateProvider({children}) {
         setGameState({...gameState, playerDefeat: playerDefeat})
     }
 
+    const setGoldCount = (goldCount) => {
+        setGoldCount({...gameState, goldCount: goldCount})
+    }
+
     const initGameState = {
         turnCount: 0,
         // positionInPlay: [null, null],
@@ -115,6 +120,10 @@ export function GameStateProvider({children}) {
         capturePointAdvantage: ["black", 4],
         playerVictory: false,
         playerDefeat: false,
+        goldCount: {
+            [PLAYERS[0]]: 7,
+            [PLAYERS[1]]: 15
+        },
         setTurnCount: setTurnCount,
         setPositionInPlay: setPositionInPlay,
         setBoardState: setBoardState,
@@ -124,7 +133,8 @@ export function GameStateProvider({children}) {
         setIsMobile: setIsMobile,
         setCapturePointAdvantage: setCapturePointAdvantage,
         setPlayerVictory: setPlayerVictory,
-        setPlayerDefeat: setPlayerDefeat
+        setPlayerDefeat: setPlayerDefeat,
+        setGoldCount: setGoldCount
     }
     const [gameState, setGameState] = useState(initGameState);
 

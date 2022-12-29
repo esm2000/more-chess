@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import { GameStateContextData } from '../context/GameStateContext';
+import Shop from './Shop';
 
 
 const HUD = () => {
@@ -9,7 +10,6 @@ const HUD = () => {
 
     const handleShopButtonClick = () => {
         setToggleShop(!toggleShop)
-        console.log("toggleShop", toggleShop)
     }
 
     const isKingOnHomeSquare = gameState.boardState[7][4]?.[0].type === "white_king"
@@ -17,8 +17,18 @@ const HUD = () => {
         <div>
             <h3># of Turns: {turnCount}</h3>
             {isKingOnHomeSquare ? 
-                <button onClick={() => handleShopButtonClick()}>{toggleShop ? "Close": "Open"} Shop</button>:
+                <button 
+                    onClick={() => handleShopButtonClick()}
+                    style={{
+                        backgroundColor: toggleShop ? "red": "green",
+                        borderColor: toggleShop ? "red": "green",
+                        borderRadius: "0.5vw"
+                    }}    
+                >{toggleShop ? "Close": "Open"} Shop</button>:
                 null
+            }
+            {
+                toggleShop ? <Shop /> : null
             }
         </div>
     );

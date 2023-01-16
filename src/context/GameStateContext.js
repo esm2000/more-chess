@@ -22,6 +22,7 @@ const GameStateContext = createContext({
     capturePointAdvantage: null,
     playerVictory: false,
     playerDefeat: false,
+    goldCount: null,
     setTurnCount: () => {},
     setPositionInPlay: () => {},
     setBoardState: () => {},
@@ -91,7 +92,7 @@ export function GameStateProvider({children}) {
     }
 
     const setGoldCount = (goldCount) => {
-        setGoldCount({...gameState, goldCount: goldCount})
+        setGameState({...gameState, goldCount: goldCount})
     }
 
     const initGameState = {
@@ -142,9 +143,11 @@ export function GameStateProvider({children}) {
     
     const fetchGameState = () => {
         // retrieve gameState
+        // TODO: have API call to backend here
+        const gameState = initGameState
         
         // and then setGameState()
-        setGameState(initGameState)
+        setGameState(gameState)
 
     }
 

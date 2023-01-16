@@ -1,12 +1,12 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { GameStateContextData } from '../context/GameStateContext';
-import { IMAGE_MAP, PLAYERS } from '../utility';
+import { IMAGE_MAP, PLAYERS, getPiecePrice } from '../utility';
 import PieceShopModal from './PieceShopModal';
 
 
-const Shop = () => {
+const Shop = (props) => {
     const gameState = GameStateContextData()
-    const playerGoldCount = gameState.goldCount[PLAYERS[0]]
+    const playerGoldCount = gameState.goldCount[PLAYERS[0]] - (getPiecePrice(props.shopPieceSelected) || 0)
     const isMobile = gameState.isMobile
 
     return(
@@ -25,21 +25,29 @@ const Shop = () => {
                     type="whitePawn"
                     playerGoldCount={playerGoldCount}
                     isMobile={isMobile}
+                    shopPieceSelected={props.shopPieceSelected}
+                    setShopPieceSelected={props.setShopPieceSelected}
                 />
                 <PieceShopModal 
                     type="whiteKnight"
                     playerGoldCount={playerGoldCount}
                     isMobile={isMobile}
+                    shopPieceSelected={props.shopPieceSelected}
+                    setShopPieceSelected={props.setShopPieceSelected}
                 />
                 <PieceShopModal 
                     type="whiteBishop"
                     playerGoldCount={playerGoldCount}
                     isMobile={isMobile}
+                    shopPieceSelected={props.shopPieceSelected}
+                    setShopPieceSelected={props.setShopPieceSelected}
                 />
                 <PieceShopModal 
                     type="whiteRook"
                     playerGoldCount={playerGoldCount}
                     isMobile={isMobile}
+                    shopPieceSelected={props.shopPieceSelected}
+                    setShopPieceSelected={props.setShopPieceSelected}
                 />
             </div>
             <div style={{display: "flex", marginBottom: `${isMobile ? 1 : 0.5}vw`}}>

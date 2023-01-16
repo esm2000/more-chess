@@ -3,7 +3,7 @@ import { GameStateContextData } from '../context/GameStateContext';
 import Shop from './Shop';
 
 
-const HUD = () => {
+const HUD = (props) => {
     const gameState = GameStateContextData()
     const turnCount = gameState.turnCount
     const [toggleShop, setToggleShop] = useState(false)
@@ -28,7 +28,12 @@ const HUD = () => {
                 null
             }
             {
-                toggleShop ? <Shop /> : null
+                toggleShop ?
+                 <Shop 
+                    shopPieceSelected={props.shopPieceSelected}
+                    setShopPieceSelected={props.setShopPieceSelected}
+                 /> : 
+                 null
             }
         </div>
     );

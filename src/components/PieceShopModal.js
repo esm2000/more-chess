@@ -1,29 +1,11 @@
 import React, {useState} from 'react';
 import { GameStateContextData } from '../context/GameStateContext';
-import { IMAGE_MAP } from '../utility';
+import { IMAGE_MAP, getPiecePrice } from '../utility';
 
 
 const PieceShopModal = (props) => {
 
-    let price
-
-    switch(props.type) {
-        case "whitePawn":
-            price = 2
-            break;
-        case "whiteKnight":
-            price = 6
-            break;
-        case "whiteBishop":
-            price = 6
-            break;
-        case "whiteRook":
-            price = 10
-            break;
-        default:
-          price = undefined
-    }
-    
+    const price = getPiecePrice(props.type)
     const canAfford = props.playerGoldCount >= price
 
     const pieceShopModalStyle = {
@@ -40,11 +22,7 @@ const PieceShopModal = (props) => {
 
     const handleBuyButtonClick = () => {
         console.log(`Buying ${props.type.replace("white", "")}`)
-        // TODO: create some kind of attribute in gameState that indicates
-        //       player must choose location (should be denoted with button 
-        //       that appears on empty squares on mouseover)
-        // TODO: make function call to backend to update gold counts and positions
-
+        props.setShopPieceSelected(props.type)
     }
 
     return(

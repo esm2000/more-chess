@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 
 import Background from './Background';
 import Piece from './Piece';
@@ -26,6 +26,8 @@ const Board = () => {
     const playerVictory = gameState.playerVictory
     const playerDefeat = gameState.playerDefeat
 
+    const [shopPieceSelected, setShopPieceSelected] = useState(null)
+
     return(
         <div style={isMobile ? {display: "block", margin: "auto"}: null}>
             <CapturedPieces 
@@ -34,6 +36,8 @@ const Board = () => {
             <div style={{position: 'relative'}}>
                 <Background 
                     possibleCaptures={possibleCaptures}
+                    shopPieceSelected={shopPieceSelected}
+                    setShopPieceSelected={setShopPieceSelected}
                 />
                 {
                     boardState.map((pieceRow, row) => {
@@ -64,13 +68,16 @@ const Board = () => {
                                 })}
                                 {possibleMoves.map((possibleMove, index) => {
                                     if (!possibleCaptures.some((possibleCapture) => JSON.stringify(possibleMove).includes(JSON.stringify(possibleCapture))))
-                                    return(
-                                        <PossibleMove 
-                                            key={'pm' + possibleMove[0].toString() + possibleMove[1].toString()}
-                                            row={possibleMove[0]}
-                                            col={possibleMove[1]}
-                                        />
-                                    );
+                                        if (!shopPieceSelected || (possibleMove[0] <= 3)) {
+                                            return(
+                                                <PossibleMove 
+                                                    key={'pm' + possibleMove[0].toString() + possibleMove[1].toString()}
+                                                    row={possibleMove[0]}
+                                                    col={possibleMove[1]}
+                                                    shopPieceSelected={shopPieceSelected}
+                                                />
+                                            );
+                                        }   
                                 })}
                             </div>
                             
@@ -90,7 +97,10 @@ const Board = () => {
                     <Defeat isMobile={isMobile}/> : null
                 }
             </div>
-            <HUD />
+            <HUD 
+                shopPieceSelected={shopPieceSelected}
+                setShopPieceSelected={setShopPieceSelected}
+            />
             <CapturedPieces 
                 side={PLAYERS[0]}
             />

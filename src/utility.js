@@ -214,6 +214,29 @@ const determineColor = (row, col, isDragonActive, isHeraldActive, isBaronActive)
     return (col + offset) % 2 === 0 ? GREEN_SQUARE_COLOR : WHITE_SQUARE_COLOR
 }
 
+const getPiecePrice = (pieceType) => {
+    let price
+
+    switch(pieceType) {
+        case "whitePawn":
+            price = 2
+            break;
+        case "whiteKnight":
+            price = 6
+            break;
+        case "whiteBishop":
+            price = 6
+            break;
+        case "whiteRook":
+            price = 10
+            break;
+        default:
+          price = undefined
+    }
+
+    return price
+}
+
 export { 
     PLAYERS, 
     IMAGE_MAP, 
@@ -222,6 +245,7 @@ export {
     BARON_NASHOR_POSITION,
     MAX_BOSS_HEALTH,
     LIGHT_BLUE_SQUARE_COLOR,
+    getPiecePrice,
     pickSide, 
     snakeToCamel, 
     determineBackgroundColor,

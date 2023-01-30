@@ -126,13 +126,12 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * shop (with light/normal green square for shop square) ✅
 
 ##### Backend 
-* MongoDB database - ✅
-* fastAPI 
-    - POST game (creates gameState object, along with other game oriented information as seen in GameStateContext.js)
-    - GET game 
-    - DELETE game
-    - PATCH game (only an API endpoint that allows for updates to gamestate object)
-    - POST endpoint to facilitate buying pieces\
+* MongoDB database  ✅
+* fastAPI ✅
+    - POST game (creates gameState object, along with other game oriented information as seen in GameStateContext.js) ✅
+    - GET game ✅
+    - DELETE game ✅
+    - PUT game (only an API endpoint that allows for updates to gamestate object) ✅
 * hook up endpoints to backend (at this stage enemy pieces incapable of moving)
 * expand PATCH game with game logic, MUST BE DEVELOPED WITH pytest unit tests 
     - getPossibleMoves() (ignore buff logic for now)

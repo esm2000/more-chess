@@ -25,9 +25,7 @@ origins = [
     "http://0.0.0.0",
     "http://0.0.0.0:80",
     "http://0.0.0.0:3080",
-    "http://0.0.0.0:3000",
-    "https://sulivability-dev.us-west-2a.app.apple.com",
-    "https://sulivability-prod.us-west-2a.app.apple.com",
+    "http://0.0.0.0:3000"
 ]
 
 app.add_middleware(

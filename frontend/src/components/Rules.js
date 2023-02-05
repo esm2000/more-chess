@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState } from 'react';
 import { GameStateContextData } from '../context/GameStateContext';
-import { IMAGE_MAP } from '../utility';
+import { IMAGE_MAP, determineIsMobile } from '../utility';
 import GeneralRules from './GeneralRules';
 import PawnRules from './PawnRules';
 import KnightRules from './KnightRules';
@@ -14,7 +14,7 @@ const Rules = () => {
     const gameState = GameStateContextData()
     const boardState = gameState.boardState
     const positionInPlay = gameState.positionInPlay
-    const isMobile = gameState.isMobile
+    const isMobile = determineIsMobile()
 
     return(
         <div

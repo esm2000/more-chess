@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { GameStateContextData } from '../context/GameStateContext';
-import { IMAGE_MAP, PLAYERS, getPiecePrice } from '../utility';
+import { IMAGE_MAP, PLAYERS, getPiecePrice, determineIsMobile } from '../utility';
 import PieceShopModal from './PieceShopModal';
 
 
 const Shop = (props) => {
     const gameState = GameStateContextData()
     const playerGoldCount = gameState.goldCount[PLAYERS[0]] - (getPiecePrice(props.shopPieceSelected) || 0)
-    const isMobile = gameState.isMobile
+    const isMobile = determineIsMobile()
 
     return(
         <div

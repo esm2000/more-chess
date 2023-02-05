@@ -12,7 +12,7 @@ import Defeat from './Defeat';
 
 import { GameStateContextData }  from '../context/GameStateContext';
 
-import { PLAYERS, pickSide, snakeToCamel } from '../utility';
+import { PLAYERS, pickSide, snakeToCamel, determineIsMobile } from '../utility';
 
 const Board = () => {
     // positionInPlay used to figure out what piece is being moved by player
@@ -22,7 +22,7 @@ const Board = () => {
     const possibleMoves = gameState.possibleMoves
     const possibleCaptures = gameState.possibleCaptures
     const swordInTheStonePosition = gameState.swordInTheStonePosition
-    const isMobile = gameState.isMobile
+    const isMobile = determineIsMobile()
     const playerVictory = gameState.playerVictory
     const playerDefeat = gameState.playerDefeat
 

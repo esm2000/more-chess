@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import "./fonts/Retro\ Gaming.ttf";
+import "./fonts/Retro_Gaming.TTF";
 import "./fonts/04B_30__.TTF"
 
 import { GameStateProvider } from './context/GameStateContext';

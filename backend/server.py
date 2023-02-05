@@ -16,15 +16,14 @@ app = FastAPI()
 
 app.include_router(api_router)
 
-# TODO: Look for a better CORS handling solution in the future for local testing
 origins = [
     "http://localhost",
     "http://localhost:80",
-    "http://localhost:3080",
+    "http://localhost:8080",
     "http://localhost:3000",
     "http://0.0.0.0",
     "http://0.0.0.0:80",
-    "http://0.0.0.0:3080",
+    "http://0.0.0.0:8080",
     "http://0.0.0.0:3000"
 ]
 
@@ -44,7 +43,7 @@ def default():
 
 def main():
     logging.info("running")
-    uvicorn.run("server:app", host="0.0.0.0", port=80, log_level="info", reload=True)
+    uvicorn.run("server:app", host="0.0.0.0", port=8080, log_level="info", reload=True)
 
 
 if __name__ == "__main__":

@@ -1,13 +1,22 @@
 import React from 'react';
 
-import  { GameStateContextData }  from '../context/GameStateContext';
+import  { updateGameState, GameStateContextData }  from '../context/GameStateContext';
 
-import { PLAYERS, IMAGE_MAP, MAX_BOSS_HEALTH } from '../utility';
+import { 
+    PLAYERS, 
+    IMAGE_MAP, 
+    MAX_BOSS_HEALTH, 
+    determineIsMobile, 
+    snakeToCamel,
+    getPiecePrice
+} from '../utility';
 
 const Piece = (props) => {
     const gameState = GameStateContextData()
-    const topPosition = props.row * 3.7 * (gameState.isMobile ? 2: 1)
-    const leftPosition = props.col * 3.7 * (gameState.isMobile ? 2: 1)
+    const positionInPlay = gameState.positionInPlay
+    const isMobile = determineIsMobile()
+    const topPosition = props.row * 3.7 * (isMobile ? 2: 1)
+    const leftPosition = props.col * 3.7 * (isMobile ? 2: 1)
 
     const handlePieceClick = () => {
         if (props.side === PLAYERS[0] && !props.isStunned) {
@@ -16,12 +25,86 @@ const Piece = (props) => {
                 gameState.positionInPlay.toString() === [null, null].toString() || 
                 (gameState.positionInPlay[0] !== props.row || gameState.positionInPlay[1] !== props.col)
             ) {
-                gameState.setPositionInPlay([props.row, props.col])
+                gameState.updateGameState({...gameState, positionInPlay: [props.row, props.col]})
             } else if(gameState.positionInPlay[0] === props.row && gameState.positionInPlay[1] === props.col) {
-                gameState.setPositionInPlay([null, null])
+                gameState.updateGameState({...gameState, positionInPlay: [null, null]})
             }
-            // TODO: add API call to update gameState.possibleMoves
         }
+        if (props.side === PLAYERS[1] && positionInPlay?.[0] != null && positionInPlay?.[1] != null) {
+            const newBoardState = [...gameState.boardState]
+            const newPositionInPlay = [null, null]
+            const pieceInPlay = newBoardState[positionInPlay[0]][positionInPlay[1]].find(piece => piece.type.includes(PLAYERS[0]))
+            const newCapturedPieces = {...gameState.capturedPieces}
+            var newGoldCount = {...gameState.goldCount}
+            var capturedPiece
+            var capturedPieceValue
+
+            for (let i = 0; i < newBoardState[props.row][props.col]?.length; i++) {
+                if (snakeToCamel(newBoardState[props.row][props.col][i]?.type) === props.type) {
+                    capturedPiece = newBoardState[props.row][props.col][i]
+                    capturedPieceValue = getPiecePrice(snakeToCamel(capturedPiece.type))
+                    newCapturedPieces[PLAYERS[0]].push(capturedPiece.type)
+                    newBoardState[props.row][props.col].splice(i, 1);
+                }
+            }
+            newGoldCount[PLAYERS[0]] += capturedPieceValue ? capturedPieceValue : 0
+
+            newBoardState[props.row][props.col] = newBoardState[props.row][props.col].filter(piece => piece.type === props.type)
+            newBoardState[props.row][props.col].push(pieceInPlay)
+            newBoardState[positionInPlay[0]][positionInPlay[1]] = newBoardState[positionInPlay[0]][positionInPlay[1]]?.filter(piece => piece.type !== pieceInPlay.type)
+
+            gameState.updateGameState({
+                ...gameState, 
+                capturedPieces: newCapturedPieces,
+                goldCount: newGoldCount,
+                boardState: newBoardState,
+                positionInPlay: newPositionInPlay
+            })
+        }
+    }
+
+    const handleSpareButtonClick = () => {
+        const newBoardState = [...gameState.boardState]
+        for (let i = 0; i < newBoardState[props.row][props.col].length; i++) {
+            if (snakeToCamel(newBoardState[props.row][props.col][i]?.type) === props.type) {
+                newBoardState[props.row][props.col][i].bishop_debuff = 0
+            }
+        }
+        // const bishopPosition = findThreateningBishop(newBoardState, props.side, props.row, props.col)
+        
+        // if (bishopPosition) {
+        //     newBoardState[bishopPosition[0]][bishopPosition[1]] = newBoardState[bishopPosition[0]][bishopPosition[1]]?.filter(piece => !piece.type.toLowerCase().includes("bishop"))
+        // }
+
+        gameState.updateGameState({
+            ...gameState, 
+            boardState: newBoardState
+        })
+    }
+
+    const handleCaptureButtonClick = () => {
+        const newBoardState = [...gameState.boardState]
+        const newCapturedPieces = {...gameState.capturedPieces}
+        var newGoldCount = {...gameState.goldCount}
+        var capturedPiece
+        var capturedPieceValue
+        for (let i = 0; i < newBoardState[props.row][props.col]?.length; i++) {
+            if (snakeToCamel(newBoardState[props.row][props.col][i]?.type) === props.type) {
+                capturedPiece = newBoardState[props.row][props.col][i]
+                capturedPieceValue = getPiecePrice(snakeToCamel(capturedPiece.type))
+                newCapturedPieces[PLAYERS[0]].push(capturedPiece.type)
+                newBoardState[props.row][props.col].splice(i, 1);
+            }
+        }
+
+        newGoldCount[PLAYERS[0]] += capturedPieceValue ? capturedPieceValue : 0
+        gameState.updateGameState({
+            ...gameState, 
+            boardState: newBoardState,
+            capturedPieces: newCapturedPieces,
+            goldCount: newGoldCount
+        })
+        
     }
 
     const pickClassName = () => {
@@ -51,8 +134,8 @@ const Piece = (props) => {
                     value={props.health} 
                     max={MAX_BOSS_HEALTH[pickClassName().replace("_piece", "")]}
                     style={{
-                        top: `${topPosition + (3.25 * (gameState.isMobile ? 2: 1)) }vw`,
-                        left: `${leftPosition + (0.15 * (gameState.isMobile ? 2: 1))}vw`
+                        top: `${topPosition + (3.25 * (isMobile ? 2: 1)) }vw`,
+                        left: `${leftPosition + (0.15 * (isMobile ? 2: 1))}vw`
                     }}
                 /> : null}
             {props.isStunned ?
@@ -62,21 +145,21 @@ const Piece = (props) => {
                     className={pickClassName()}
                     style={{
                         top: `${topPosition}vw`,
-                        left: `${leftPosition - (0.3 * (gameState.isMobile ? 2: 1))}vw`,
-                        width: gameState.isMobile ? '5vw': '2.5vw'
+                        left: `${leftPosition - (0.3 * (isMobile ? 2: 1))}vw`,
+                        width: isMobile ? '5vw': '2.5vw'
                     }}
                 /> : null}
             {props.energizeStacks || props.energizeStacks === 0 ? 
                 <p 
                     className={pickClassName()}
                     style={{
-                        top: `${topPosition + (2.55 * (gameState.isMobile ? 2: 1))}vw`,
-                        left: `${leftPosition - (0.75 * (gameState.isMobile ? 2: 1))}vw`,
+                        top: `${topPosition + (2.55 * (isMobile ? 2: 1))}vw`,
+                        left: `${leftPosition - (0.75 * (isMobile ? 2: 1))}vw`,
                         fontWeight: 'bold',
                         background: '-webkit-linear-gradient(white, blue)',
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
-                        fontSize: gameState.isMobile ? '2.4vw': '1.2vw'
+                        fontSize: isMobile ? '2.4vw': '1.2vw'
                     }}
                 >
                     {props.energizeStacks}
@@ -89,10 +172,10 @@ const Piece = (props) => {
                         src={IMAGE_MAP['bishopDebuff']}
                         className={pickClassName()}
                         style={{
-                            width: gameState.isMobile ? '2vw': '1vw',
-                            height: gameState.isMobile ? '2vw': '1vw',
+                            width: isMobile ? '2vw': '1vw',
+                            height: isMobile ? '2vw': '1vw',
                             top: `${topPosition}vw`,
-                            left: `${leftPosition - (gameState.isMobile ? 3.5: 1.75) + (count * (gameState.isMobile ? 3.6: 1.2))}vw`
+                            left: `${leftPosition - (isMobile ? 3.5: 1.75) + (count * (isMobile ? 2.5: 1.2))}vw`
                         }}
                     />);
                 }): null
@@ -104,13 +187,13 @@ const Piece = (props) => {
                     <button
                         className={pickClassName()}
                         style={{
-                            top: `${(topPosition + 0.75) * (gameState.isMobile ? 2: 1)}vw`,
-                            left: `${(leftPosition + 0.5) * (gameState.isMobile ? 2: 1)}vw`,
-                            borderRadius: `${0.4 * (gameState.isMobile ? 2: 1)}vw`,
-                            padding: `${0.15 * (gameState.isMobile ? 2: 1)}vw`,
-                            height: `${1.25 * (gameState.isMobile ? 2: 1)}vw`,
-                            width: `${3 * (gameState.isMobile ? 2: 1)}vw`,
-                            fontSize: `${0.5 * (gameState.isMobile ? 2: 1)}em`,
+                            top: `${(topPosition + 0.75) * (isMobile ? 1: 1)}vw`,
+                            left: `${(leftPosition + 0) * (isMobile ? 1: 1)}vw`,
+                            borderRadius: `${0.4 * (isMobile ? 2: 1)}vw`,
+                            padding: `${0.15 * (isMobile ? 2: 1)}vw`,
+                            height: `${1.25 * (isMobile ? 2: 1)}vw`,
+                            width: `${4 * (isMobile ? 2: 1)}vw`,
+                            fontSize: `0.5em`,
                             positon: "absolute",
                             textAlign: "center",
                             textDecoration: "none",
@@ -119,17 +202,18 @@ const Piece = (props) => {
                             color: "white",
                             backgroundColor: "#24a0ed",
                         }}
+                        onClick={() => handleCaptureButtonClick()}
                     >Capture</button>
                     <button
                         className={pickClassName()}
                         style={{
-                            top: `${(topPosition + 2.25) * (gameState.isMobile ? 2: 1)}vw`,
-                            left: `${(leftPosition + 0.5) * (gameState.isMobile ? 2: 1)}vw`,
-                            borderRadius: `${0.4 * (gameState.isMobile ? 2: 1)}vw`,
-                            padding: `${0.15 * (gameState.isMobile ? 2: 1)}vw`,
-                            height: `${1.25 * (gameState.isMobile ? 2: 1)}vw`,
-                            width: `${3 * (gameState.isMobile ? 2: 1)}vw`,
-                            fontSize: `${0.5 * (gameState.isMobile ? 2: 1)}em`,
+                            top: `${(topPosition + (isMobile? 3.5: 2.25))}vw`,
+                            left: `${(leftPosition + 0.5) * (isMobile ? 1.005: 1)}vw`,
+                            borderRadius: `${0.4 * (isMobile ? 2: 1)}vw`,
+                            padding: `${0.15 * (isMobile ? 2: 1)}vw`,
+                            height: `${1.25 * (isMobile ? 2: 1)}vw`,
+                            width: `${3 * (isMobile ? 2: 1)}vw`,
+                            fontSize: `0.5em`,
                             positon: "absolute",
                             textAlign: "center",
                             textDecoration: "none",
@@ -138,6 +222,7 @@ const Piece = (props) => {
                             color: "white",
                             backgroundColor: "#fd0e35",
                         }}
+                        onClick={() => handleSpareButtonClick()}
                     >Spare</button>
                 </div>
                 : null
@@ -149,10 +234,10 @@ const Piece = (props) => {
                         src={IMAGE_MAP['checkProtection']}
                         className={pickClassName()}
                         style={{
-                            width: gameState.isMobile ? '2.3vw': '1.15vw',
-                            height: gameState.isMobile ? '2.3vw': '1.15vw',
+                            width: isMobile ? '2.3vw': '1.15vw',
+                            height: isMobile ? '2.3vw': '1.15vw',
                             top: `${topPosition}vw`,
-                            left: `${leftPosition - (gameState.isMobile ? 3.5: 1.75) + (count * (gameState.isMobile ? 3.6: 1.2))}vw`
+                            left: `${leftPosition - (isMobile ? 3.5: 1.75) + (count * (isMobile ? 3.6: 1.2))}vw`
                         }}
                     />);
                 }): null

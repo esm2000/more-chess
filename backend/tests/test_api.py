@@ -30,7 +30,7 @@ def test_game_created(game):
         assert key in game
     assert game["turn_count"] == 0
     assert game["position_in_play"] == [None, None]
-    pieces = ["rook", "knight", "bishop", "queen", "king", "bishop", "king", "rook"]
+    pieces = ["rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"]
     pieces += ["pawn"] * 8
     for i, black_piece in enumerate(game["board_state"][0] + game["board_state"][1]):
         assert "black" in black_piece[0]["type"]

@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import '../index.css';
 
-import setPositionInPlay, { GameStateContextData }  from '../context/GameStateContext';
+import { GameStateContextData }  from '../context/GameStateContext';
 
 import { 
     determineBackgroundColor, 
     determineColor, 
+    determineIsMobile,
     DRAGON_POSITION, 
     BOARD_HERALD_POSITION, 
-    BARON_NASHOR_POSITION
+    BARON_NASHOR_POSITION,
+    PLAYERS,
+    camelToSnake,
+    getPiecePrice
 } from '../utility';
 
 const isBossActive = (boardState, bossPosition, bossType) => {
@@ -31,13 +35,17 @@ const Square = (props) => {
 
     const backgroundColor = determineBackgroundColor(row, col, positionInPlay, possibleCaptures, isDragonActive, isHeraldActive, isBaronActive, swordInTheStonePosition)
     const color = determineColor(row, col, isDragonActive, isHeraldActive, isBaronActive)
-    const isMobile = gameState.isMobile
+    const isMobile = determineIsMobile()
 
     const isValidSquare = (row, col) => {
         if (row <= 3) {
             return false
         }
-        const bossPositions = [DRAGON_POSITION, BOARD_HERALD_POSITION, BARON_NASHOR_POSITION]
+        const bossPositions = []
+        if (isDragonActive) bossPositions.push(DRAGON_POSITION)
+        if (isHeraldActive) bossPositions.push(BOARD_HERALD_POSITION)
+        if (isBaronActive) bossPositions.push(BARON_NASHOR_POSITION)
+        
         for (let i = 0; i < bossPositions.length; i++) {
             if ([0, 1].includes(Math.abs(row - bossPositions[i][0])) && [0, 1].includes(Math.abs(col - bossPositions[i][1]))) {
                 return false
@@ -56,14 +64,54 @@ const Square = (props) => {
     }
 
     const handleSquareSelectionClick = () => {
+        const newBoardState = [...gameState.boardState]
+        const selectedShopPieceValue = getPiecePrice(props.shopPieceSelected)
+        var newGoldCount = {...gameState.goldCount}
+
+        if (!newBoardState[row][col]) {
+            newBoardState[row][col] = [{"type": camelToSnake(props.shopPieceSelected)}]
+        } else {
+            // player shouldn't be allowed to place piece where another piece is present
+            return
+        }
+
+        newGoldCount[PLAYERS[0]] -= selectedShopPieceValue ? selectedShopPieceValue : 0
+        
+        gameState.updateGameState({
+            ...gameState, 
+            boardState: newBoardState,
+            goldCount: newGoldCount
+        })
         props.setShopPieceSelected(null)
-        // TODO: add an API call to update gameState with new positions and gold count
+    }
+
+    const handleSquareClick = () => {
+
+        if (positionInPlay?.[0] != null && positionInPlay?.[1] != null) {
+            const newBoardState = [...gameState.boardState]
+            const newPositionInPlay = [null, null]
+            const pieceInPlay = newBoardState[positionInPlay[0]][positionInPlay[1]].find(piece => piece.type.includes(PLAYERS[0]))
+            if (pieceInPlay) {
+                if (newBoardState[row][col]) {
+                    newBoardState[row][col].push(pieceInPlay)
+                } else {
+                    newBoardState[row][col] = [pieceInPlay]
+                }
+                newBoardState[positionInPlay[0]][positionInPlay[1]] = newBoardState[positionInPlay[0]][positionInPlay[1]]?.filter(piece => piece.type !== pieceInPlay.type)
+            }
+            gameState.updateGameState({
+                ...gameState, 
+                boardState: newBoardState,
+                positionInPlay: newPositionInPlay
+            })
+        }
     }
 
     return (
         <div 
             style={{ backgroundColor }} 
             className="square"
+            onClick={() => handleSquareClick()}
         >
             <p 
                 style={{ color, fontSize: "1vw", opacity: col === 0 ? 1 : 0 }}
@@ -86,14 +134,14 @@ const Square = (props) => {
                         fontSize: `${isMobile ? 1: 0.5}vw`,
                         height: `${isMobile ? 5: 1.75}vw`,
                         position: "relative",
-                        right: `${isMobile ? 2.5: 1.9}vw`,
+                        right: `${isMobile ? 2.5: 1.8}vw`,
                         top: `${isMobile ? 1: 0.5}vw`,
                         borderRadius: `${isMobile ? 1: 0.5}vw`,
                         borderColor: "green",
                         backgroundColor: "green",
                         padding: `${isMobile ? 0.5 : 0}vw ${isMobile ? 0.75: 0.375}vw`
                     }}
-                >Select Square</button>}
+                >Select Position</button>}
         </div>
     )
 }

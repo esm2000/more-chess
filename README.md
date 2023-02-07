@@ -1,4 +1,4 @@
-# Chess Patch 1.1
+# League of Chess Patch 1.1
 
 ## Introduction
 An online revision of the classic game of Chess. The idea came from a [thread](https://www.reddit.com/r/leagueoflegends/comments/3yf3d3/chess_patch_11_notes_by_riot_games/) posted to Reddit that parodied the balance of a video game. However, the rules were so intriguing that I was interested in bringing it to life. 
@@ -9,14 +9,14 @@ Roadmap is included in its own section below
 ## Quickstart
 
 ### Prerequisites 
-Ensure you have the latest version of [Node.js and npm](https://nodejs.org/en/). 
+Ensure you have [Docker Desktop](docker.com) installed and opened.
 
 ### Instructions
 
-To run locally open your terminal and navigate to the root directory of the project and run
+To run locally open your terminal, navigate to the root directory of the project, and run 
 
 ```
-npm start
+docker build . -t league-of-chess && docker run  -p 80:80 -p 8080:8080 league-of-chess
 ```
 
 ## Patch Notes
@@ -124,6 +124,9 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * win + loss screens ✅
 * checkmate protection status effect ✅
 * shop (with light/normal green square for shop square) ✅
+* give player option to switch between chess sprites and league sprites (make league sprites default (with button [chess piece] <-> [league character]))
+* rename game to League of Chess
+* shop rework 
 
 ##### Backend 
 * MongoDB database  ✅
@@ -132,8 +135,8 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
     - GET game ✅
     - DELETE game ✅
     - PUT game (only an API endpoint that allows for updates to gamestate object) ✅
-* hook up endpoints to backend (at this stage enemy pieces incapable of moving)
-* expand PATCH game with game logic, MUST BE DEVELOPED WITH pytest unit tests 
+* hook up endpoints to backend (at this stage enemy pieces incapable of moving) ✅
+* expand PUT game with game logic, MUST BE DEVELOPED WITH pytest unit tests 
     - getPossibleMoves() (ignore buff logic for now)
         - getPossibleMovesForPawn()
         - getPossibleMovesForKnignt()
@@ -147,8 +150,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * MEDIUM enemy AI that is a combination of EASY and ADVANCED AIs
 
 ##### Production-Ready Development
-* Get off of SQLite and move to a database more sutiable for production
-* Restructure project for deployment
-* Dockerize project with Dockerfile
+* Restructure project for deployment ✅
+* Dockerize project with Dockerfile ✅
 * Create a Kubernetes deployment script and a configuration file
 * Deploy

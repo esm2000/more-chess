@@ -1,7 +1,7 @@
 @font-face {
-    font-family: "Default";   /*Can be any text*/
-    src: local("Retro Gaming"),
-      url("./fonts/Retro\ Gaming.ttf") format("truetype");
+    font-family: "Basic";   /*Can be any text*/
+    src: local("Retro_Gaming"),
+      url("./fonts/Retro_Gaming.TTF") format("truetype");
 }
 
 @font-face {
@@ -74,11 +74,11 @@
 .board-and-rules-container {
     display: flex;
     flex-direction: row;
-    font-family: "Default";
+    font-family: "Basic";
 }
 
 button {
-    font-family: "Default";
+    font-family: "Basic";
 }
 
 .rules {

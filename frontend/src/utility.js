@@ -1,5 +1,22 @@
 const PLAYERS = ["white", "black"]
 
+var BASE_API_URL
+if (process.env.REACT_APP_LOCAL === "true") {
+    BASE_API_URL = "http://0.0.0.0:8080";
+} else {
+    var current_link = window.location.href
+
+    if (current_link.charAt(current_link.length - 1) === "/") {
+        current_link = current_link.slice(0, current_link.length - 1)
+    }
+
+    if (current_link === 'http://0.0.0.0:3000') {
+        current_link = 'http://0.0.0.0:8080'
+    }
+
+    BASE_API_URL = current_link
+} 
+
 const IMAGE_MAP = {
     blackBishop: require('./assets/pieces/black_bishop.png'),
     blackKing: require("./assets/pieces/black_king.png"),
@@ -142,12 +159,39 @@ const pickSide = (pieceName) => {
 }
 
 const snakeToCamel = str =>
-  str.toLowerCase().replace(/([-_][a-z])/g, group =>
-    group
-      .toUpperCase()
-      .replace('-', '')
-      .replace('_', '')
-  );
+    str.toLowerCase().replace(/([-_][a-z])/g, group =>
+        group
+        .toUpperCase()
+        .replace('-', '')
+        .replace('_', '')
+    );
+
+const camelToSnake = (str) => 
+    str.replace(/[A-Z]/g, (letter) => {
+        return `_${letter.toLowerCase()}`;
+    });
+
+const convertKeysToCamelCase = (obj) => {
+    let newObj = {};
+    for (let key in obj) {
+        let newKey = key.replace(/([-_][a-z])/gi, (group) => {
+        return group.toUpperCase().replace('-', '').replace('_', '');
+        });
+        newObj[newKey] = obj[key];
+    }
+    return newObj;
+}
+
+function convertKeysToSnakeCase(obj) {
+    const result = {};
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        const newKey = key.replace(/([A-Z])/g, "_$1").toLowerCase();
+        result[newKey] = obj[key];
+      }
+    }
+    return result;
+  }
 
 const capitalizeFirstLetter = (string) =>  {
     return string.charAt(0).toUpperCase() + string.slice(1);
@@ -181,7 +225,7 @@ const determineBackgroundColor = (row, col, positionInPlay, possibleCaptures, is
         white = DARK_WHITE_SQUARE_COLOR
     }
 
-    if ([[0, 4], [7, 4]].toString().includes([row, col].toString())) {
+    if ([0, 4].toString() === [row, col].toString() || [7, 4].toString() === [row, col].toString()) {
         green = WHITE_SHOP_SQUARE_COLOR
         white = BLACK_SHOP_SQUARE_COLOR
     }
@@ -219,16 +263,24 @@ const getPiecePrice = (pieceType) => {
 
     switch(pieceType) {
         case "whitePawn":
+        case "blackPawn":
             price = 2
             break;
         case "whiteKnight":
+        case "blackKnight":
             price = 6
             break;
         case "whiteBishop":
+        case "blackBishop":
             price = 6
             break;
         case "whiteRook":
+        case "blackRook":
             price = 10
+            break;
+        case "whiteQueen":
+        case "blackQueen":
+            price = 18
             break;
         default:
           price = undefined
@@ -236,6 +288,34 @@ const getPiecePrice = (pieceType) => {
 
     return price
 }
+
+function findThreateningBishop(boardState, side, row, col) {
+    const directions = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+
+    const opposingSide = PLAYERS.find(player => player !== side)
+  
+    for (const [dRow, dCol] of directions) {
+      let currentRow = row + dRow;
+      let currentCol = col + dCol;
+  
+      while (currentRow >= 0 && currentRow < 8 && currentCol >= 0 && currentCol < 8) {
+        const pieceArray = boardState[currentRow][currentCol];
+
+        for (const piece of pieceArray) {
+            if (piece.type.toLowerCase.includes(opposingSide) && piece.type.toLowerCase.includes("bishop")) {
+                return [currentRow, currentCol];
+            }
+        }
+  
+        currentRow += dRow;
+        currentCol += dCol;
+      }
+    }
+  
+    return null;
+  }
+
+const determineIsMobile = () => window.matchMedia("(max-width: 1024px)").matches && window.matchMedia("(orientation: portrait)").matches
 
 export { 
     PLAYERS, 
@@ -245,10 +325,16 @@ export {
     BARON_NASHOR_POSITION,
     MAX_BOSS_HEALTH,
     LIGHT_BLUE_SQUARE_COLOR,
+    BASE_API_URL,
     getPiecePrice,
     pickSide, 
     snakeToCamel, 
+    camelToSnake,
+    convertKeysToCamelCase,
+    convertKeysToSnakeCase,
     determineBackgroundColor,
     determineColor, 
-    capitalizeFirstLetter
+    determineIsMobile,
+    capitalizeFirstLetter,
+    findThreateningBishop
 };

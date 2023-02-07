@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 
 import  { GameStateContextData }  from '../context/GameStateContext';
 
+import { determineIsMobile } from '../utility';
+
 const PossibleMove = (props) => {
     const gameState = GameStateContextData()
-    const isMobile = gameState.isMobile
-    const topPosition = props.row * 3.7 * (gameState.isMobile ? 2: 1)
-    const leftPosition = props.col * 3.7 * (gameState.isMobile ? 2: 1)
+    const isMobile = determineIsMobile()
+    const topPosition = props.row * 3.7 * (isMobile ? 2: 1)
+    const leftPosition = props.col * 3.7 * (isMobile ? 2: 1)
     const [isMouseOverSquare, setIsMouseOverSquare] = useState(false)
 
 

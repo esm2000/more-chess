@@ -1,4 +1,5 @@
 from bson.objectid import ObjectId
+import datetime
 from fastapi import APIRouter, Response
 from pydantic import BaseModel, Extra
 from typing import Union
@@ -36,7 +37,7 @@ def create_game():
                 [{"type": "black_queen"}],
                 [{"type": "black_king"}],
                 [{"type": "black_bishop", "energize_stacks": 0}],
-                [{"type": "black_king"}],
+                [{"type": "black_knight"}],
                 [{"type": "black_rook"}],
             ],
             [[{"type": "black_pawn", "pawn_buff": 0}]] * 8,
@@ -52,7 +53,7 @@ def create_game():
                 [{"type": "white_queen"}],
                 [{"type": "white_king"}],
                 [{"type": "white_bishop", "energize_stacks": 0}],
-                [{"type": "white_king"}],
+                [{"type": "white_knight"}],
                 [{"type": "white_rook"}],
             ],
         ],
@@ -64,6 +65,7 @@ def create_game():
         "player_victory": False,
         "player_defeat": False,
         "gold_count": {"white": 0, "black": 0},
+        "last_updated": datetime.datetime.now()
     }
     game_database = mongo_client["game_db"]
     game_database["games"].insert_one(game_state)
@@ -89,6 +91,14 @@ def update_game_state(id, state: GameState, response: Response):
     # TODO: add method to validate whether the new game state is valid
     #       and return status code 500 if it isn't
 
+    # TODO: In another script, use endless loop to update games with
+    #       odd number turns if its been 6 seconds since the last update;
+    #       sleep for a second at end of loop
+
+    # TODO: determine possibleMoves if a position_in_play is not [null, null]
+    #       and add to new_game_state
+
+    new_game_state["last_updated"] = datetime.datetime.now()
     query = {"_id": ObjectId(id)}
     new_values = {"$set": new_game_state}
     game_database = mongo_client["game_db"]

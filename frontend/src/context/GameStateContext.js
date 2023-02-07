@@ -1,39 +1,27 @@
 import { createContext, useContext, useEffect, useState } from "react"
-import { PLAYERS } from '../utility';
+import { PLAYERS, BASE_API_URL, convertKeysToCamelCase, convertKeysToSnakeCase } from '../utility';
 
 const GameStateContext = createContext({
     turnCount: 0,
     positionInPlay: [null, null],
     boardState: [
-        Array(8).fill([null]),
-        Array(8).fill([null]),
-        Array(8).fill([null]),
-        Array(8).fill([null]),
-        Array(8).fill([null]),
-        Array(8).fill([null]),
-        Array(8).fill([null]),
-        Array(8).fill([null])
+        Array(8).fill(null),
+        Array(8).fill(null),
+        Array(8).fill(null),
+        Array(8).fill(null),
+        Array(8).fill(null),
+        Array(8).fill(null),
+        Array(8).fill(null),
+        Array(8).fill(null)
     ],
     possibleMoves: [],
     possibleCaptures: [],
     capturedPieces: [],
     SwordInTheStonePosition: null,
-    isMobile: false,
     capturePointAdvantage: null,
     playerVictory: false,
     playerDefeat: false,
-    goldCount: null,
-    setTurnCount: () => {},
-    setPositionInPlay: () => {},
-    setBoardState: () => {},
-    setPossibleCaptures: () => {},
-    setCapturedPieces: () => {},
-    setSwordInTheStonePosition: () => {},
-    setIsMobile: () => {},
-    setCapturePointAdvantage: () => {},
-    setPlayerVictory: () => {},
-    setPlayerDefeat: () => {},
-    setGoldCount: () => {}
+    goldCount: null
 })
 
 export function GameStateContextData() {
@@ -45,127 +33,112 @@ export function GameStateContextData() {
 // state refreshes every 5 second
 
 export function GameStateProvider({children}) {
-
-    const setTurnCount = (turnCount) => {
-        setGameState({...gameState, turnCount: turnCount})
-    }
-
-    const setPositionInPlay = (positionInPlay) => {
-        // TODO API Call where you update the game via API and get the response to update possibleCaptures
-        setGameState({
-            ...gameState, 
-            positionInPlay: positionInPlay,
-            // possibleCaptures: getPossibleCaptures(gameState.boardState, gameState.possibleMoves)
+    const updateGameState = (gameState) => {
+        const gameStateId = sessionStorage.getItem("gameStateId")
+        
+        fetch(`${BASE_API_URL}/api/game/${gameStateId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(convertKeysToSnakeCase(gameState))
         })
-    }
-
-    const setBoardState = (boardState) => {
-        setGameState({...gameState, boardState: boardState})
-    }
-
-    const setPossibleCaptures = (possibleCaptures) => {
-        setGameState({...gameState, possibleCaptures: possibleCaptures})
-    }
-
-    const setCapturedPieces = (capturedPieces) => {
-        setGameState({...gameState, capturedPieces: capturedPieces})
-    }
-
-    const setSwordInTheStonePosition = (swordInTheStonePosition) => {
-        setGameState({...gameState, swordInTheStonePosition: swordInTheStonePosition})
-    }
-
-    const setIsMobile = (isMobile) => {
-        setGameState({...gameState, isMobile: isMobile})
-    }
-
-    const setCapturePointAdvantage = (capturePointAdvantage) => {
-        setGameState({...gameState, capturePointAdvantage: capturePointAdvantage})
-    }
-
-    const setPlayerVictory = (playerVictory) => {
-        setGameState({...gameState, playerVictory: playerVictory})
-    }
-
-    const setPlayerDefeat = (playerDefeat) => {
-        setGameState({...gameState, playerDefeat: playerDefeat})
-    }
-
-    const setGoldCount = (goldCount) => {
-        setGameState({...gameState, goldCount: goldCount})
+        .then(response => response.json())
+        .then(jsonResponse => {
+            const parsedJsonResponse = {
+                ...convertKeysToCamelCase(jsonResponse), 
+                updateGameState: updateGameState
+            }
+            setGameState(parsedJsonResponse)
+        })
+        .catch(exception => {
+            console.log(exception);
+        });
     }
 
     const initGameState = {
+        initialState: true,
         turnCount: 0,
-        // positionInPlay: [null, null],
-        positionInPlay: [5, 2],
+        positionInPlay: [null, null],
         boardState: [
-            [[{"type":"black_rook"}], [{"type":"black_knight"}], [{"type":"black_bishop", "energize_stacks": 0}], [{"type":"black_queen"}], [{"type":"black_king"}], [{"type":"black_bishop", "energize_stacks": 100}], [{"type":"black_king"}], [{"type":"black_rook"}]],
-            [[{"type":"black_pawn", "pawn_buff": 1}], [{"type":"black_pawn", "pawn_buff": 1}], [{"type":"black_pawn", "pawn_buff": 1}], null, [{"type":"black_pawn", "pawn_buff": 1}], [{"type":"black_pawn", "pawn_buff": 1}], [{"type":"black_pawn", "pawn_buff": 1}], [{"type":"black_pawn", "pawn_buff": 1}]],
-            [null, null, null, [{"type":"black_pawn", "pawn_buff": 1}], null, null, null, null],
-            [null, null, null, [{"type":"black_pawn", "pawn_buff": 1}], null, null, null, [{"type":"neutral_dragon", "health": 4}]],
-            [[{"type":"neutral_baron_nashor", "health": 10}], null, null, null, null, null, null, null],
-            [null, null, [{"type":"white_knight"}], null, null, null, null, null],
-            Array(8).fill([{"type":"white_pawn", "pawn_buff": 2}]),
-            [[{"type":"white_rook", "is_stunned": true}], [{"type":"white_knight", "is_stunned": true}], [{"type":"white_bishop", "energize_stacks": 50}], [{"type":"white_queen"}], [{"type":"white_king", "check_protection": 1}], [{"type":"white_bishop", "energize_stacks": 15}], [{"type":"white_knight", "bishop_debuff": 1}], [{"type":"white_rook", "bishop_debuff": 2}]],
+            [[{"type":"black_pawn"}], [{"type":"black_knight"}], [{"type":"black_bishop", "energize_stacks": 0}], [{"type":"black_queen"}], [{"type":"black_king"}], [{"type":"black_bishop", "energize_stacks": 0}], [{"type":"black_knight"}], [{"type":"black_rook"}]],
+            Array(8).fill([{"type":"black_pawn"}]),
+            Array(8).fill(null),
+            Array(8).fill(null),
+            Array(8).fill(null),
+            Array(8).fill(null),
+            Array(8).fill([{"type":"white_pawn"}]),
+            [[{"type":"white_rook"}], [{"type":"white_knight"}], [{"type":"white_bishop", "energize_stacks": 0}], [{"type":"white_queen"}], [{"type":"white_king"}], [{"type":"white_bishop", "energize_stacks": 0}], [{"type":"white_knight"}], [{"type":"white_rook"}]],
         ],
-        // possibleMoves: [],
-        possibleMoves: [[4, 2], [3, 2], [3, 3]],
-        possibleCaptures: [[3, 3]],
+        possibleMoves: [],
+        possibleCaptures: [],
         capturedPieces: {
-            [PLAYERS[0]]: ["black_pawn", "black_rook", "neutral_board_herald"],
-            [PLAYERS[1]]: ["white_bishop", "neutral_dragon", "neutral_baron_nashor"]
+            [PLAYERS[0]]: [],
+            [PLAYERS[1]]: []
         }, 
-        swordInTheStonePosition: [4, 5],
-        isMobile: window.matchMedia("(max-width: 1024px)").matches && window.matchMedia("(orientation: portrait)").matches,
-        capturePointAdvantage: ["black", 4],
+        swordInTheStonePosition: null,
+        capturePointAdvantage: null,
         playerVictory: false,
         playerDefeat: false,
         goldCount: {
-            [PLAYERS[0]]: 7,
-            [PLAYERS[1]]: 15
-        },
-        setTurnCount: setTurnCount,
-        setPositionInPlay: setPositionInPlay,
-        setBoardState: setBoardState,
-        setPossibleCaptures: setPossibleCaptures,
-        setCapturedPieces: setCapturedPieces,
-        setSwordInTheStonePosition: setSwordInTheStonePosition,
-        setIsMobile: setIsMobile,
-        setCapturePointAdvantage: setCapturePointAdvantage,
-        setPlayerVictory: setPlayerVictory,
-        setPlayerDefeat: setPlayerDefeat,
-        setGoldCount: setGoldCount
+            [PLAYERS[0]]: 0,
+            [PLAYERS[1]]: 0
+        }
     }
     const [gameState, setGameState] = useState(initGameState);
 
-    const [refreshInterval, setRefreshInterval] = useState(3000);
+    const [intervalTime, setIntervalTime] = useState(3000);
     
     const fetchGameState = () => {
-        // retrieve gameState
-        // TODO: have API call to backend here
-        const gameState = initGameState
+        var url
+        var method
+        const gameStateId = sessionStorage.getItem("gameStateId")
+        const lastUpdated = sessionStorage.getItem("lastUpdated")
+
+        if (gameStateId == null) {
+            url = `${BASE_API_URL}/api/game`
+            method = "POST"
+        } else {
+            url = `${BASE_API_URL}/api/game/${gameStateId}`
+            method = "GET"
+        }
         
-        // and then setGameState()
-        setGameState(gameState)
+        const sixSecondsAgo = Date.now() - 6000;
+        if (Date.parse(lastUpdated) < sixSecondsAgo) {
+            return
+        }
 
-    }
-
-    const updateIsMobile = () => {
-        setIsMobile(window.matchMedia("(max-width: 1024px)").matches && window.matchMedia("(orientation: portrait)").matches)
+        fetch(url, {"method": method})
+        .then(response => response.json())
+        .then(result => {
+            if (method === "POST") {
+                console.log(`Game ID - ${result["id"]}`)
+            } else {
+                console.log(`GET Game ${result["id"]}`)
+            }
+            const parsedResult = {
+                ...convertKeysToCamelCase(result), 
+                updateGameState: updateGameState
+            }
+            setGameState(parsedResult)
+            sessionStorage.setItem("gameStateId", parsedResult["id"])
+            sessionStorage.setItem("lastUpdated", parsedResult["lastUpdated"])
+        })
+        .catch(exception => {
+            console.log(exception);
+        });
     }
 
     useEffect(() => {
-        // uncomment when backend is finished and remove uncommented fetchGameState() call
-        // // setting refreshInterval to null can be used in a pause
-        // if (refreshInterval) {
-        //     const interval = setInterval(fetchGameState, refreshInterval)
-        //     // when component is not being rendered stop refresh
-        //     return () => clearInterval(interval)
-        // }
         fetchGameState()
-        window.addEventListener('resize', updateIsMobile)
-    }, [initGameState.turnCount])
+        
+        const interval = setInterval(() => fetchGameState(), 3000)
+        // when component is not being rendered stop refresh
+        return () => {
+            clearInterval(interval)
+            sessionStorage.clear();
+        }
+    }, [])
 
     return(
         <GameStateContext.Provider value={gameState}>

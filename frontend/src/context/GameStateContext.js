@@ -43,7 +43,12 @@ export function GameStateProvider({children}) {
             },
             body: JSON.stringify(convertKeysToSnakeCase(gameState))
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Request failed with status code ${response.status}: ${response.statusText}`)
+            }
+            return response.json();
+        })
         .then(jsonResponse => {
             const parsedJsonResponse = {
                 ...convertKeysToCamelCase(jsonResponse), 
@@ -76,6 +81,7 @@ export function GameStateProvider({children}) {
             [PLAYERS[0]]: [],
             [PLAYERS[1]]: []
         }, 
+        graveyard: [],
         swordInTheStonePosition: null,
         capturePointAdvantage: null,
         playerVictory: false,

@@ -1,16 +1,9 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
-import logging
 import uvicorn
 
 from src.api import router as api_router
-
-
-logging.basicConfig(
-    format="%(asctime)s %(message)s", datefmt="%m/%d/%Y | %I:%M:%S%p | " + ":"
-)
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+from src.logging import logger
 
 app = FastAPI()
 
@@ -42,7 +35,7 @@ def default():
 
 
 def main():
-    logging.info("running")
+    logger.info("running")
     uvicorn.run("server:app", host="0.0.0.0", port=8080, log_level="info", reload=True)
 
 

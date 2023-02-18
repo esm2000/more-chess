@@ -67,7 +67,10 @@ const Board = () => {
                                     }
                                 })}
                                 {possibleMoves.map((possibleMove, index) => {
-                                    if (!possibleCaptures.some((possibleCapture) => JSON.stringify(possibleMove).includes(JSON.stringify(possibleCapture))))
+                                    // possibleCaptures is an array of arrays of arrays
+                                    // a position is represented as an array
+                                    // [[position that piece in play will land in , position of enemy in danger], ...]
+                                    if (!possibleCaptures.some((possibleCapture) => JSON.stringify(possibleMove).includes(JSON.stringify(possibleCapture[0]))))
                                         if (!shopPieceSelected || (possibleMove[0] <= 3)) {
                                             return(
                                                 <PossibleMove 

@@ -19,6 +19,21 @@ To run locally open your terminal, navigate to the root directory of the project
 docker build . -t league-of-chess && docker run  -p 80:80 -p 8080:8080 league-of-chess
 ```
 
+You can access the game at `0.0.0.0:80` in your browser. 
+
+### Unit Tests
+
+To run unit tests navigate to root directory of folder and run the following in your terminal
+
+```
+% python3 -m venv env
+% source env/bin/activate
+% pip install -r backend/requirements.txt
+% PYTHONPATH="$PWD/backend" pytest
+```
+
+Use `PYTHONPATH="$PWD/backend" pytest -o log_cli=true` if you need to debug.
+
 ## Patch Notes
 There are quite a few changes here that will dramatically alter gameplay, especially large buffs to Bishops and Queens as well as some nerf for Knights and Rooks.
 
@@ -125,7 +140,9 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * checkmate protection status effect ✅
 * shop (with light/normal green square for shop square) ✅
 * rename game to League of Chess
+* create a screen directing users to refresh or try again later when POST request fails
 * shop rework 
+* pawn exchange
 * give player option to switch between chess sprites and league sprites (make league sprites default (with button [chess piece] <-> [league character]))
 
 ##### Backend 
@@ -152,5 +169,8 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 ##### Production-Ready Development
 * Restructure project for deployment ✅
 * Dockerize project with Dockerfile ✅
+* Un-nest the code (extraction and inversion) - https://www.youtube.com/watch?v=CFRhGnuXG-4&t=40s
+* Clean up and refactor code
+* Proofread and finalize README
 * Create a Kubernetes deployment script and a configuration file
 * Deploy

@@ -87,9 +87,9 @@ const LIGHT_BLUE_SQUARE_COLOR = "rgb(102, 216, 242)"
 const WHITE_SHOP_SQUARE_COLOR = "rgb(51, 171, 55)"
 const BLACK_SHOP_SQUARE_COLOR = "rgb(171, 51, 51)"
 
-const DRAGON_POSITION = [3, 7]
-const BOARD_HERALD_POSITION = [4, 0]
-const BARON_NASHOR_POSITION = [4, 0]
+const DRAGON_POSITION = [4, 7]
+const BOARD_HERALD_POSITION = [3, 0]
+const BARON_NASHOR_POSITION = [3, 0]
 
 const BOSS_POSITIONS = {
     "dragon": DRAGON_POSITION,
@@ -205,7 +205,10 @@ const determineBackgroundColor = (row, col, positionInPlay, possibleCaptures, is
 
     const dangerZonePositions = getBossDangerZonePositions(isDragonActive, isHeraldActive, isBaronActive)
     
-    if(JSON.stringify(possibleCaptures).includes(JSON.stringify(currentPosition))) {
+    // possibleCaptures is an array of arrays
+    // the first array is where the piece in play will land
+    // the second array is the enemy position
+    if(JSON.stringify(possibleCaptures.map(mapping => mapping[0])).includes(JSON.stringify(currentPosition))) {
         return RED_SQUARE_COLOR
     }
 

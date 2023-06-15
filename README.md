@@ -166,6 +166,9 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * ADVANCED enemy AI that plays perfectly as possible
 * MEDIUM enemy AI that is a combination of EASY and ADVANCED AIs
 
+##### Miscellaneous
+* Music (looping track with gameplay triggers) - something like https://www.instagram.com/reel/CtKyXtBo8Qm/?igshid=MzRlODBiNWFlZA==
+
 ##### Production-Ready Development
 * Restructure project for deployment ✅
 * Dockerize project with Dockerfile ✅

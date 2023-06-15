@@ -162,9 +162,10 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
         - getPossibleMovesForQueen()
         - getPossibleMovesForKing() - to determine check and checkmate will possible involve looping through every enemy piece's getPossibleMoves()
     - expand getPossibleMoves() to be able to dynamically take into consideration neutral monster buffs
-* rudimentary EASY enemy AI (chooses random moves from possible moves)
-* ADVANCED enemy AI that plays perfectly as possible
-* MEDIUM enemy AI that is a combination of EASY and ADVANCED AIs
+* AI - https://www.chessprogramming.org/Evaluation#Publications
+    - rudimentary EASY enemy AI (chooses random moves from possible moves)
+    - ADVANCED enemy AI that plays as well as possible
+    - MEDIUM enemy AI 
 
 ##### Miscellaneous
 * Music (looping track with gameplay triggers) - something like https://www.instagram.com/reel/CtKyXtBo8Qm/?igshid=MzRlODBiNWFlZA==

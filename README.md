@@ -161,6 +161,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
         - getPossibleMovesForRook()
         - getPossibleMovesForQueen()
         - getPossibleMovesForKing() - to determine check and checkmate will possible involve looping through every enemy piece's getPossibleMoves()
+    - handle possibility that a piece can move to a square containing a neutral monster and another piece (where it captures the other piece and damages the neutral monster)
     - expand getPossibleMoves() to be able to dynamically take into consideration neutral monster buffs
 * AI - https://www.chessprogramming.org/Evaluation#Publications
     - rudimentary EASY enemy AI (chooses random moves from possible moves)
@@ -175,6 +176,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * Dockerize project with Dockerfile ✅
 * Un-nest the code (extraction and inversion) - https://www.youtube.com/watch?v=CFRhGnuXG-4&t=40s
 * Clean up and refactor code
+* Linting
 * Proofread and finalize README
 * Create a Kubernetes deployment script and a configuration file
 * Deploy

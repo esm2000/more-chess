@@ -183,3 +183,12 @@ def is_neutral_monster_spawned(neutral_monster_type, board_state):
     if not square:
         return False
     return any([piece.get("type") == neutral_monster_type for piece in square])
+
+
+def evaluate_current_position(curr_position, curr_game_state):
+    if curr_position[0] is None or curr_position[1] is None:
+        raise Exception(f"Invalid position, {curr_position}, cannot have None value as a position")
+    if curr_position[0] < -1 or curr_position[0] > 7 or curr_position[1] < -1 or curr_position[1] > 7:
+        raise Exception(f"Invalid position, {curr_position}, out of bounds")
+    if not curr_game_state["board_state"][curr_position[0]][curr_position[1]]:
+        raise Exception(f"No piece at position {curr_position}")

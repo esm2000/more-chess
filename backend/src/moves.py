@@ -1,3 +1,4 @@
+from src.utility import evaluate_current_position
 def get_moves():
     pass
 
@@ -8,12 +9,7 @@ def get_moves():
 # }
 
 def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
-    if curr_position[0] is None or curr_position[1] is None:
-        raise Exception(f"Invalid position, {curr_position}, cannot have None value as a position")
-    if curr_position[0] < -1 or curr_position[0] > 7 or curr_position[1] < -1 or curr_position[1] > 7:
-        raise Exception(f"Invalid position, {curr_position}, out of bounds")
-    if not curr_game_state["board_state"][curr_position[0]][curr_position[1]]:
-        raise Exception(f"No piece at position {curr_position}")
+    evaluate_current_position(curr_position, curr_game_state)
     piece_in_play = None
 
     for piece in curr_game_state["board_state"][curr_position[0]][curr_position[1]]:
@@ -75,7 +71,7 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
             if not square:
                 continue
 
-            if any("king" not in piece.get("type", None) and \
+            if all("king" not in piece.get("type", None) and \
                    (opposing_side in piece.get("type", None) or "neutral" in piece.get("type", None)) and \
                    not ("pawn" in piece.get("type", None) and piece.get("pawn_buff", 0) > 1) \
                    for piece in square):
@@ -106,7 +102,8 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
         if ((side == "black" and curr_position[0] == 4) or (side == "white" and curr_position[0] == 3)) and \
         (lateral_square and any(piece.get("type", "None") == f"{opposing_side}_pawn" for piece in lateral_square)) and \
         (prev_opposing_starting_square and any(piece.get("type", "None") == f"{opposing_side}_pawn" for piece in prev_opposing_starting_square)) and \
-        (not curr_opposing_starting_square or all(piece.get("type", "None") != f"{opposing_side}_pawn" for piece in curr_opposing_starting_square)):
+        (not curr_opposing_starting_square or all(piece.get("type", "None") != f"{opposing_side}_pawn" for piece in curr_opposing_starting_square)) and \
+        (all("king" not in piece.get("type", "None") for piece in (curr_game_state["board_state"][curr_position[0]][lateral_position[1]] or []))):
             possible_moves.append([curr_position[0] + (-1 if side == "white" else 1), lateral_position[1]])
             possible_captures.append([[curr_position[0] + (-1 if side == "white" else 1), lateral_position[1]], [curr_position[0] , lateral_position[1]]])
     
@@ -115,65 +112,64 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
 
 
 def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
-    pass
-    # if curr_position[0] is None or curr_position[1] is None:
-    #     raise Exception(f"Invalid position, {curr_position}, cannot have None value as a position")
-    # if curr_position[0] < -1 or curr_position[0] > 7 or curr_position[1] < -1 or curr_position[1] > 7:
-    #     raise Exception(f"Invalid position, {curr_position}, out of bounds")
-    # if not curr_game_state["board_state"][curr_position[0]][curr_position[1]]:
-    #     raise Exception(f"No piece at position {curr_position}")
-    # piece_in_play = None
+    evaluate_current_position(curr_position, curr_game_state)
+    piece_in_play = None
 
-    # for piece in curr_game_state["board_state"][curr_position[0]][curr_position[1]]:
-    #     if "knight" in piece["type"]:
-    #         piece_in_play = piece
-    #         side = piece["type"].split("_")[0]
-    #         opposing_side = "white" if side == "black" else "black"
-    #         break
+    for piece in curr_game_state["board_state"][curr_position[0]][curr_position[1]]:
+        if "knight" in piece["type"]:
+            piece_in_play = piece
+            side = piece["type"].split("_")[0]
+            opposing_side = "white" if side == "black" else "black"
+            break
 
-    # if not piece_in_play:
-    #     raise Exception(f"No pawn found at position {curr_position}")
+    if not piece_in_play:
+        raise Exception(f"No pawn found at position {curr_position}")
     
-    # possible_moves = []
-    # possible_captures = []
-    # # relative_positions represent all possible moves knight can take
-    # relative_positions = [[1, -2], [1, 2], [2, -1], [2, 1], [-1, -2],  [-1, 2], [-2, -1], [-2, 1]]
+    possible_moves = []
+    possible_captures = []
+    # relative_positions represent all possible moves knight can take
+    relative_positions = [[1, -2], [1, 2], [2, -1], [2, 1], [-1, -2],  [-1, 2], [-2, -1], [-2, 1]]
     
-    # for relative_position in relative_positions:
-    #     potential_position = [curr_position[0] + relative_position[0], curr_position[1] + relative_position[1]]
+    for relative_position in relative_positions:
+        potential_position = [curr_position[0] + relative_position[0], curr_position[1] + relative_position[1]]
 
-    #     if potential_position[0] < 0 or potential_position[0] > 7 or \
-    #     potential_position[1] < 0 or potential_position[1] > 7:
-    #         continue
+        if potential_position[0] < 0 or potential_position[0] > 7 or \
+        potential_position[1] < 0 or potential_position[1] > 7:
+            continue
 
-    #     potential_position_free = True
+        potential_position_free = True
 
-    #     # checking to see if path is unblocked to potentional move
-    #     for i in range(2):
-    #         if abs(relative_position[i]) == 2:
-    #             for j in range(2):
-    #                 square = [None, None]
-    #                 square[i] = j + 1
-    #                 square[0 if i else 1] = 0
-
-    #                 if curr_game_state["board_state"][square[0]][square[1]]:
-    #                     potential_position_free = False
+        # checking to see if path is unblocked to potentional move
+        for index_of_relative_position in range(2):
+            if abs(relative_position[index_of_relative_position]) == 2:
+                index_of_relative_position_with_absolute_value_of_2 = index_of_relative_position
+        for j in range(2):
+            relative_square = [None, None]
+            relative_square[index_of_relative_position_with_absolute_value_of_2] = j + 1
+            relative_square[0 if index_of_relative_position_with_absolute_value_of_2 else 1] = 0
+            intermediate_square_on_the_way_to_destination = [curr_position[0] + relative_square[0], curr_position[1] + relative_square[1]]
+            if curr_game_state["board_state"][intermediate_square_on_the_way_to_destination[0]][intermediate_square_on_the_way_to_destination[1]]:
+                potential_position_free = False
         
-    #     potential_square = curr_game_state["board_state"][potential_position[0]][potential_position[1]]
 
-    #     # if path is unblocked knight is free to move to position 
-    #     if potential_position_free:
-    #         if not potential_square:
-    #             possible_moves.append(potential_position)
+        # if path is unblocked knight is free to move to position 
+        if potential_position_free:
+            potential_square = curr_game_state["board_state"][potential_position[0]][potential_position[1]]
+            if not potential_square:
+                possible_moves.append(potential_position)
             
-    #         for piece in potential_square:
-    #             if (opposing_side in piece.get("type")):
-    #                 possible_moves.append(potential_position)
-    #                 possible_captures.append([potential_position, potential_position])
-    #             if len(potential_square) == 1 and "neutral" in piece.get("type"):
-    #                 possible_moves.append(potential_position)
-    #                 if piece.get("health", 0) == 1:
-    #                     possible_captures.append([potential_position, potential_position])
+            if potential_square and all('king' not in piece.get('type', 'None') for piece in potential_square):
+                for piece in potential_square:
+                    if (opposing_side in piece.get("type")):
+                        possible_moves.append(potential_position)
+                        possible_captures.append([potential_position, potential_position])
+                        break
+                    if len(potential_square) == 1 and "neutral" in piece.get("type"):
+                        possible_moves.append(potential_position)
+                        if piece.get("health", 0) == 1:
+                            possible_captures.append([potential_position, potential_position])
+
+    return {"possible_moves": possible_moves, "possible_captures": possible_captures}
                     
 
 def get_moves_for_bishop():

@@ -3,6 +3,10 @@ import src.moves as moves
 from mocks.empty_game import empty_game
 
 
+def test_pawn_movement():
+    pass
+
+
 def test_pawn_capture():
     ##    0  1  2  3  4  5  6  7
     ## 0 |__|##|__|##|__|##|__|##|

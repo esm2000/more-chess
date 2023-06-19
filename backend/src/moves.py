@@ -1,4 +1,6 @@
 from src.utility import evaluate_current_position
+
+
 def get_moves():
     pass
 
@@ -137,21 +139,36 @@ def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
         potential_position[1] < 0 or potential_position[1] > 7:
             continue
 
-        potential_position_free = True
+        path_1_free = True
+        path_2_free = True
 
         # checking to see if path is unblocked to potentional move
-        for index_of_relative_position in range(2):
-            if abs(relative_position[index_of_relative_position]) == 2:
-                index_of_relative_position_with_absolute_value_of_2 = index_of_relative_position
-        for j in range(2):
-            relative_square = [None, None]
-            relative_square[index_of_relative_position_with_absolute_value_of_2] = j + 1
-            relative_square[0 if index_of_relative_position_with_absolute_value_of_2 else 1] = 0
-            intermediate_square_on_the_way_to_destination = [curr_position[0] + relative_square[0], curr_position[1] + relative_square[1]]
-            if curr_game_state["board_state"][intermediate_square_on_the_way_to_destination[0]][intermediate_square_on_the_way_to_destination[1]]:
-                potential_position_free = False
-        
+        path_1_positions = []
+        path_2_positions = []
 
+        if abs(relative_position[0]) == 2: # moving 2 squares in x-direction
+            path_1_positions.append([curr_position[0] + relative_position[0] // 2, curr_position[1]]) 
+            path_1_positions.append([curr_position[0] + relative_position[0], curr_position[1]]) 
+            path_2_positions.append([curr_position[0], curr_position[1] + relative_position[1]])
+            path_2_positions.append([curr_position[0] + relative_position[0] // 2, curr_position[1] + relative_position[1]])
+
+        else: # moving 2 squares in y-direction
+            path_1_positions.append([curr_position[0], curr_position[1] + relative_position[1] // 2])
+            path_1_positions.append([curr_position[0], curr_position[1] + relative_position[1]]) 
+            path_2_positions.append([curr_position[0] + relative_position[0], curr_position[1]])
+            path_2_positions.append([curr_position[0] + relative_position[0], curr_position[1] + relative_position[1] // 2])
+
+        # check if path positions are free
+        for i, path_positions in enumerate([path_1_positions, path_2_positions]):
+            for path_position in path_positions:
+                if curr_game_state["board_state"][path_position[0]][path_position[1]]:
+                    if not i:
+                        path_1_free = False
+                    else:
+                        path_2_free = False
+                    break
+
+        potential_position_free = path_1_free or path_2_free
         # if path is unblocked knight is free to move to position 
         if potential_position_free:
             potential_square = curr_game_state["board_state"][potential_position[0]][potential_position[1]]

@@ -125,7 +125,7 @@ def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
             break
 
     if not piece_in_play:
-        raise Exception(f"No pawn found at position {curr_position}")
+        raise Exception(f"No knight found at position {curr_position}")
     
     possible_moves = []
     possible_captures = []

@@ -156,7 +156,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * expand PUT game with game logic, MUST BE DEVELOPED WITH pytest unit tests 
     - getPossibleMoves() (ignore buff logic for now)
         - getPossibleMovesForPawn() ✅
-        - getPossibleMovesForKnignt()
+        - getPossibleMovesForKnignt() ✅
         - getPossibleMovesForBishop()
         - getPossibleMovesForRook()
         - getPossibleMovesForQueen()

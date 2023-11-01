@@ -5,6 +5,7 @@ import logging
 from pydantic import BaseModel, Extra
 from typing import Union
 
+from mocks.starting_game import starting_game
 import src.moves as moves
 from src.database import mongo_client
 from src.logging import logger
@@ -40,34 +41,7 @@ def create_game():
     game_state = {
         "turn_count": 0,
         "position_in_play": [None, None],
-        "board_state": [
-            [
-                [{"type": "black_rook"}],
-                [{"type": "black_knight"}],
-                [{"type": "black_bishop", "energize_stacks": 0}],
-                [{"type": "black_queen"}],
-                [{"type": "black_king"}],
-                [{"type": "black_bishop", "energize_stacks": 0}],
-                [{"type": "black_knight"}],
-                [{"type": "black_rook"}],
-            ],
-            [[{"type": "black_pawn", "pawn_buff": 0}]] * 8,
-            [None] * 8,
-            [None] * 8,
-            [None] * 8,
-            [None] * 8,
-            [[{"type": "white_pawn", "pawn_buff": 0}]] * 8,
-            [
-                [{"type": "white_rook"}],
-                [{"type": "white_knight"}],
-                [{"type": "white_bishop", "energize_stacks": 0}],
-                [{"type": "white_queen"}],
-                [{"type": "white_king"}],
-                [{"type": "white_bishop", "energize_stacks": 0}],
-                [{"type": "white_knight"}],
-                [{"type": "white_rook"}],
-            ],
-        ],
+        "board_state": starting_game["board_state"],
         "possible_moves": [],
         "possible_captures": [],
         "captured_pieces": {"white": [], "black": []},
@@ -184,6 +158,12 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                     # TODO: incorporate other piece types here
                     if "pawn" in moved_piece["piece"]["type"]:
                         moves_info = moves.get_moves_for_pawn(
+                            curr_game_state=old_game_state, 
+                            prev_game_state=old_game_state.get("previous_state"), 
+                            curr_position=moved_piece["previous_position"]
+                        )
+                    if "knight" in moved_piece["piece"]["type"]:
+                        moves_info = moves.get_moves_for_knight(
                             curr_game_state=old_game_state, 
                             prev_game_state=old_game_state.get("previous_state"), 
                             curr_position=moved_piece["previous_position"]
@@ -347,6 +327,12 @@ def update_game_state(id, state: GameState, response: Response, player = True):
             # TODO: incorporate other piece types here
             if "pawn" in piece_in_play["type"]:
                 moves_info = moves.get_moves_for_pawn(
+                    curr_game_state=old_game_state, 
+                    prev_game_state=old_game_state.get("previous_state"), 
+                    curr_position=new_game_state["position_in_play"]
+                )
+            if "knight" in piece_in_play["type"]:
+                moves_info = moves.get_moves_for_knight(
                     curr_game_state=old_game_state, 
                     prev_game_state=old_game_state.get("previous_state"), 
                     curr_position=new_game_state["position_in_play"]

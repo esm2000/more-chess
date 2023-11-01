@@ -3,6 +3,42 @@ import src.moves as moves
 from mocks.empty_game import empty_game
 
 
+def test_pawn_movement():
+    ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|wp|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|
+
+    ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|bp|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|
+    for i in range(2):
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_pawn"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        prev_game_state["board_state"][2 if i else 4][3] = copy.deepcopy(curr_game_state["board_state"][5 if i else 2][3])
+        prev_game_state["board_state"][3][3] = None
+
+        curr_position = [3, 3]
+
+        possible_moves_and_captures = moves.get_moves_for_pawn(curr_game_state, prev_game_state, curr_position)
+        assert [[4 if i else 2, 3]] == sorted(possible_moves_and_captures["possible_moves"])
+        assert len(possible_moves_and_captures["possible_captures"]) == 0
+
+
+
 def test_pawn_capture():
     ##    0  1  2  3  4  5  6  7
     ## 0 |__|##|__|##|__|##|__|##|

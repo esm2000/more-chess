@@ -1,6 +1,7 @@
 import copy
 import src.moves as moves
 from mocks.empty_game import empty_game
+from mocks.starting_game import starting_game
 
 
 def test_knight_movement():
@@ -236,12 +237,74 @@ def test_knight_cant_capture_king():
 
 
 def test_knight_overflow():
-    pass
+    for i in range(2):
+        relative_positions = [[1, 2], [-1, 2], [1, -2], [-1, -2], [2, 1], [-2, 1], [2, -1], [-2, -1]]
+        rows_and_columns = [0, 1, 6, 7]
+
+        for row in rows_and_columns:
+            for col in rows_and_columns:
+                curr_game_state = copy.deepcopy(empty_game)
+                curr_game_state["board_state"][row][col] = [{"type": f"{'white' if not i else 'black'}_knight"}]
+                prev_game_state = copy.deepcopy(curr_game_state)
+                for relative_position in relative_positions:
+                    ending_position = [relative_position[0] + row, relative_position[1] + col]
+                    possible_moves_and_captures = moves.get_moves_for_knight(curr_game_state, prev_game_state, [row, col])
+                    if ending_position[0] >= 8 or ending_position[1] >= 8 or ending_position[0] < 0 or ending_position[1] < 0:
+                        assert ending_position not in possible_moves_and_captures["possible_moves"]
+                    else:
+                        assert ending_position in possible_moves_and_captures["possible_moves"]
+                    assert len(possible_moves_and_captures["possible_captures"]) == 0
+
+def test_knight_interactions_with_neutral_monster():
+    ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|wk|##|__|##|__|
+    ## 4 |__|##|__|##|__|nd|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|
 
 
-def test_pawn_interactions_with_neutral_monster():
-    pass
+    ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|bk|##|__|##|__|
+    ## 4 |__|##|__|##|__|nd|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|
+
+    relative_positions = [[1, 2], [-1, 2], [1, -2], [-1, -2], [2, 1], [-2, 1], [2, -1], [-2, -1]]
+
+    for i in range(2):
+        for health in [5, 1]:
+            for monster in ["dragon", "baron_nashor", "board_herald"]:
+                for relative_position in relative_positions:
+                    monster_position = [3 + relative_position[0], 3 + relative_position[1]]
+                    curr_game_state = copy.deepcopy(empty_game)
+                    curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_knight"}]
+                    curr_game_state["board_state"][monster_position[0]][monster_position[1]] = [
+                        {
+                            "type": f"neutral_{monster}",
+                            "health": health
+                        }
+                    ]
+                    possible_moves_and_captures = moves.get_moves_for_knight(curr_game_state, None, [3, 3])
+                    assert monster_position in possible_moves_and_captures["possible_moves"]
+                    if health > 1:
+                        assert len(possible_moves_and_captures["possible_captures"]) == 0
+                    else:
+                        assert [[monster_position, monster_position]] == possible_moves_and_captures["possible_captures"]
 
 
 def test_knight_starting_position():
-    pass
+    curr_game_state = copy.deepcopy(starting_game)
+    starting_positions = [[0, 1], [0, 6], [7, 1], [7, 6]]
+
+    for starting_position in starting_positions:
+        possible_moves_and_captures = moves.get_moves_for_knight(curr_game_state, None, [starting_position[0], starting_position[1]])
+        assert len(possible_moves_and_captures["possible_moves"]) == 0
+        assert len(possible_moves_and_captures["possible_captures"]) == 0

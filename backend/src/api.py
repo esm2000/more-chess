@@ -5,6 +5,7 @@ import logging
 from pydantic import BaseModel, Extra
 from typing import Union
 
+from mocks.starting_game import starting_game
 import src.moves as moves
 from src.database import mongo_client
 from src.logging import logger
@@ -40,34 +41,7 @@ def create_game():
     game_state = {
         "turn_count": 0,
         "position_in_play": [None, None],
-        "board_state": [
-            [
-                [{"type": "black_rook"}],
-                [{"type": "black_knight"}],
-                [{"type": "black_bishop", "energize_stacks": 0}],
-                [{"type": "black_queen"}],
-                [{"type": "black_king"}],
-                [{"type": "black_bishop", "energize_stacks": 0}],
-                [{"type": "black_knight"}],
-                [{"type": "black_rook"}],
-            ],
-            [[{"type": "black_pawn", "pawn_buff": 0}]] * 8,
-            [None] * 8,
-            [None] * 8,
-            [None] * 8,
-            [None] * 8,
-            [[{"type": "white_pawn", "pawn_buff": 0}]] * 8,
-            [
-                [{"type": "white_rook"}],
-                [{"type": "white_knight"}],
-                [{"type": "white_bishop", "energize_stacks": 0}],
-                [{"type": "white_queen"}],
-                [{"type": "white_king"}],
-                [{"type": "white_bishop", "energize_stacks": 0}],
-                [{"type": "white_knight"}],
-                [{"type": "white_rook"}],
-            ],
-        ],
+        "board_state": starting_game["board_state"],
         "possible_moves": [],
         "possible_captures": [],
         "captured_pieces": {"white": [], "black": []},

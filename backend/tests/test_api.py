@@ -36,13 +36,23 @@ def test_game_created(game):
     assert game["turn_count"] == 0
     assert game["position_in_play"] == [None, None]
     pieces = ["rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"]
-    pieces += ["pawn"] * 8
-    for i, black_piece in enumerate(game["board_state"][0] + game["board_state"][1]):
+    for i, black_piece in enumerate(game["board_state"][0]):
         assert "black" in black_piece[0]["type"]
         assert pieces[i] in black_piece[0]["type"]
+    for i, black_piece in enumerate(game["board_state"][1]):
+        if i == 3:
+            continue
+        assert "black" in black_piece[0]["type"]
+        assert "pawn" in black_piece[0]["type"]
     for row in [2, 3, 4, 5]:
         for col in range(8):
-            assert game["board_state"][row][col] is None
+            if row == 2 and col == 3:
+                assert "black" in black_piece[0]["type"]
+                assert "pawn" in black_piece[0]["type"]
+            else:
+                assert game["board_state"][row][col] is None
+    pieces = ["rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"]
+    pieces += ["pawn"] * 8
     for i, white_piece in enumerate(game["board_state"][7] + game["board_state"][6]):
         assert "white" in white_piece[0]["type"]
         assert pieces[i] in white_piece[0]["type"]

@@ -10,8 +10,26 @@ starting_game = {
             [{"type": "black_knight"}],
             [{"type": "black_rook"}],
         ],
-        [[{"type": "black_pawn", "pawn_buff": 0}]] * 8,
-        [None] * 8,
+        [
+            [{"type": "black_pawn", "pawn_buff": 0}], 
+            [{"type": "black_pawn", "pawn_buff": 0}],
+            [{"type": "black_pawn", "pawn_buff": 0}],
+            None,
+            [{"type": "black_pawn", "pawn_buff": 0}],
+            [{"type": "black_pawn", "pawn_buff": 0}],
+            [{"type": "black_pawn", "pawn_buff": 0}],
+            [{"type": "black_pawn", "pawn_buff": 0}]
+        ],
+        [
+            None,
+            None,
+            None,
+            [{"type": "black_pawn", "pawn_buff": 0}],
+            None,
+            None,
+            None,
+            None
+        ],
         [None] * 8,
         [None] * 8,
         [None] * 8,

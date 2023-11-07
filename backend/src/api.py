@@ -93,6 +93,13 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     #   },
     #   ...
     # }
+
+    # TODO: iterate through moved pieces to check to see if a bishop has moved from its previous position and hasn't been bought 
+    # and add energize stacks based on its movement (5 energize stacks for each square moved, 10 energize stacks for each piece captured)
+
+    # TODO: iterate through moved pieces to check to see if bishop is threatening to capture a piece and apply debuff
+
+    # TODO: if any pieces on the board have gained third bishop debuff, retain last player's turn until they've spared or captured it
     is_valid_game_state = True
     move_count_for_white = 0 
     move_count_for_black = 0
@@ -120,7 +127,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     # do not allow for updates to graveyard
     new_game_state["graveyard"] = old_game_state["graveyard"]
 
-        # if more than one pieces for one side has moved and its not a castle, invalidate
+    # if more than one pieces for one side has moved and its not a castle, invalidate
     for side in old_game_state["captured_pieces"]:
         count_of_pieces_on_new_state = 0
         has_king_moved = False

@@ -466,3 +466,11 @@ def test_alter_game(game):
             assert len(game["board_state"][0 if not i else 7][3]) == 1
             assert game["board_state"][0 if not i else 7][3][0]["type"] == f"{'white' if not i else 'black'}_{piece_type}"
             assert game["previous_state"]["board_state"][0 if not i else 7][3][0]["type"] == f"{'white' if not i else 'black'}_pawn"
+
+
+def test_energize_stacks():
+    pass
+
+
+def test_bishop_debuff_application():
+    pass

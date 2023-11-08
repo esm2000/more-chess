@@ -308,3 +308,7 @@ def test_knight_starting_position():
         possible_moves_and_captures = moves.get_moves_for_knight(curr_game_state, None, [starting_position[0], starting_position[1]])
         assert len(possible_moves_and_captures["possible_moves"]) == 0
         assert len(possible_moves_and_captures["possible_captures"]) == 0
+
+
+def test_knight_capturing_adjacent_bishop():
+    pass

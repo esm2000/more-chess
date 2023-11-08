@@ -192,3 +192,21 @@ def evaluate_current_position(curr_position, curr_game_state):
         raise Exception(f"Invalid position, {curr_position}, out of bounds")
     if not curr_game_state["board_state"][curr_position[0]][curr_position[1]]:
         raise Exception(f"No piece at position {curr_position}")
+
+
+def enable_adjacent_bishop_captures(curr_game_state, side, possible_moves_dict):
+    adjacent_squares = [[1, 1], [1, -1], [-1, -1], [-1, 1]]
+    opposing_side = "white" if side == "black" else "black"
+    # iterate through possible moves
+    for possible_move in possible_moves_dict["possible_moves"]:
+        # iterate through every adjacent square
+        for adjacent_square in adjacent_squares:
+            potential_bishop_square = [possible_move[0] + adjacent_square[0], possible_move[1] + adjacent_square[1]]
+            # continue if square is out of bounds 
+            if potential_bishop_square[0] < 0 or potential_bishop_square[0] > 7 or potential_bishop_square[1] < 0 or potential_bishop_square[1] > 7:
+                continue
+            # if there's a bishop from the opposing side present in an adjacent square,
+            # add it to the capture_moves
+            if any(piece.get("type") == f"{opposing_side}_bishop" for piece in curr_game_state[potential_bishop_square[0]][potential_bishop_square[1]]):
+                possible_moves_dict["possible_captures"].append([possible_move, potential_bishop_square])
+    return possible_moves_dict

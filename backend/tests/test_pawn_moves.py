@@ -476,3 +476,6 @@ def test_pawn_en_passant_capture():
         assert sorted([[5 if i else 2, 4], [5 if i else 2, 3]]) == sorted(possible_moves_and_captures["possible_moves"])
         assert [[[5 if i else 2, 3], [4 if i else 3, 3]]] == possible_moves_and_captures["possible_captures"]
     
+
+def test_pawn_capturing_adjacent_bishop():
+    pass

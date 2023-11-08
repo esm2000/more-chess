@@ -1,17 +1,21 @@
-from src.utility import evaluate_current_position
+from src.utility import enable_adjacent_bishop_captures, evaluate_current_position
 
 
 def get_moves():
     pass
 
-# TODO: come up with solution for bishops being able to be captured by landing on an adjacent square
+
+def process_possible_moves_dict(curr_game_state, side, possible_moves_dict):
+    possible_moves_dict = enable_adjacent_bishop_captures(curr_game_state, side, possible_moves_dict)
+    possible_moves_dict["possible_captures"] = list(set(possible_moves_dict["possible_captures"]))
+    return possible_moves_dict
+
 
 # get_moves_for_x() returns possible_moves_dict
 # {
 #   "possible_moves": [[row, col], ...] - positions where piece can move
 #   "possible_captures": [[[row, col], [row, col]], ...] - first position is where piece has to move to capture piece in second position
 # }
-
 def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
     evaluate_current_position(curr_position, curr_game_state)
     piece_in_play = None
@@ -112,7 +116,7 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
             possible_captures.append([[curr_position[0] + (-1 if side == "white" else 1), lateral_position[1]], [curr_position[0] , lateral_position[1]]])
     
     
-    return {"possible_moves": possible_moves, "possible_captures": possible_captures}
+    return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
 
 
 def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
@@ -188,7 +192,7 @@ def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
                         if piece.get("health", 0) == 1:
                             possible_captures.append([potential_position, potential_position])
 
-    return {"possible_moves": possible_moves, "possible_captures": possible_captures}
+    return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
                     
 def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
     evaluate_current_position(curr_position, curr_game_state)
@@ -234,7 +238,8 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
             possible_position[0] += direction[0]
             possible_position[1] += direction[1]
 
-    return {"possible_moves": possible_moves, "possible_captures": possible_captures}
+    return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
+
 
 def get_moves_for_rook():
     pass

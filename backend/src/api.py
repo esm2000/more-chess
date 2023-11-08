@@ -100,6 +100,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     # TODO: iterate through moved pieces to check to see if bishop is threatening to capture a piece and apply debuff
 
     # TODO: if any pieces on the board have gained third bishop debuff, retain last player's turn until they've spared or captured it
+    
     is_valid_game_state = True
     move_count_for_white = 0 
     move_count_for_black = 0

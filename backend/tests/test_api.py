@@ -468,7 +468,7 @@ def test_alter_game(game):
             assert game["previous_state"]["board_state"][0 if not i else 7][3][0]["type"] == f"{'white' if not i else 'black'}_pawn"
 
 
-def test_energize_stacks():
+def test_bishop_energize_stacks():
     pass
 
 

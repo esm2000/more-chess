@@ -94,13 +94,32 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     #   ...
     # }
 
-    # TODO: iterate through moved pieces to check to see if a bishop has moved from its previous position and hasn't been bought 
+    # iterate through moved pieces to check to see if a bishop has moved from its previous position and hasn't been bought/captured 
     # and add energize stacks based on its movement (5 energize stacks for each square moved, 10 energize stacks for each piece captured)
+    for i, moved_piece in enumerate(moved_pieces):
+        if "bishop" in moved_piece["piece"] and moved_piece["previous_position"][0] and moved_piece["current_position"][0]:
+            # should be a good measure of how many diagonal squares the bishop has traveled
+            distance_moved = abs(moved_piece["previous_position"][0] - moved_piece["current_position"][0])
+            energize_stacks_to_add = 5 * distance_moved
+            moves_info = moves.get_moves_for_bishop(
+                curr_game_state=old_game_state, 
+                prev_game_state=old_game_state.get("previous_state"), 
+                curr_position=moved_piece["previous_position"]
+            )
 
+            for j, piece in enumerate(moved_pieces):
+                if i == j or piece["current_position"][0] is not None:
+                    continue
+                if any(capture_positions[0] == moved_piece["current_position"] and capture_positions[1] == piece["previous_position"] for capture_positions in moves_info["possible_captures"]):
+                    energize_stacks_to_add += 10
+
+            new_game_state["board_state"][moved_piece["current_position"][0]][moved_piece["current_position"][1]]["energize_stacks"] += energize_stacks_to_add
+            if new_game_state["board_state"][moved_piece["current_position"][0]][moved_piece["current_position"][1]]["energize_stacks"] > 100:
+                new_game_state["board_state"][moved_piece["current_position"][0]][moved_piece["current_position"][1]]["energize_stacks"] = 100
     # TODO: iterate through moved pieces to check to see if bishop is threatening to capture a piece and apply debuff
 
     # TODO: if any pieces on the board have gained third bishop debuff, retain last player's turn until they've spared or captured it
-    
+
     is_valid_game_state = True
     move_count_for_white = 0 
     move_count_for_black = 0

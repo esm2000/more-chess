@@ -116,8 +116,22 @@ def update_game_state(id, state: GameState, response: Response, player = True):
             new_game_state["board_state"][moved_piece["current_position"][0]][moved_piece["current_position"][1]]["energize_stacks"] += energize_stacks_to_add
             if new_game_state["board_state"][moved_piece["current_position"][0]][moved_piece["current_position"][1]]["energize_stacks"] > 100:
                 new_game_state["board_state"][moved_piece["current_position"][0]][moved_piece["current_position"][1]]["energize_stacks"] = 100
-    # TODO: iterate through moved pieces to check to see if bishop is threatening to capture a piece and apply debuff
+    
+    # iterate through moved pieces to check to see if bishop is threatening to capture a piece and apply debuff
 
+            future_moves_info = moves.get_moves_for_bishop(
+                curr_game_state=new_game_state, 
+                prev_game_state=old_game_state, 
+                curr_position=moved_piece["current_position"]
+            )
+
+            for future_move in future_moves_info:
+                for j in range(len(new_game_state[future_move["possible_captures"][1][0]][future_move["possible_captures"][1][1]])):
+                    if "bishop_debuff" not in new_game_state[future_move["possible_captures"][1][0]][future_move["possible_captures"][1][1]][j]:
+                        new_game_state[future_move["possible_captures"][1][0]][future_move["possible_captures"][1][1]][j]["bishop_debuff"] = 1
+                    elif new_game_state[future_move["possible_captures"][1][0]][future_move["possible_captures"][1][1]][j]["bishop_debuff"] < 3:
+                        new_game_state[future_move["possible_captures"][1][0]][future_move["possible_captures"][1][1]][j]["bishop_debuff"] += 1
+                    
     # TODO: if any pieces on the board have gained third bishop debuff, retain last player's turn until they've spared or captured it
 
     is_valid_game_state = True

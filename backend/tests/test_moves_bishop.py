@@ -205,8 +205,61 @@ def test_bishop_blocked():
 
 
 def test_bishop_cant_capture_king():
-    pass
+    # white square                      # black square
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__| 
+    ## 2 |__|##|__|##|bK|##|__|##|      ## 2 |__|##|__|bK|__|##|__|##|
+    ## 3 |##|__|##|wb|##|__|##|__|      ## 3 |##|__|##|__|wb|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
 
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__| 
+    ## 2 |__|##|__|##|wK|##|__|##|      ## 2 |__|##|__|wK|__|##|__|##|
+    ## 3 |##|__|##|bb|##|__|##|__|      ## 3 |##|__|##|__|bb|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    # white square
+    king_positions = [[2, 4], [1, 1], [6, 0], [7, 7]]
+    for i in range(2):
+        for king_position in king_positions:
+            curr_game_state = copy.deepcopy(empty_game)
+            curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
+            curr_game_state["board_state"][king_position[0]][king_position[1]] = [{"type": f"{'black' if not i else 'white'}_king"}]
+
+            prev_game_state = copy.deepcopy(curr_game_state)
+
+            curr_position = [3, 3]
+
+            possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, prev_game_state, curr_position)
+
+            assert [king_position, king_position] not in possible_moves_and_captures["possible_captures"]
+            assert len(possible_moves_and_captures["possible_captures"]) == 0
+
+    # black square
+    king_positions = [[2, 3], [1, 6], [6, 7], [7, 0]]
+    for i in range(2):
+        for king_position in king_positions:
+            curr_game_state = copy.deepcopy(empty_game)
+            curr_game_state["board_state"][3][4] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
+            curr_game_state["board_state"][king_position[0]][king_position[1]] = [{"type": f"{'black' if not i else 'white'}_king"}]
+
+            prev_game_state = copy.deepcopy(curr_game_state)
+
+            curr_position = [3, 4]
+
+            possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, prev_game_state, curr_position)
+
+            assert [king_position, king_position] not in possible_moves_and_captures["possible_captures"]
+            assert len(possible_moves_and_captures["possible_captures"]) == 0
+            
 
 def test_bishop_interactions_with_neutral_monster():
     pass

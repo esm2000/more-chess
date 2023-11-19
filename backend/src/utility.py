@@ -207,6 +207,7 @@ def enable_adjacent_bishop_captures(curr_game_state, side, possible_moves_dict):
                 continue
             # if there's a bishop from the opposing side present in an adjacent square,
             # add it to the capture_moves
-            if any(piece.get("type") == f"{opposing_side}_bishop" for piece in curr_game_state[potential_bishop_square[0]][potential_bishop_square[1]]):
+            if curr_game_state["board_state"][potential_bishop_square[0]][potential_bishop_square[1]] and \
+            any(piece.get("type") == f"{opposing_side}_bishop" for piece in curr_game_state["board_state"][potential_bishop_square[0]][potential_bishop_square[1]]):
                 possible_moves_dict["possible_captures"].append([possible_move, potential_bishop_square])
     return possible_moves_dict

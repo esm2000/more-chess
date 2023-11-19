@@ -1,3 +1,5 @@
+import copy
+
 from src.utility import enable_adjacent_bishop_captures, evaluate_current_position
 
 
@@ -7,7 +9,12 @@ def get_moves():
 
 def process_possible_moves_dict(curr_game_state, side, possible_moves_dict):
     possible_moves_dict = enable_adjacent_bishop_captures(curr_game_state, side, possible_moves_dict)
-    possible_moves_dict["possible_captures"] = list(set(possible_moves_dict["possible_captures"]))
+    # remove duplicates
+    possible_captures_with_no_duplicates = []
+    for entry in possible_moves_dict["possible_captures"]:
+        if entry not in possible_captures_with_no_duplicates:
+            possible_captures_with_no_duplicates.append(copy.deepcopy(entry))
+    possible_moves_dict["possible_captures"] = possible_captures_with_no_duplicates
     return possible_moves_dict
 
 
@@ -224,9 +231,9 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
                 # check for a piece from the opposing side, add piece's position to the possible_moves and possible_captures
                 # (UNLESS IT'S A KING) and break out of the current loop 
                 if any(opposing_side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
-                    if all(f"{opposing_side}_king" != piece["type"] for piece in curr_game_state[possible_position[0]][possible_position[1]]):
+                    if all(f"{opposing_side}_king" != piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                         possible_moves.append(possible_position.copy())
-                        possible_captures.append([[possible_position.copy()], [possible_position.copy()]])
+                        possible_captures.append([possible_position.copy(), possible_position.copy()])
                     break
                 # check for a neutral monster, add monster's position to possible_moves and only add monster's position 
                 # to possible_captures if it has a health of 1. Then break
@@ -234,7 +241,7 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
                     possible_moves.append(possible_position.copy())
                     for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]:
                         if "neutral" in piece["type"] and piece.get("health", 0) == 1:
-                            possible_captures.append([[possible_position.copy()], [possible_position.copy()]])
+                            possible_captures.append([possible_position.copy(), possible_position.copy()])
             possible_position[0] += direction[0]
             possible_position[1] += direction[1]
 

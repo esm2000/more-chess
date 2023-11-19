@@ -2,6 +2,7 @@ import copy
 
 import src.moves as moves
 from mocks.empty_game import empty_game
+from mocks.starting_game import starting_game
 
 def test_bishop_movement():
     ##    0  1  2  3  4  5  6  7
@@ -259,14 +260,94 @@ def test_bishop_cant_capture_king():
 
             assert [king_position, king_position] not in possible_moves_and_captures["possible_captures"]
             assert len(possible_moves_and_captures["possible_captures"]) == 0
-            
+
 
 def test_bishop_interactions_with_neutral_monster():
-    pass
+    # white square                      # black square
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__| 
+    ## 2 |__|##|__|##|nd|##|__|##|      ## 2 |__|##|__|nd|__|##|__|##|
+    ## 3 |##|__|##|wb|##|__|##|__|      ## 3 |##|__|##|__|wb|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__| 
+    ## 2 |__|##|__|##|nd|##|__|##|      ## 2 |__|##|__|nd|__|##|__|##|
+    ## 3 |##|__|##|bb|##|__|##|__|      ## 3 |##|__|##|__|bb|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    # white square
+    neutral_monster_positions = [[2, 4], [1, 1], [6, 0], [7, 7]]
+    for i in range(2):
+        for neutral_monster_position in neutral_monster_positions:
+            for health in [5, 1]:
+                for monster in ["dragon", "baron_nashor", "board_herald"]:
+                    curr_game_state = copy.deepcopy(empty_game)
+                    curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
+                    curr_game_state["board_state"][neutral_monster_position[0]][neutral_monster_position[1]] = [{
+                        "type": f"neutral_{monster}",
+                        "health": health
+                    }]
+
+                    prev_game_state = copy.deepcopy(curr_game_state)
+
+                    curr_position = [3, 3]
+
+                    possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, prev_game_state, curr_position)
+                    assert neutral_monster_position in possible_moves_and_captures["possible_moves"]
+
+                    if health == 1:
+                        assert [[neutral_monster_position, neutral_monster_position]] == possible_moves_and_captures["possible_captures"]
+                    else:
+                        assert [neutral_monster_position, neutral_monster_position] not in possible_moves_and_captures["possible_captures"]
+                        assert len(possible_moves_and_captures["possible_captures"]) == 0
+
+    # black square
+    neutral_monster_positions = [[2, 3], [1, 6], [6, 7], [7, 0]]
+    for i in range(2):
+        for neutral_monster_position in neutral_monster_positions:
+            for health in [5, 1]:
+                for monster in ["dragon", "baron_nashor", "board_herald"]:
+                    curr_game_state = copy.deepcopy(empty_game)
+                    curr_game_state["board_state"][3][4] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
+                    curr_game_state["board_state"][neutral_monster_position[0]][neutral_monster_position[1]] = [{
+                        "type": f"neutral_{monster}",
+                        "health": health
+                    }]
+
+                    prev_game_state = copy.deepcopy(curr_game_state)
+
+                    curr_position = [3, 4]
+
+                    possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, prev_game_state, curr_position)
+                    assert neutral_monster_position in possible_moves_and_captures["possible_moves"]
+
+                    if health == 1:
+                        assert [[neutral_monster_position, neutral_monster_position]] == possible_moves_and_captures["possible_captures"]
+                    else:
+                        assert [neutral_monster_position, neutral_monster_position] not in possible_moves_and_captures["possible_captures"]
+                        assert len(possible_moves_and_captures["possible_captures"]) == 0
 
 
 def test_bishop_starting_position():
-    pass
+    curr_game_state = copy.deepcopy(starting_game)
+    starting_positions = [[0, 2], [0, 5], [7, 2], [7, 5]]
+
+    for starting_position in starting_positions:
+        possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, None, [starting_position[0], starting_position[1]])
+        if starting_position != [0, 2]:
+            assert len(possible_moves_and_captures["possible_moves"]) == 0
+        else:
+            assert sorted([[1, 3], [2, 4], [3, 5], [4, 6], [5, 7]]) == sorted(possible_moves_and_captures["possible_moves"])
+        assert len(possible_moves_and_captures["possible_captures"]) == 0
 
 
 def test_bishop_capturing_adjacent_bishop():

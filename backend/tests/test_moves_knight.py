@@ -181,7 +181,6 @@ def test_knight_blocked():
 
                     assert enemy_position not in possible_moves_and_captures["possible_moves"]
                     assert [enemy_position, enemy_position] not in possible_moves_and_captures["possible_captures"]
-                    print(f"expected_positions = {expected_positions}")
 
                     # blocking the paths to one possible move can possibly block the path to another possible move
                     # TODO: (nice to have) tighten up validation so that we validate the expected positions exactly

@@ -23,6 +23,8 @@ def test_bishop_movement():
     ## 5 |##|__|##|__|##|__|##|__|
     ## 6 |__|##|__|##|__|##|__|##|
     ## 7 |##|__|##|__|##|__|##|__|
+
+    # white square
     for i in range(2):
         curr_game_state = copy.deepcopy(empty_game)
         curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
@@ -35,6 +37,21 @@ def test_bishop_movement():
         assert sorted([
             [0, 0], [1, 1], [2, 2], [4, 4], [5, 5], [6, 6], [7, 7], 
             [6, 0], [5, 1], [4, 2], [2, 4], [1, 5], [0, 6]
+        ]) == sorted(possible_moves_and_captures["possible_moves"])
+        assert len(possible_moves_and_captures["possible_captures"]) == 0
+    # black square 
+    for i in range(2):
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][3][4] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+
+        curr_position = [3, 4]
+
+        possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, prev_game_state, curr_position)
+        assert sorted([
+            [7, 0], [6, 1], [5, 2], [4, 3], [2, 5], [1, 6], [0, 7],
+            [0, 1], [1, 2], [2, 3], [4, 5], [5, 6], [6, 7]
         ]) == sorted(possible_moves_and_captures["possible_moves"])
         assert len(possible_moves_and_captures["possible_captures"]) == 0
 

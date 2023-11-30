@@ -468,8 +468,31 @@ def test_alter_game(game):
             assert game["previous_state"]["board_state"][0 if not i else 7][3][0]["type"] == f"{'white' if not i else 'black'}_pawn"
 
 
-def test_bishop_energize_stacks():
-    pass
+def test_bishop_energize_stacks(game):
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["turn_count"] = 0
+    game_on_next_turn["board_state"] = copy.deepcopy(empty_game["board_state"])
+    
+    
+    game_on_next_turn["board_state"][3][3] = [{"type": "white_bishop", "energize_stacks": 0}]
+    game_on_next_turn["board_state"][1][1] = [{"type": "black_pawn", "pawn_buff": 0}]
+    game_on_next_turn["graveyard"] = []
+    game_on_next_turn["gold_count"] = {
+        "white": 0,
+        "black": 0
+    }
+    game_on_next_turn["captured_pieces"] = {"white": [], "black": []}
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][1][1] = [{"type": "white_bishop", "energize_stacks": 0}]
+    game_on_next_turn["board_state"][3][3] = None
+    game_on_next_turn["captured_pieces"]["white"].append(f"black_pawn")
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["board_state"][1][1][0]["energize_stacks"] == 20
 
 
 def test_bishop_debuff_application():

@@ -134,11 +134,11 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                     if not new_game_state["board_state"][position_of_piece_in_danger[0]][position_of_piece_in_danger[1]]:
                         continue
                     for piece in new_game_state["board_state"][position_of_piece_in_danger[0]][position_of_piece_in_danger[1]]:
-                        if piece != opposing_side:
+                        if opposing_side not in piece.get('type'):
                             continue
                         if "bishop_debuff" not in piece:
                             piece["bishop_debuff"] = 1
-                        elif piece["bishop_debuf"] < 3:
+                        elif piece["bishop_debuff"] < 3:
                             piece["bishop_debuff"] += 1
                     
     # TODO: if any pieces on the board have gained third bishop debuff, retain last player's turn until they've spared or captured it

@@ -371,7 +371,7 @@ def test_bishop_capturing_adjacent_bishop():
 
         # moving to [1, 5] would allow the capturing of [1, 5] and [2, 5], 
         # moving to [2, 4] would allow the capturing of [2, 5]
-        assert possible_moves_and_captures["possible_captures"] == [
+        assert sorted(possible_moves_and_captures["possible_captures"]) == sorted([
             [
                 [1, 5], 
                 [1, 5]
@@ -384,4 +384,4 @@ def test_bishop_capturing_adjacent_bishop():
                 [1, 5], 
                 [2, 5]
             ]
-        ]
+        ])

@@ -265,6 +265,9 @@ def update_game_state(id, state: GameState, response: Response, player = True):
         logger.error("More than one side have pieces that have moved")
         is_valid_game_state = False
 
+    # TODO: before capture_positions is altered in this for loop,
+    # check that if a piece moved to a specific positions, all pieces that are supposed to be eliminated from that move are eliminated
+    # since its possible to capture more than one piece a turn
     was_neutral_monster_killed = False
     for moved_piece in moved_pieces:
         # if a neutral monster moves invalidate

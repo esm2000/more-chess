@@ -351,4 +351,37 @@ def test_bishop_starting_position():
 
 
 def test_bishop_capturing_adjacent_bishop():
-    pass
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|bp|##|__|      ## 1 |##|__|##|__|##|wp|##|__|
+    ## 2 |__|##|__|##|__|bb|__|##|      ## 2 |__|##|__|##|__|wb|__|##|
+    ## 3 |##|__|##|wb|##|__|##|__|      ## 3 |##|__|##|bb|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+    
+    for i in range(2):
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
+        curr_game_state["board_state"][1][5] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][2][5] = [{"type": f"{'black' if not i else 'white'}_bishop"}]
+
+        possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, None, [3, 3])
+
+        # moving to [1, 5] would allow the capturing of [1, 5] and [2, 5], 
+        # moving to [2, 4] would allow the capturing of [2, 5]
+        assert possible_moves_and_captures["possible_captures"] == [
+            [
+                [1, 5], 
+                [1, 5]
+            ], 
+            [
+                [2, 4], 
+                [2, 5]
+            ], 
+            [
+                [1, 5], 
+                [2, 5]
+            ]
+        ]

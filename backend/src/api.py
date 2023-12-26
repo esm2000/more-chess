@@ -393,7 +393,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                     prev_game_state=old_game_state.get("previous_state"), 
                     curr_position=new_game_state["position_in_play"]
                 )
-            if "bishop" in moved_piece["piece"]["type"]:
+            if "bishop" in piece_in_play["type"]:
                 moves_info = moves.get_moves_for_bishop(
                     curr_game_state=old_game_state, 
                     prev_game_state=old_game_state.get("previous_state"), 

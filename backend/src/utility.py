@@ -195,7 +195,7 @@ def evaluate_current_position(curr_position, curr_game_state):
 
 
 def enable_adjacent_bishop_captures(curr_game_state, side, possible_moves_dict):
-    adjacent_squares = [[1, 1], [1, -1], [-1, -1], [-1, 1]]
+    adjacent_squares = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
     opposing_side = "white" if side == "black" else "black"
     # iterate through possible moves
     for possible_move in possible_moves_dict["possible_moves"]:

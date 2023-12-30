@@ -158,7 +158,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
     - getPossibleMoves() (ignore buff logic for now)
         - getPossibleMovesForPawn() ✅
         - getPossibleMovesForKnignt() ✅
-        - getPossibleMovesForBishop()
+        - getPossibleMovesForBishop() ✅
         - getPossibleMovesForRook()
         - getPossibleMovesForQueen()
         - getPossibleMovesForKing() - to determine check and checkmate will possible involve looping through every enemy piece's getPossibleMoves()

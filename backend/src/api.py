@@ -70,6 +70,14 @@ def retrieve_game_state(id, response: Response):
     return game_state
 
 
+@router.delete("/game/{id}")
+def delete_game(id):
+    query = {"_id": ObjectId(id)}
+    game_database = mongo_client["game_db"]
+    game_database["games"].delete_one(query)
+    return {"message": "Success"}
+
+
 @router.put("/game/{id}", status_code=200)
 def update_game_state(id, state: GameState, response: Response, player = True):
     new_game_state = dict(state)
@@ -484,11 +492,3 @@ def update_game_state_no_restrictions(id, state: GameState, response: Response):
     game_database = mongo_client["game_db"]
     game_database["games"].update_one(query, new_values)
     return retrieve_game_state(id, response)
-
-
-@router.delete("/game/{id}")
-def delete_game(id):
-    query = {"_id": ObjectId(id)}
-    game_database = mongo_client["game_db"]
-    game_database["games"].delete_one(query)
-    return {"message": "Success"}

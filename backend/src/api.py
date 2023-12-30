@@ -108,7 +108,9 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     # 1. iterate through moved pieces to check for pieces that have moved
     while moved_pieces_pointer < len(moved_pieces):
         moved_piece = moved_pieces[moved_pieces_pointer]
-        if moved_piece["previous_position"][0] is None or moved_piece["current_position"][1] is None:
+        if moved_piece["previous_position"][0] is None or \
+        moved_piece["current_position"][1] is None or \
+        moved_piece["side"] == "neutral":
             moved_pieces_pointer += 1
             continue        
     # 2. get the moves and captures possible for the piece in its previous position

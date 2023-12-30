@@ -94,13 +94,84 @@ def update_game_state(id, state: GameState, response: Response, player = True):
             
     # moved_pieces = [ 
     #   {
-    #       "piece": [{"type": "piece_type", ...}],
+    #       "piece": {"type": "piece_type", ...},
     #       "side": "",
     #       "previous_position": [],
     #       "current_position": []
     #   },
     #   ...
     # }
+
+    # facilitate adjacent capture 
+    # (while loop and manual pointer used since moved_pieces might be mutated)
+    moved_pieces_pointer = 0
+    # 1. iterate through moved pieces to check for pieces that have moved
+    while moved_pieces_pointer < len(moved_pieces):
+        moved_piece = moved_pieces[moved_pieces_pointer]
+        if moved_piece["previous_position"][0] is None or moved_piece["current_position"][1] is None:
+            continue        
+    # 2. get the moves and captures possible for the piece in its previous position
+        # moves_info = {
+        #   "possible_moves": [[row, col], ...] - positions where piece can move
+        #   "possible_captures": [[[row, col], [row, col]], ...] - first position is where piece has to move to capture piece in second position
+        # }
+        try:
+            # TODO: incorporate other piece types here
+            if "pawn" in moved_piece["piece"]["type"]:
+                moves_info = moves.get_moves_for_pawn(
+                    curr_game_state=old_game_state, 
+                    prev_game_state=old_game_state.get("previous_state"), 
+                    curr_position=moved_piece["previous_position"]
+                )
+            if "knight" in moved_piece["piece"]["type"]:
+                moves_info = moves.get_moves_for_knight(
+                    curr_game_state=old_game_state, 
+                    prev_game_state=old_game_state.get("previous_state"), 
+                    curr_position=moved_piece["previous_position"]
+                )
+            if "bishop" in moved_piece["piece"]["type"]:
+                moves_info = moves.get_moves_for_bishop(
+                    curr_game_state=old_game_state, 
+                    prev_game_state=old_game_state.get("previous_state"), 
+                    curr_position=moved_piece["previous_position"]
+                )
+        except Exception as e:
+            logger.error(f"Unable to determine move for {moved_piece['piece']} due to: {e}")
+            continue
+    # 3. iterate through possible captures, looking for the ones that match the current position
+
+        possible_captures = moves_info["possible_captures"]
+        for possible_capture in possible_captures:
+            if possible_capture[0] != moved_piece["current_position"]:
+                continue
+    # 4. check to see that there are captured pieces with previous positions that match each of the possible captures
+            adajacent_pieces_to_capture_found = True
+            for mp in moved_pieces:
+                if mp["current_position"][0] is None and mp["previous_position"] == possible_capture[1]:
+                    adajacent_pieces_to_capture_found = False
+    # 5. for the possible captures that aren't accounted for in moved pieces, add to moved pieces and remove from new game state
+    # and append to captured pieces
+            if adajacent_pieces_to_capture_found:
+                square = new_game_state["board_state"][possible_capture[1][0]][possible_capture[1][1]]
+                piece_pointer = 0
+                while piece_pointer < len(square):
+                    piece = square[piece_pointer]
+                    # if on opposing side add to moved pieces and remove from new game state
+                    if (moved_piece["side"] == "white" and "black" in piece["type"]) or \
+                    (moved_piece["side"] == "black" and "white" in piece["type"]) or \
+                    "neutral" in piece["type"] and piece["health"] == 1:
+                        if "health" in piece:
+                            piece["health"] = 0
+                        square.pop(piece_pointer)
+                        moved_pieces.append({
+                            "piece": piece,
+                            "side": piece["type"].split("_")[0],
+                            "previous_position": possible_capture[1],
+                            "current_position": [None, None]
+                        })
+                        new_game_state["captured_pieces"][moved_piece["side"]].append(piece["type"])
+                    piece_pointer += 1
+        moved_pieces_pointer += 1
 
     # iterate through moved pieces to check to see if a bishop has moved from its previous position and hasn't been bought/captured 
     # and add energize stacks based on its movement (5 energize stacks for each square moved, 10 energize stacks for each piece captured)
@@ -297,11 +368,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
             for capture_position in capture_positions:
                 if capture_position[1] == moved_piece["previous_position"]:
                     captured_piece_accounted_for = True
-                    capture_positions.remove(capture_position)
-        # if a piece was captured by another piece moving to adjacent square 
-        # we need to update captured_pieces with it 
-                if capture_position[0] != capture_position[1]:
-                    new_game_state["captured_pieces"][side].append(moved_piece["piece"]["type"])
+                    capture_positions.remove(capture_position)           
             
             if not captured_piece_accounted_for:
                 # check to see if captured piece was next to a neutral monster 

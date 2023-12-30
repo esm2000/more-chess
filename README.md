@@ -168,9 +168,6 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
     - ADVANCED enemy AI that plays as well as possible
     - MEDIUM enemy AI 
 
-##### Miscellaneous
-* Music (looping track with gameplay triggers) - something like https://www.instagram.com/reel/CtKyXtBo8Qm/?igshid=MzRlODBiNWFlZA==
-
 ##### Production-Ready Development
 * Restructure project for deployment ✅
 * Dockerize project with Dockerfile ✅
@@ -180,3 +177,9 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * Proofread and finalize README
 * Create a Kubernetes deployment script and a configuration file
 * Deploy
+
+##### Miscellaneous
+* Music (looping track with gameplay triggers) - something like https://www.instagram.com/reel/CtKyXtBo8Qm/?igshid=MzRlODBiNWFlZA==
+
+##### Known Bugs (to be addressed later)
+* "auto dark mode for web contents" experimental chrome feature (chrome://flags) messes up the color scheme

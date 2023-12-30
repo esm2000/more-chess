@@ -310,4 +310,38 @@ def test_knight_starting_position():
 
 
 def test_knight_capturing_adjacent_bishop():
-    pass
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|bb|##|__|      ## 1 |##|__|##|__|##|wb|##|__|
+    ## 2 |__|##|__|##|__|bp|__|##|      ## 2 |__|##|__|##|__|wp|__|##|
+    ## 3 |##|__|##|wk|##|__|##|__|      ## 3 |##|__|##|bk|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+    
+    for i in range(2):
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_knight"}]
+        curr_game_state["board_state"][1][5] = [{"type": f"{'black' if not i else 'white'}_bishop"}]
+        curr_game_state["board_state"][2][5] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+
+        possible_moves_and_captures = moves.get_moves_for_knight(curr_game_state, None, [3, 3])
+
+        # moving to [2, 5] would allow the capturing of [1, 5] and [2, 5]
+        # moving to [1, 4] would allow the capturing of [1, 5]
+        print(sorted(possible_moves_and_captures["possible_captures"]))
+        assert sorted(possible_moves_and_captures["possible_captures"]) == sorted([
+            [
+                [2, 5], 
+                [2, 5]
+            ], 
+            [
+                [2, 5], 
+                [1, 5]
+            ], 
+            [
+                [1, 4], 
+                [1, 5]
+            ]
+        ])

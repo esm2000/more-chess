@@ -109,6 +109,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     while moved_pieces_pointer < len(moved_pieces):
         moved_piece = moved_pieces[moved_pieces_pointer]
         if moved_piece["previous_position"][0] is None or moved_piece["current_position"][1] is None:
+            moved_pieces_pointer += 1
             continue        
     # 2. get the moves and captures possible for the piece in its previous position
         # moves_info = {
@@ -137,6 +138,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                 )
         except Exception as e:
             logger.error(f"Unable to determine move for {moved_piece['piece']} due to: {e}")
+            moved_pieces_pointer += 1
             continue
     # 3. iterate through possible captures, looking for the ones that match the current position
 
@@ -163,6 +165,8 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                         if "health" in piece:
                             piece["health"] = 0
                         square.pop(piece_pointer)
+                        if not square:
+                            new_game_state["board_state"][possible_capture[1][0]][possible_capture[1][1]] = None
                         moved_pieces.append({
                             "piece": piece,
                             "side": piece["type"].split("_")[0],

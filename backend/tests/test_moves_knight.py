@@ -330,7 +330,6 @@ def test_knight_capturing_adjacent_bishop():
 
         # moving to [2, 5] would allow the capturing of [1, 5] and [2, 5]
         # moving to [1, 4] would allow the capturing of [1, 5]
-        print(sorted(possible_moves_and_captures["possible_captures"]))
         assert sorted(possible_moves_and_captures["possible_captures"]) == sorted([
             [
                 [2, 5], 

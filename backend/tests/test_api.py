@@ -4,8 +4,7 @@ import pytest
 
 from mocks.empty_game import empty_game
 import src.api as api
-# for debugging
-from src.logging import logger
+
 
 @pytest.fixture
 def game():
@@ -466,3 +465,92 @@ def test_alter_game(game):
             assert len(game["board_state"][0 if not i else 7][3]) == 1
             assert game["board_state"][0 if not i else 7][3][0]["type"] == f"{'white' if not i else 'black'}_{piece_type}"
             assert game["previous_state"]["board_state"][0 if not i else 7][3][0]["type"] == f"{'white' if not i else 'black'}_pawn"
+
+
+def test_bishop_energize_stacks(game):
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["turn_count"] = 0
+    game_on_next_turn["board_state"] = copy.deepcopy(empty_game["board_state"])
+    
+    
+    game_on_next_turn["board_state"][3][3] = [{"type": "white_bishop", "energize_stacks": 0}]
+    game_on_next_turn["board_state"][1][1] = [{"type": "black_pawn", "pawn_buff": 0}]
+    game_on_next_turn["graveyard"] = []
+    game_on_next_turn["gold_count"] = {
+        "white": 0,
+        "black": 0
+    }
+    game_on_next_turn["captured_pieces"] = {"white": [], "black": []}
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][1][1] = [{"type": "white_bishop", "energize_stacks": 0}]
+    game_on_next_turn["board_state"][3][3] = None
+    game_on_next_turn["captured_pieces"]["white"].append(f"black_pawn")
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["board_state"][1][1][0]["energize_stacks"] == 20
+
+
+def test_bishop_debuff_application(game):
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["turn_count"] = 0
+    game_on_next_turn["board_state"] = copy.deepcopy(empty_game["board_state"])
+
+    game_on_next_turn["board_state"][0][0] = [{"type": "black_pawn"}]
+    game_on_next_turn["board_state"][0][6] = [{"type": "black_pawn", "bishop_debuff": 1}]
+    game_on_next_turn["board_state"][6][6] = [{"type": "black_pawn", "bishop_debuff": 2}]
+    game_on_next_turn["board_state"][6][0] = [{"type": "black_pawn", "bishop_debuff": 3}]
+    game_on_next_turn["board_state"][5][1] = [{"type": "white_bishop", "energize_stacks": 0}]
+
+    game_on_next_turn["graveyard"] = []
+    game_on_next_turn["gold_count"] = {
+        "white": 0,
+        "black": 0
+    }
+    game_on_next_turn["captured_pieces"] = {"white": [], "black": []}
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][5][1] = None 
+    game_on_next_turn["board_state"][3][3] = [{"type": "white_bishop", "energize_stacks": 0}]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["board_state"][0][0][0].get("bishop_debuff") == 1
+    assert game["board_state"][0][6][0].get("bishop_debuff") == 2
+    assert game["board_state"][6][6][0].get("bishop_debuff") == 3
+    assert game["board_state"][6][0][0].get("bishop_debuff") == 3
+
+
+def test_adjacent_capture_of_bishop(game):
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["turn_count"] = 0
+    game_on_next_turn["board_state"] = copy.deepcopy(empty_game["board_state"])
+
+    game_on_next_turn["graveyard"] = []
+    game_on_next_turn["gold_count"] = {
+        "white": 0,
+        "black": 0
+    }
+    game_on_next_turn["captured_pieces"] = {"white": [], "black": []}
+
+    game_on_next_turn["board_state"][3][3] = [{"type": "white_knight"}]
+    game_on_next_turn["board_state"][4][5] = [{"type": "black_pawn"}]
+    game_on_next_turn["board_state"][5][5] = [{"type": "black_bishop", "energize_stacks": 0}]
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][3][3] = None 
+    game_on_next_turn["board_state"][4][5] = [{"type": "white_knight"}]
+    game_on_next_turn["captured_pieces"]["white"].append(f"black_pawn")
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["board_state"][5][5] is None
+    assert sorted(game["captured_pieces"]["white"]) == sorted(["black_bishop", "black_pawn"])

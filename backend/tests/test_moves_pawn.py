@@ -476,3 +476,39 @@ def test_pawn_en_passant_capture():
         assert sorted([[5 if i else 2, 4], [5 if i else 2, 3]]) == sorted(possible_moves_and_captures["possible_moves"])
         assert [[[5 if i else 2, 3], [4 if i else 3, 3]]] == possible_moves_and_captures["possible_captures"]
     
+
+def test_pawn_capturing_adjacent_bishop():
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|bb|__|##|__|      ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|bp|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|wp|##|__|##|__|      ## 3 |##|__|##|bk|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|wp|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|wb|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+    
+    for i in range(2):
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_pawn"}]
+        curr_game_state["board_state"][2 if not i else 4][4] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][1 if not i else 5][4] = [{"type": f"{'black' if not i else 'white'}_bishop"}]
+
+        possible_moves_and_captures = moves.get_moves_for_pawn(curr_game_state, None, [3, 3])
+
+        # moving to [2, 4] would allow the capturing of [2, 4] and [1, 4]
+        # moving to [2, 3] would allow the capturing of [1, 4]
+        assert sorted(possible_moves_and_captures["possible_captures"]) == sorted([
+            [
+                [2, 4] if not i else [4, 4], 
+                [2, 4] if not i else [4, 4]
+            ], 
+            [
+                [2, 4] if not i else [4, 4],
+                [1, 4] if not i else [5, 4]
+            ], 
+            [
+                [2, 3] if not i else [4, 3], 
+                [1, 4] if not i else [5, 4]
+            ]
+        ])

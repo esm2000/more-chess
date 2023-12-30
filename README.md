@@ -140,6 +140,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * checkmate protection status effect ✅
 * shop (with light/normal green square for shop square) ✅
 * rename game to League of Chess
+* change favicon and website/tab title
 * create a screen directing users to refresh or try again later when POST request fails
 * shop rework 
 * pawn exchange
@@ -163,13 +164,11 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
         - getPossibleMovesForKing() - to determine check and checkmate will possible involve looping through every enemy piece's getPossibleMoves()
     - handle possibility that a piece can move to a square containing a neutral monster and another piece (where it captures the other piece and damages the neutral monster)
     - expand getPossibleMoves() to be able to dynamically take into consideration neutral monster buffs
+    - clean up PUT game endpoint for easier readibility and maintainability
 * AI - https://www.chessprogramming.org/Evaluation#Publications
     - rudimentary EASY enemy AI (chooses random moves from possible moves)
     - ADVANCED enemy AI that plays as well as possible
     - MEDIUM enemy AI 
-
-##### Miscellaneous
-* Music (looping track with gameplay triggers) - something like https://www.instagram.com/reel/CtKyXtBo8Qm/?igshid=MzRlODBiNWFlZA==
 
 ##### Production-Ready Development
 * Restructure project for deployment ✅
@@ -180,3 +179,9 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * Proofread and finalize README
 * Create a Kubernetes deployment script and a configuration file
 * Deploy
+
+##### Miscellaneous
+* Music (looping track with gameplay triggers) - something like https://www.instagram.com/reel/CtKyXtBo8Qm/?igshid=MzRlODBiNWFlZA==
+
+##### Known Bugs (to be addressed later)
+* "auto dark mode for web contents" experimental chrome feature (chrome://flags) messes up the color scheme

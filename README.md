@@ -163,6 +163,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
         - getPossibleMovesForKing() - to determine check and checkmate will possible involve looping through every enemy piece's getPossibleMoves()
     - handle possibility that a piece can move to a square containing a neutral monster and another piece (where it captures the other piece and damages the neutral monster)
     - expand getPossibleMoves() to be able to dynamically take into consideration neutral monster buffs
+    - clean up PUT game endpoint for easier readibility and maintainability
 * AI - https://www.chessprogramming.org/Evaluation#Publications
     - rudimentary EASY enemy AI (chooses random moves from possible moves)
     - ADVANCED enemy AI that plays as well as possible

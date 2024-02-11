@@ -187,7 +187,52 @@ def test_rook_capture():
 
 
 def test_rook_blocked():
-    pass
+    ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|bp|##|__|##|__|##|__|
+    ## 2 |__|wp|__|##|__|##|__|##|
+    ## 3 |##|wr|##|bp|bp|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|bp|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|
+
+    ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|wp|##|__|##|__|##|__|
+    ## 2 |__|bp|__|##|__|##|__|##|
+    ## 3 |##|br|##|wp|wp|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|wp|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|
+
+    for i in range(2):
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][3][1] = [{"type": f"{'white' if not i else 'black'}_rook"}]
+
+        curr_game_state["board_state"][1][1] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][2][1] = [{"type": f"{'white' if not i else 'black'}_pawn"}]
+
+        curr_game_state["board_state"][3][3] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][3][4] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+
+        curr_game_state["board_state"][6][1] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+    
+        prev_game_state = copy.deepcopy(curr_game_state)
+        curr_position = [3, 1]
+
+        possible_moves_and_captures = moves.get_moves_for_rook(curr_game_state, prev_game_state, curr_position)
+        print(possible_moves_and_captures["possible_moves"])
+        assert sorted([
+            [3, 0], 
+            [3, 2], [3, 3],
+            [4, 1], [5, 1], [6, 1]
+        ]) == sorted(possible_moves_and_captures["possible_moves"])
+        assert sorted([
+            [[3, 3], [3, 3]],
+            [[6, 1], [6, 1]]
+        ]) == sorted(possible_moves_and_captures["possible_captures"])
 
 
 def test_rook_cant_capture_king():

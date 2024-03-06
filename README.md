@@ -13,6 +13,8 @@ Ensure you have [Docker Desktop](docker.com) installed and opened.
 
 ### Instructions
 
+(Database setup instructions to be added later...)
+
 To run locally open your terminal, navigate to the root directory of the project, and run 
 
 ```
@@ -165,6 +167,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
     - handle possibility that a piece can move to a square containing a neutral monster and another piece (where it captures the other piece and damages the neutral monster)
     - expand getPossibleMoves() to be able to dynamically take into consideration neutral monster buffs
     - clean up PUT game endpoint for easier readibility and maintainability
+* Enhance instructions with local database setup
 * AI - https://www.chessprogramming.org/Evaluation#Publications
     - rudimentary EASY enemy AI (chooses random moves from possible moves)
     - ADVANCED enemy AI that plays as well as possible

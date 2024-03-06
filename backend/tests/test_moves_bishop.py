@@ -258,7 +258,7 @@ def test_bishop_cant_capture_king():
 
             possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, prev_game_state, curr_position)
 
-            assert [king_position, king_position] not in possible_moves_and_captures["possible_captures"]
+            assert [king_position, king_position] not in possible_moves_and_captures["possible_moves"]
             assert len(possible_moves_and_captures["possible_captures"]) == 0
 
 

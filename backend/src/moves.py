@@ -242,14 +242,67 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
                     for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]:
                         if "neutral" in piece["type"] and piece.get("health", 0) == 1:
                             possible_captures.append([possible_position.copy(), possible_position.copy()])
+                    break
             possible_position[0] += direction[0]
             possible_position[1] += direction[1]
 
     return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
 
 
-def get_moves_for_rook():
-    pass
+def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
+    evaluate_current_position(curr_position, curr_game_state)
+    piece_in_play = None
+
+    for piece in curr_game_state["board_state"][curr_position[0]][curr_position[1]]:
+        if "rook" in piece["type"]:
+            piece_in_play = piece
+            side = piece["type"].split("_")[0]
+            opposing_side = "white" if side == "black" else "black"
+            break
+
+    if not piece_in_play:
+        raise Exception(f"No rook found at position {curr_position}")
+    
+    possible_moves = []
+    possible_captures = []
+    
+    range_limit = 3
+    current_turn_count = curr_game_state["turn_count"]
+
+    if current_turn_count >= 15:
+        range_limit += (current_turn_count - 10) // 5
+    
+    directions = [[0, 1], [1, 0], [0, -1], [-1, 0]]
+    for direction in directions:
+        possible_position = [curr_position[0] + direction[0], curr_position[1] + direction[1]]
+        range_count = 1
+        while possible_position[0] >= 0 and possible_position[0] <= 7 and possible_position[1] >= 0 and possible_position[1] <= 7 and range_count <= range_limit:
+            if not curr_game_state["board_state"][possible_position[0]][possible_position[1]]:
+                possible_moves.append(possible_position.copy())
+            else:
+                # check for a piece from the same side, break out of the current loop if there's one present
+                if any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
+                    break
+                # check for a piece from the opposing side, add piece's position to the possible_moves and possible_captures
+                # (UNLESS IT'S A KING) and break out of the current loop 
+                if any(opposing_side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
+                    if all(f"{opposing_side}_king" != piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
+                        possible_moves.append(possible_position.copy())
+                        possible_captures.append([possible_position.copy(), possible_position.copy()])
+                    break
+                # check for a neutral monster, add monster's position to possible_moves and only add monster's position 
+                # to possible_captures if it has a health of 1. Then break
+                if any("neutral" in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
+                    possible_moves.append(possible_position.copy())
+                    for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]:
+                        if "neutral" in piece["type"] and piece.get("health", 0) == 1:
+                            possible_captures.append([possible_position.copy(), possible_position.copy()])
+                    break
+            range_count += 1
+            possible_position[0] += direction[0]
+            possible_position[1] += direction[1]
+            
+    return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
 
 
 def get_moves_for_queen():

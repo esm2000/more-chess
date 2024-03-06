@@ -138,6 +138,12 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                     prev_game_state=old_game_state.get("previous_state"), 
                     curr_position=moved_piece["previous_position"]
                 )
+            if "rook" in moved_piece["piece"]["type"]:
+                moves_info = moves.get_moves_for_rook(
+                    curr_game_state=old_game_state, 
+                    prev_game_state=old_game_state.get("previous_state"), 
+                    curr_position=moved_piece["previous_position"]
+                )
         except Exception as e:
             logger.error(f"Unable to determine move for {moved_piece['piece']} due to: {e}")
             moved_pieces_pointer += 1
@@ -305,6 +311,12 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                         )
                     if "bishop" in moved_piece["piece"]["type"]:
                         moves_info = moves.get_moves_for_bishop(
+                            curr_game_state=old_game_state, 
+                            prev_game_state=old_game_state.get("previous_state"), 
+                            curr_position=moved_piece["previous_position"]
+                        )
+                    if "rook" in moved_piece["piece"]["type"]:
+                        moves_info = moves.get_moves_for_rook(
                             curr_game_state=old_game_state, 
                             prev_game_state=old_game_state.get("previous_state"), 
                             curr_position=moved_piece["previous_position"]
@@ -480,6 +492,12 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                 )
             if "bishop" in piece_in_play["type"]:
                 moves_info = moves.get_moves_for_bishop(
+                    curr_game_state=old_game_state, 
+                    prev_game_state=old_game_state.get("previous_state"), 
+                    curr_position=new_game_state["position_in_play"]
+                )
+            if "rook" in piece_in_play["type"]:
+                moves_info = moves.get_moves_for_rook(
                     curr_game_state=old_game_state, 
                     prev_game_state=old_game_state.get("previous_state"), 
                     curr_position=new_game_state["position_in_play"]

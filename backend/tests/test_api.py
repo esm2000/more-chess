@@ -554,3 +554,14 @@ def test_adjacent_capture_of_bishop(game):
 
     assert game["board_state"][5][5] is None
     assert sorted(game["captured_pieces"]["white"]) == sorted(["black_bishop", "black_pawn"])
+
+
+def test_queen_stun(game):
+    # make sure queen stuns when expected to 
+
+    # make sure queen doesn't stun when not expected to
+
+    # make sure queen is able to apply stun after it captures a piece,
+    # opponent moves, and queen moves but doesn't capture a piece
+    
+    pass

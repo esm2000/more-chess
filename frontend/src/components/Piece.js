@@ -19,8 +19,6 @@ const Piece = (props) => {
     const leftPosition = props.col * 3.7 * (isMobile ? 2: 1)
 
     const handlePieceClick = () => {
-        console.log("click")
-        console.log(positionInPlay)
         if (props.side === PLAYERS[0] && !props.isStunned) {
             
             if(

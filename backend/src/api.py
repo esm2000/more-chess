@@ -80,7 +80,6 @@ def delete_game(id):
 
 @router.put("/game/{id}", status_code=200)
 def update_game_state(id, state: GameState, response: Response, player = True):
-    # NEED TO FIX: Unable to capture stunned pieces
     # NEED TO IMPLEMENT: Stunned pieces logic, where endpoint returns an error if user attempts to move a stunned piece (captures are allowed)
     # NEED TO FIX/IMPLEMENT: Cleanse stunned pieces based on turncount (2 turns ahead of previous stun)
     # NEED TO IMPLEMENT: testing for stun conditions

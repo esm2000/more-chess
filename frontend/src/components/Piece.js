@@ -19,6 +19,8 @@ const Piece = (props) => {
     const leftPosition = props.col * 3.7 * (isMobile ? 2: 1)
 
     const handlePieceClick = () => {
+        console.log("click")
+        console.log(positionInPlay)
         if (props.side === PLAYERS[0] && !props.isStunned) {
             
             if(
@@ -148,6 +150,7 @@ const Piece = (props) => {
                         left: `${leftPosition - (0.3 * (isMobile ? 2: 1))}vw`,
                         width: isMobile ? '5vw': '2.5vw'
                     }}
+                    onClick={() => handlePieceClick()}
                 /> : null}
             {props.energizeStacks || props.energizeStacks === 0 ? 
                 <p 

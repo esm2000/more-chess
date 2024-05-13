@@ -243,10 +243,8 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     
     # iterate through moved pieces to check to see if a queen has moved from its previous position and hasn't been bought/captured,
     # also check to see if it's captured any pieces. If it hasn't captured any pieces, stun all adjacent pieces
-    # NEED TO FIX: queen seems unable to stun pieces if captured pieces in the last turn
-    # NEED TO FIX: position seems to be inaccurate because if queen lingers in similar position, it fools logic to think that queen captured last turn when it could have captured a piece two turns ago                        
     for i, moved_piece in enumerate(moved_pieces):
-        if "queen" in moved_piece["piece"]["type"] and moved_piece["previous_position"][0] and moved_piece["current_position"][0]:
+        if "queen" in moved_piece["piece"]["type"] and moved_piece["previous_position"][0] is not None and moved_piece["current_position"][0] is not None:
             queen_side = moved_piece["side"]
             moves_info = moves.get_moves_for_queen(
                 curr_game_state=old_game_state, 

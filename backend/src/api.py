@@ -80,9 +80,6 @@ def delete_game(id):
 
 @router.put("/game/{id}", status_code=200)
 def update_game_state(id, state: GameState, response: Response, player = True):
-    # NEED TO IMPLEMENT: Stunned pieces logic, where endpoint returns an error if user attempts to move a stunned piece (captures are allowed)
-    # NEED TO FIX/IMPLEMENT: Cleanse stunned pieces based on turncount (2 turns ahead of previous stun)
-    # NEED TO IMPLEMENT: testing for stun conditions
     new_game_state = dict(state)
     old_game_state = retrieve_game_state(id, response)
 
@@ -372,11 +369,11 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                         capture_positions.append(possible_capture_info)
                         
                 except Exception as e:
-                    logger.error(f"Unable to determine move for {moved_piece['piece']} due to: {e}")
+                    logger.error(f"Unable to determine move for {moved_piece['piece']['type']} due to: {e}")
                     is_valid_game_state = False
         # if move(s) are invalid, invalidate
                 if moved_piece["current_position"] not in moves_info["possible_moves"]:
-                    logger.error(f"Square {moved_piece['previous_position']} to square {moved_piece['current_position']} invalid for {moved_piece['piece']}")
+                    logger.error(f"Square {moved_piece['previous_position']} to square {moved_piece['current_position']} invalid for {moved_piece['piece']['type']}")
                     is_valid_game_state = False
 
         # if a piece has spawned without being exchanged for a pawn
@@ -408,6 +405,27 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     if move_count_for_white > 0 and move_count_for_black > 0: 
         logger.error("More than one side have pieces that have moved")
         is_valid_game_state = False
+    
+    for moved_piece in moved_pieces:
+        # if piece has a origin and a destination (not spawned or captured) and is stunned, invalidate 
+        if moved_piece["current_position"][0] is not None \
+        and moved_piece["previous_position"][0] is not None \
+        and moved_piece["piece"].get("is_stunned", False):
+            logger.error(f"Stunned piece, {moved_piece['piece']['type']}, has moved")
+            is_valid_game_state = False
+    
+    # the side being cleansed is the moving side
+    side_being_cleansed = "white" if move_count_for_white else "black"
+    
+    # iterate through the entire board
+    for row in new_game_state["board_state"]:
+        for square in row:
+            # if the square is present iterate through it
+            if square:
+                for piece in square:
+                    # if piece is on moving side and is stunned, cleanse
+                    if side_being_cleansed in piece['type'] and piece.get("is_stunned", False):
+                        del piece['is_stunned']
 
     # TODO: before capture_positions is altered in this for loop,
     # ensure that if a piece moved to a specific positions, all pieces that are supposed to be eliminated from that move are eliminated
@@ -453,7 +471,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                     captured_piece_accounted_for = True
                       
             if not captured_piece_accounted_for:
-                logger.error(f"Piece {moved_piece['piece']} on {moved_piece['previous_position']} has disappeared from board without being captured")
+                logger.error(f"Piece {moved_piece['piece']['type']} on {moved_piece['previous_position']} has disappeared from board without being captured")
                 is_valid_game_state = False
         # if a piece is on the same square or adjacent to neutral monsters, they should damage or kill them
         if moved_piece["previous_position"][0] is not None and moved_piece["current_position"][0] is not None:

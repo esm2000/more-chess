@@ -564,9 +564,10 @@ def test_queen_stun(game):
     # make sure queen is able to apply stun after it captures a piece,
     # opponent moves, and queen moves but doesn't capture a piece
     
+    # ensure that the player can't move when stunned
     pass
 
 
 def test_stun_cleanse(game):
-    # ensure that stuns cleanse after a play moves for their next turn
+    # ensure that stuns cleanse after a player moves for their next turn
     pass

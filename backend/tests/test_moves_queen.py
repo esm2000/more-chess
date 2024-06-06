@@ -46,7 +46,63 @@ def test_queen_movement():
 
 
 def test_queen_capture():
-    pass
+    ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|bp|##|
+    ## 1 |##|__|##|bp|##|__|##|__|
+    ## 2 |__|##|bp|##|__|##|__|##|
+    ## 3 |##|bp|##|wq|bp|__|##|__|
+    ## 4 |__|##|bp|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|bp|##|__|
+    ## 6 |__|##|__|bp|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|
+
+    ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|wp|##|
+    ## 1 |##|__|##|wp|##|__|##|__|
+    ## 2 |__|##|wp|##|__|##|__|##|
+    ## 3 |##|wp|##|bq|wp|__|##|__|
+    ## 4 |__|##|wp|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|wp|##|__|
+    ## 6 |__|##|__|wp|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|
+
+    for i in range(2):
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["turn_count"] = 0
+        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_queen"}]
+        curr_game_state["board_state"][3][1] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][2][2] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][1][3] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][0][6] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][3][4] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][5][5] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][6][3] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][4][2] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        curr_position = [3, 3]
+
+        possible_moves_and_captures = moves.get_moves_for_queen(curr_game_state, prev_game_state, curr_position)
+        assert sorted([
+            [2, 3], [1, 3],
+            [2, 4], [1, 5], [0, 6],
+            [3, 4],
+            [4, 4], [5, 5],
+            [4, 3], [5, 3], [6, 3],
+            [4, 2],
+            [3, 2], [3, 1],
+            [2, 2]
+        ]) == sorted(possible_moves_and_captures["possible_moves"])
+        assert sorted([
+            [[1, 3], [1, 3]],
+            [[0, 6], [0, 6]],
+            [[3, 4], [3, 4]],
+            [[5, 5], [5, 5]],
+            [[6, 3], [6, 3]],
+            [[4, 2], [4, 2]],
+            [[3, 1], [3, 1]],
+            [[2, 2], [2, 2]]
+        ]) == sorted(possible_moves_and_captures["possible_captures"])
 
 def test_queen_blocked():
     pass

@@ -193,10 +193,94 @@ def test_queen_cant_capture_king():
             assert len(possible_moves_and_captures["possible_captures"]) == 0
 
 def test_queen_interactions_with_neutral_monster():
-    pass
+    # vertical                          # horizontal                        # diagonal
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__| 
+    ## 2 |__|##|__|nd|__|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|wr|##|__|##|__|      ## 3 |##|__|##|wr|nd|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__| 
+    ## 2 |__|##|__|nd|__|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|br|##|__|##|__|      ## 3 |##|__|##|br|nd|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+    
+    neutral_monster_positions = [[2, 3], [2, 4], [3, 4], [4, 4], [4, 3], [4, 2], [3, 2], [2, 2]]
+    for i in range(2):
+        for neutral_monster_position in neutral_monster_positions:
+            for health in [5, 1]:
+                for monster in ["dragon", "baron_nashor", "board_herald"]:
+                    curr_game_state = copy.deepcopy(empty_game)
+                    curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_queen"}]
+                    curr_game_state["board_state"][neutral_monster_position[0]][neutral_monster_position[1]] = [{
+                        "type": f"neutral_{monster}",
+                        "health": health
+                    }]
+
+                    prev_game_state = copy.deepcopy(curr_game_state)
+
+                    curr_position = [3, 3]
+                    
+                    possible_moves_and_captures = moves.get_moves_for_queen(curr_game_state, prev_game_state, curr_position)
+                    assert neutral_monster_position in possible_moves_and_captures["possible_moves"]
+
+                    if health == 1:
+                        assert [[neutral_monster_position, neutral_monster_position]] == possible_moves_and_captures["possible_captures"]
+                    else:
+                        assert [neutral_monster_position, neutral_monster_position] not in possible_moves_and_captures["possible_captures"]
+                        assert len(possible_moves_and_captures["possible_captures"]) == 0     
 
 def test_queen_starting_position():
-    pass
+    curr_game_state = copy.deepcopy(starting_game)
+    starting_positions = [[0, 3], [7, 3]]
+
+    for starting_position in starting_positions:
+        possible_moves_and_captures = moves.get_moves_for_queen(curr_game_state, None, [starting_position[0], starting_position[1]])
+        if starting_position == [0, 3]:
+            assert possible_moves_and_captures["possible_moves"] == [[1, 3]]
+        elif starting_position == [7, 3]:
+            assert len(possible_moves_and_captures["possible_moves"]) == 0
+        assert len(possible_moves_and_captures["possible_captures"]) == 0
+
 
 def test_queen_capturing_adjacent_bishop():
-    pass
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|bp|bb|__|##|__|      ## 1 |##|__|##|wp|wb|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|wr|##|__|##|__|      ## 3 |##|__|##|br|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    for i in range(2):
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_queen"}]
+        curr_game_state["board_state"][1][3] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][1][4] = [{"type": f"{'black' if not i else 'white'}_bishop"}]
+
+        possible_moves_and_captures = moves.get_moves_for_queen(curr_game_state, None, [3, 3])
+
+        # moving to [1, 3] would allow the capturing of [1, 3] and [1, 4], 
+        # moving to [1, 5] would allow the capturing of [1, 4]
+        # moving to [2, 3] would allow the capturing of [1, 4]
+        # moving to [2, 4] would allow the capturing of [1, 4]
+
+        print(sorted(possible_moves_and_captures["possible_captures"]))
+        assert sorted(possible_moves_and_captures["possible_captures"]) == sorted([
+            [[1, 3], [1, 3]], 
+            [[1, 3], [1, 4]], 
+            [[1, 5], [1, 4]], 
+            [[2, 3], [1, 4]],
+            [[2, 4], [1, 4]]
+        ])

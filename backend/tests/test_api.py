@@ -4,6 +4,7 @@ import pytest
 
 from mocks.empty_game import empty_game
 import src.api as api
+from src.utility import clear_game
 
 
 @pytest.fixture
@@ -558,16 +559,135 @@ def test_adjacent_capture_of_bishop(game):
 
 def test_queen_stun(game):
     # make sure queen stuns when expected to 
+    game = clear_game(game)
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][3][3] = [{"type": "black_pawn"}]
+    game_on_next_turn["board_state"][4][7] = [{"type": "white_queen"}]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][4][7] = None
+    game_on_next_turn["board_state"][4][3] = [{"type": "white_queen"}]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["board_state"][3][3][0]["type"] == "black_pawn"
+    assert game["board_state"][3][3][0]["is_stunned"]
 
     # make sure queen doesn't stun when not expected to
+    game = clear_game(game)
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][3][3] = [{"type": "black_pawn"}]
+    game_on_next_turn["board_state"][4][7] = [{"type": "white_queen"}]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][4][7] = None
+    game_on_next_turn["board_state"][4][6] = [{"type": "white_queen"}]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["board_state"][3][3][0]["type"] == "black_pawn"
+    assert not game["board_state"][3][3][0].get("is_stunned", False)
 
     # make sure queen is able to apply stun after it captures a piece,
     # opponent moves, and queen moves but doesn't capture a piece
+    game = clear_game(game)
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][3][3] = [{"type": "black_pawn"}]
+    game_on_next_turn["board_state"][1][0] = [{"type": "black_pawn"}]
+    game_on_next_turn["board_state"][3][7] = [{"type": "white_queen"}]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][3][7] = None
+    game_on_next_turn["board_state"][3][3] = [{"type": "white_queen"}]
+    game_on_next_turn[ "captured_pieces"] = {"white": ["black_pawn"], "black": []}
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][1][0] = None
+    game_on_next_turn["board_state"][2][0] = [{"type": "black_pawn"}]
+    game_state = api.GameState(**game_on_next_turn)
+    game_on_next_turn["previous_state"] = copy.deepcopy(game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][3][3] = None
+    game_on_next_turn["board_state"][3][0] = [{"type": "white_queen"}]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["board_state"][2][0][0]["type"] == "black_pawn"
+    assert game["board_state"][2][0][0].get("is_stunned", False) 
     
     # ensure that the player can't move when stunned
-    pass
+    game = clear_game(game)
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][3][3] = [{"type": "white_pawn"}]
+    game_on_next_turn["board_state"][4][7] = [{"type": "black_queen"}]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][4][7] = None
+    game_on_next_turn["board_state"][4][4] = [{"type": "black_queen"}]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][3][3] = None
+    game_on_next_turn["board_state"][2][3] = [{"type": "white_pawn"}]
+    game_state = api.GameState(**game_on_next_turn)
+    with pytest.raises(Exception):
+        game = api.update_game_state(game["id"], game_state, Response())
 
 
 def test_stun_cleanse(game):
     # ensure that stuns cleanse after a player moves for their next turn
-    pass
+    ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|wp|wp|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|bq|
+    ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|
+    game = clear_game(game)
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][3][3] = [{"type": "white_pawn"}]
+    game_on_next_turn["board_state"][3][2] = [{"type": "white_pawn"}]
+    game_on_next_turn["board_state"][4][7] = [{"type": "black_queen"}]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][4][7] = None
+    game_on_next_turn["board_state"][4][4] = [{"type": "black_queen"}]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][3][2] = None
+    game_on_next_turn["board_state"][2][2] = [{"type": "white_pawn"}]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][4][4] = None
+    game_on_next_turn["board_state"][4][5] = [{"type": "black_queen"}]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["board_state"][3][3][0]["type"] == "white_pawn"
+    assert not game["board_state"][3][3][0].get("is_stunned", False) 

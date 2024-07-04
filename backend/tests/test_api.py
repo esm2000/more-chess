@@ -469,19 +469,12 @@ def test_alter_game(game):
 
 
 def test_bishop_energize_stacks(game):
+    game = clear_game(game)
     game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["turn_count"] = 0
-    game_on_next_turn["board_state"] = copy.deepcopy(empty_game["board_state"])
-    
     
     game_on_next_turn["board_state"][3][3] = [{"type": "white_bishop", "energize_stacks": 0}]
     game_on_next_turn["board_state"][1][1] = [{"type": "black_pawn", "pawn_buff": 0}]
-    game_on_next_turn["graveyard"] = []
-    game_on_next_turn["gold_count"] = {
-        "white": 0,
-        "black": 0
-    }
-    game_on_next_turn["captured_pieces"] = {"white": [], "black": []}
+
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
@@ -496,22 +489,15 @@ def test_bishop_energize_stacks(game):
 
 
 def test_bishop_debuff_application(game):
+    game = clear_game(game)
     game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["turn_count"] = 0
-    game_on_next_turn["board_state"] = copy.deepcopy(empty_game["board_state"])
 
     game_on_next_turn["board_state"][0][0] = [{"type": "black_pawn"}]
     game_on_next_turn["board_state"][0][6] = [{"type": "black_pawn", "bishop_debuff": 1}]
     game_on_next_turn["board_state"][6][6] = [{"type": "black_pawn", "bishop_debuff": 2}]
     game_on_next_turn["board_state"][6][0] = [{"type": "black_pawn", "bishop_debuff": 3}]
     game_on_next_turn["board_state"][5][1] = [{"type": "white_bishop", "energize_stacks": 0}]
-
-    game_on_next_turn["graveyard"] = []
-    game_on_next_turn["gold_count"] = {
-        "white": 0,
-        "black": 0
-    }
-    game_on_next_turn["captured_pieces"] = {"white": [], "black": []}
+    
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
@@ -528,17 +514,8 @@ def test_bishop_debuff_application(game):
 
 
 def test_adjacent_capture_of_bishop(game):
+    game = clear_game(game)
     game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["turn_count"] = 0
-    game_on_next_turn["board_state"] = copy.deepcopy(empty_game["board_state"])
-
-    game_on_next_turn["graveyard"] = []
-    game_on_next_turn["gold_count"] = {
-        "white": 0,
-        "black": 0
-    }
-    game_on_next_turn["captured_pieces"] = {"white": [], "black": []}
-
     game_on_next_turn["board_state"][3][3] = [{"type": "white_knight"}]
     game_on_next_turn["board_state"][4][5] = [{"type": "black_pawn"}]
     game_on_next_turn["board_state"][5][5] = [{"type": "black_bishop", "energize_stacks": 0}]
@@ -653,15 +630,6 @@ def test_queen_stun(game):
 
 def test_stun_cleanse(game):
     # ensure that stuns cleanse after a player moves for their next turn
-    ##    0  1  2  3  4  5  6  7
-    ## 0 |__|##|__|##|__|##|__|##|
-    ## 1 |##|__|##|__|##|__|##|__|
-    ## 2 |__|##|__|##|__|##|__|##|
-    ## 3 |##|__|wp|wp|##|__|##|__|
-    ## 4 |__|##|__|##|__|##|__|bq|
-    ## 5 |##|__|##|__|##|__|##|__|
-    ## 6 |__|##|__|##|__|##|__|##|
-    ## 7 |##|__|##|__|##|__|##|__|
     game = clear_game(game)
 
     game_on_next_turn = copy.deepcopy(game)

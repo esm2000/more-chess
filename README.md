@@ -177,7 +177,6 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * Restructure project for deployment ✅
 * Dockerize project with Dockerfile ✅
 * Un-nest the code (extraction and inversion) - https://www.youtube.com/watch?v=CFRhGnuXG-4&t=40s
-* use clear_game() function to reduce code duplication in api integration testing
 * Clean up and refactor code
 * Linting
 * Proofread and finalize README

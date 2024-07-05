@@ -1,5 +1,8 @@
 import copy 
+from fastapi import Response
+from mocks.empty_game import empty_game
 from src.logging import logger
+import src.api as api
 
 INVALID_GAME_STATE_ERROR_MESSAGE = "New game state is invalid"
 
@@ -211,3 +214,21 @@ def enable_adjacent_bishop_captures(curr_game_state, side, possible_moves_dict):
             any(piece.get("type") == f"{opposing_side}_bishop" for piece in curr_game_state["board_state"][potential_bishop_square[0]][potential_bishop_square[1]]):
                 possible_moves_dict["possible_captures"].append([possible_move, potential_bishop_square])
     return possible_moves_dict
+
+# used to reset game state during integration testing
+def clear_game(game):
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["turn_count"] = 0
+    game_on_next_turn["board_state"] = copy.deepcopy(empty_game["board_state"])
+
+    game_on_next_turn["graveyard"] = []
+    game_on_next_turn["gold_count"] = {
+        "white": 0,
+        "black": 0
+    }
+    game_on_next_turn["captured_pieces"] = {"white": [], "black": []}
+    game_on_next_turn["previous_state"] = game_on_next_turn["board_state"]
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+    return game

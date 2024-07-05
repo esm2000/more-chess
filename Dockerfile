@@ -23,6 +23,11 @@ COPY . .
 
 # 5. Install python and python modules
 RUN apk add --update --no-cache python3 bash && ln -sf python3 /usr/bin/python
+
+# use of a venv is required for the Linux distro in use (https://peps.python.org/pep-0668/)
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
 RUN python3 -m ensurepip
 RUN pip3 install --upgrade pip && \
     pip3 install --no-cache-dir -r /app/backend/requirements.txt 

@@ -144,6 +144,12 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                     prev_game_state=old_game_state.get("previous_state"), 
                     curr_position=moved_piece["previous_position"]
                 )
+            if "queen" in moved_piece["piece"]["type"]:
+                moves_info = moves.get_moves_for_queen(
+                    curr_game_state=old_game_state, 
+                    prev_game_state=old_game_state.get("previous_state"), 
+                    curr_position=moved_piece["previous_position"]
+                )
         except Exception as e:
             logger.error(f"Unable to determine move for {moved_piece['piece']} due to: {e}")
             moved_pieces_pointer += 1
@@ -231,8 +237,40 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                             piece["bishop_debuff"] = 1
                         elif piece["bishop_debuff"] < 3:
                             piece["bishop_debuff"] += 1
-                    
-    # TODO: if any pieces on the board have gained third bishop debuff, retain last player's turn until they've spared or captured it
+    
+    # iterate through moved pieces to check to see if a queen has moved from its previous position and hasn't been bought/captured,
+    # also check to see if it's captured any pieces. If it hasn't captured any pieces, stun all adjacent pieces
+    for i, moved_piece in enumerate(moved_pieces):
+        if "queen" in moved_piece["piece"]["type"] and moved_piece["previous_position"][0] is not None and moved_piece["current_position"][0] is not None:
+            queen_side = moved_piece["side"]
+            moves_info = moves.get_moves_for_queen(
+                curr_game_state=old_game_state, 
+                prev_game_state=old_game_state.get("previous_state"), 
+                curr_position=moved_piece["previous_position"]
+            )
+            canStun = True
+            for j, piece in enumerate(moved_pieces):
+                if i == j or piece["current_position"][0] is not None:
+                    continue
+                if any(capture_positions[0] == moved_piece["current_position"] and capture_positions[1] == piece["previous_position"] for capture_positions in moves_info["possible_captures"]):
+                    canStun = False
+                    break
+            if canStun:
+                directions = [[0, 1], [1, 0], [0, -1], [-1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]]
+                for direction in directions:
+                    row, col = moved_piece["current_position"][0] + direction[0], moved_piece["current_position"][1] + direction[1]
+                    if row < 0 or col < 0 or row > 7 or col > 7:
+                        continue
+                    square = new_game_state["board_state"][row][col]
+                    if square:
+                        for piece in square:
+                            side = piece["type"].split("_")[0]
+                            if queen_side != side:
+                                piece["is_stunned"] = True
+    # TODO: if any pieces on the board have gained third bishop debuff, retain last player's turn until they've spared or captured it'
+                   
+    # TODO: if a queen captures or "assists" a piece and is not in danger of being captures, retain last player's turn until they move queen again
+    
 
     is_valid_game_state = True
     move_count_for_white = 0 
@@ -321,15 +359,21 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                             prev_game_state=old_game_state.get("previous_state"), 
                             curr_position=moved_piece["previous_position"]
                         )
+                    if "queen" in moved_piece["piece"]["type"]:
+                        moves_info = moves.get_moves_for_queen(
+                            curr_game_state=old_game_state, 
+                            prev_game_state=old_game_state.get("previous_state"), 
+                            curr_position=moved_piece["previous_position"]
+                        )
                     for possible_capture_info in moves_info["possible_captures"]:
                         capture_positions.append(possible_capture_info)
                         
                 except Exception as e:
-                    logger.error(f"Unable to determine move for {moved_piece['piece']} due to: {e}")
+                    logger.error(f"Unable to determine move for {moved_piece['piece']['type']} due to: {e}")
                     is_valid_game_state = False
         # if move(s) are invalid, invalidate
                 if moved_piece["current_position"] not in moves_info["possible_moves"]:
-                    logger.error(f"Square {moved_piece['previous_position']} to square {moved_piece['current_position']} invalid for {moved_piece['piece']}")
+                    logger.error(f"Square {moved_piece['previous_position']} to square {moved_piece['current_position']} invalid for {moved_piece['piece']['type']}")
                     is_valid_game_state = False
 
         # if a piece has spawned without being exchanged for a pawn
@@ -361,6 +405,27 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     if move_count_for_white > 0 and move_count_for_black > 0: 
         logger.error("More than one side have pieces that have moved")
         is_valid_game_state = False
+    
+    for moved_piece in moved_pieces:
+        # if piece has a origin and a destination (not spawned or captured) and is stunned, invalidate 
+        if moved_piece["current_position"][0] is not None \
+        and moved_piece["previous_position"][0] is not None \
+        and moved_piece["piece"].get("is_stunned", False):
+            logger.error(f"Stunned piece, {moved_piece['piece']['type']}, has moved")
+            is_valid_game_state = False
+    
+    # the side being cleansed is the moving side
+    side_being_cleansed = "white" if move_count_for_white else "black"
+    
+    # iterate through the entire board
+    for row in new_game_state["board_state"]:
+        for square in row:
+            # if the square is present iterate through it
+            if square:
+                for piece in square:
+                    # if piece is on moving side and is stunned, cleanse
+                    if side_being_cleansed in piece['type'] and piece.get("is_stunned", False):
+                        del piece['is_stunned']
 
     # TODO: before capture_positions is altered in this for loop,
     # ensure that if a piece moved to a specific positions, all pieces that are supposed to be eliminated from that move are eliminated
@@ -406,7 +471,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                     captured_piece_accounted_for = True
                       
             if not captured_piece_accounted_for:
-                logger.error(f"Piece {moved_piece['piece']} on {moved_piece['previous_position']} has disappeared from board without being captured")
+                logger.error(f"Piece {moved_piece['piece']['type']} on {moved_piece['previous_position']} has disappeared from board without being captured")
                 is_valid_game_state = False
         # if a piece is on the same square or adjacent to neutral monsters, they should damage or kill them
         if moved_piece["previous_position"][0] is not None and moved_piece["current_position"][0] is not None:
@@ -498,6 +563,12 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                 )
             if "rook" in piece_in_play["type"]:
                 moves_info = moves.get_moves_for_rook(
+                    curr_game_state=old_game_state, 
+                    prev_game_state=old_game_state.get("previous_state"), 
+                    curr_position=new_game_state["position_in_play"]
+                )
+            if "queen" in piece_in_play["type"]:
+                moves_info = moves.get_moves_for_queen(
                     curr_game_state=old_game_state, 
                     prev_game_state=old_game_state.get("previous_state"), 
                     curr_position=new_game_state["position_in_play"]

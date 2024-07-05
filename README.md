@@ -162,7 +162,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
         - getPossibleMovesForKnignt() ✅
         - getPossibleMovesForBishop() ✅
         - getPossibleMovesForRook() ✅
-        - getPossibleMovesForQueen()
+        - getPossibleMovesForQueen() ✅
         - getPossibleMovesForKing() - to determine check and checkmate will possibly involve looping through every enemy piece's getPossibleMoves()
     - handle possibility that a piece can move to a square containing a neutral monster and another piece (where it captures the other piece and damages the neutral monster)
     - expand getPossibleMoves() to be able to dynamically take into consideration neutral monster buffs
@@ -176,6 +176,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 ##### Production-Ready Development
 * Restructure project for deployment ✅
 * Dockerize project with Dockerfile ✅
+* Add database setup to instructions in README
 * Un-nest the code (extraction and inversion) - https://www.youtube.com/watch?v=CFRhGnuXG-4&t=40s
 * Clean up and refactor code
 * Linting

@@ -150,6 +150,12 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                     prev_game_state=old_game_state.get("previous_state"), 
                     curr_position=moved_piece["previous_position"]
                 )
+            if "king" in moved_piece["piece"]["type"]:
+                moves_info = moves.get_moves_for_king(
+                    curr_game_state=old_game_state, 
+                    prev_game_state=old_game_state.get("previous_state"), 
+                    curr_position=moved_piece["previous_position"]
+                )
         except Exception as e:
             logger.error(f"Unable to determine move for {moved_piece['piece']} due to: {e}")
             moved_pieces_pointer += 1
@@ -365,6 +371,12 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                             prev_game_state=old_game_state.get("previous_state"), 
                             curr_position=moved_piece["previous_position"]
                         )
+                    if "king" in moved_piece["piece"]["type"]:
+                        moves_info = moves.get_moves_for_king(
+                            curr_game_state=old_game_state, 
+                            prev_game_state=old_game_state.get("previous_state"), 
+                            curr_position=moved_piece["previous_position"]
+                        )
                     for possible_capture_info in moves_info["possible_captures"]:
                         capture_positions.append(possible_capture_info)
                         
@@ -569,6 +581,12 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                 )
             if "queen" in piece_in_play["type"]:
                 moves_info = moves.get_moves_for_queen(
+                    curr_game_state=old_game_state, 
+                    prev_game_state=old_game_state.get("previous_state"), 
+                    curr_position=new_game_state["position_in_play"]
+                )
+            if "king" in piece_in_play["type"]:
+                moves_info = moves.get_moves_for_king(
                     curr_game_state=old_game_state, 
                     prev_game_state=old_game_state.get("previous_state"), 
                     curr_position=new_game_state["position_in_play"]

@@ -661,6 +661,9 @@ def test_stun_cleanse(game):
     assert not game["board_state"][3][3][0].get("is_stunned", False) 
 
 
+def test_neutral_monster_captures_after_spawning_on_any_non_king_piece(game):
+    pass
+
 def test_sword_in_the_stone_spawn(game):
     pass
 
@@ -689,4 +692,16 @@ def test_white_checkmate(game):
     pass
 
 def test_black_checkmate(game):
+    pass
+
+def test_king_cant_put_itself_in_check(game):
+    pass
+
+def test_king_cant_get_close_to_king(game):
+    pass
+
+def test_game_ends_when_monster_spawns_on_top_of_king(game):
+    pass
+
+def test_game_ends_when_king_stays_near_neutral_monster(game):
     pass

@@ -307,7 +307,6 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
 
 def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
     evaluate_current_position(curr_position, curr_game_state)
-
     piece_in_play = None
 
     for piece in curr_game_state["board_state"][curr_position[0]][curr_position[1]]:
@@ -353,5 +352,38 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
             
     return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
 
-def get_moves_for_king():
-    pass
+def get_moves_for_king(curr_game_state, prev_game_state, curr_position):
+    evaluate_current_position(curr_position, curr_game_state)
+    piece_in_play = None
+
+    for piece in curr_game_state["board_state"][curr_position[0]][curr_position[1]]:
+        if "king" in piece["type"]:
+            piece_in_play = piece
+            side = piece["type"].split("_")[0]
+            opposing_side = "white" if side == "black" else "black"
+            break
+
+    if not piece_in_play:
+        raise Exception(f"No queen found at position {curr_position}")
+    
+    possible_moves = []
+    possible_captures = []
+    
+    directions = [[0, 1], [1, 0], [0, -1], [-1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]]
+    for direction in directions:
+        possible_position = [curr_position[0] + direction[0], curr_position[1] + direction[1]]
+        if not (possible_position[0] >= 0 and possible_position[0] <= 7 and possible_position[1] >= 0 and possible_position[1] <= 7):
+            continue
+
+        if not curr_game_state["board_state"][possible_position[0]][possible_position[1]]:
+            possible_moves.append(possible_position.copy())
+        # check for a piece from the opposing side, add piece's position to the possible_moves and possible_captures
+        # (UNLESS IT'S A KING) and break out of the current loop 
+        elif any(opposing_side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
+            if all(f"{opposing_side}_king" != piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
+                possible_moves.append(possible_position.copy())
+                possible_captures.append([possible_position.copy(), possible_position.copy()])
+
+        # the king shouldn't be allowed to be on the same square as a neutral monster (behavior included by omission)
+
+    return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})

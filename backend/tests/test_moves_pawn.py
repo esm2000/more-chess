@@ -512,3 +512,7 @@ def test_pawn_capturing_adjacent_bishop():
                 [1, 4] if not i else [5, 4]
             ]
         ])
+
+
+def test_pawn_not_being_allowed_to_move_to_sword_in_stone_square():
+    pass

@@ -659,3 +659,34 @@ def test_stun_cleanse(game):
 
     assert game["board_state"][3][3][0]["type"] == "white_pawn"
     assert not game["board_state"][3][3][0].get("is_stunned", False) 
+
+
+def test_sword_in_the_stone_spawn(game):
+    pass
+
+
+def test_sword_in_the_stone_retrieval(game):
+    pass 
+
+
+def test_sword_in_the_stone_check_protection(game):
+    pass
+
+
+def test_sword_in_the_stone_stacks(game):
+    pass
+
+
+def test_white_check(game):
+    pass
+
+
+def test_black_check(game):
+    pass
+
+
+def test_white_checkmate(game):
+    pass
+
+def test_black_checkmate(game):
+    pass

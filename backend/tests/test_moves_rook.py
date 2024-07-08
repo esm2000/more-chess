@@ -367,3 +367,7 @@ def test_rook_capturing_adjacent_bishop():
                 [1, 4]
             ]
         ])
+
+
+def test_rook_not_being_allowed_to_move_to_sword_in_stone_square():
+    pass

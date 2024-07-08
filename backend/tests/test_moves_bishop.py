@@ -385,3 +385,7 @@ def test_bishop_capturing_adjacent_bishop():
                 [2, 5]
             ]
         ])
+
+
+def test_bishop_not_being_allowed_to_move_to_sword_in_stone_square():
+    pass

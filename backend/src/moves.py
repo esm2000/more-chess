@@ -7,8 +7,19 @@ def get_moves():
     pass
 
 
-def process_possible_moves_dict(curr_game_state, side, possible_moves_dict):
+def process_possible_moves_dict(curr_game_state, side, possible_moves_dict, is_king=False):
     possible_moves_dict = enable_adjacent_bishop_captures(curr_game_state, side, possible_moves_dict)
+    
+    # remove moves and captures that involve moving to a sword in stone buff unless we're dealing with a king
+    if not is_king and curr_game_state["sword_in_the_stone_position"]:
+        for i, possible_move in enumerate(possible_moves_dict["possible_moves"]):
+            if possible_move == curr_game_state["sword_in_the_stone_position"]:
+                possible_moves_dict["possible_moves"].remove(i)
+
+        for i, possible_capture in enumerate(possible_moves_dict["possible_captures"]):
+            if possible_capture[0] == curr_game_state["sword_in_the_stone_position"]:
+                possible_moves_dict["possible_captures"].remove(i)
+
     # remove duplicates
     possible_captures_with_no_duplicates = []
     for entry in possible_moves_dict["possible_captures"]:

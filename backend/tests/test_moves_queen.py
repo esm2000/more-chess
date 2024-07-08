@@ -284,3 +284,7 @@ def test_queen_capturing_adjacent_bishop():
             [[2, 3], [1, 4]],
             [[2, 4], [1, 4]]
         ])
+
+
+def test_queen_not_being_allowed_to_move_to_sword_in_stone_square():
+    pass

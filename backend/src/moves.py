@@ -375,7 +375,7 @@ def get_moves_for_king(curr_game_state, prev_game_state, curr_position):
             break
 
     if not piece_in_play:
-        raise Exception(f"No queen found at position {curr_position}")
+        raise Exception(f"No king found at position {curr_position}")
     
     possible_moves = []
     possible_captures = []
@@ -389,12 +389,14 @@ def get_moves_for_king(curr_game_state, prev_game_state, curr_position):
         if not curr_game_state["board_state"][possible_position[0]][possible_position[1]]:
             possible_moves.append(possible_position.copy())
         # check for a piece from the opposing side, add piece's position to the possible_moves and possible_captures
-        # (UNLESS IT'S A KING) and break out of the current loop 
+        # (UNLESS IT'S A KING)
         elif any(opposing_side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
             if all(f"{opposing_side}_king" != piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                 possible_moves.append(possible_position.copy())
                 possible_captures.append([possible_position.copy(), possible_position.copy()])
-
-        # the king shouldn't be allowed to be on the same square as a neutral monster (behavior included by omission)
-
+        # the king shouldn't be allowed to be on the same square as a neutral monster and can only move to a neutral monster's square to slay it
+        # check for a neutral monster, only add monster's position to possible_moves and possible_captures if it has a health of 1.
+        elif any(("neutral" in piece["type"] and piece.get("health", 0) == 1) for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
+            possible_moves.append(possible_position.copy())
+            possible_captures.append([possible_position.copy(), possible_position.copy()])
     return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})

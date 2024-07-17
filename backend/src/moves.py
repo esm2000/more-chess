@@ -12,14 +12,9 @@ def process_possible_moves_dict(curr_game_state, side, possible_moves_dict, is_k
 
     # remove moves and captures that involve moving to a sword in stone buff unless we're dealing with a king
     if not is_king and curr_game_state["sword_in_the_stone_position"]:
-        for i, possible_move in enumerate(possible_moves_dict["possible_moves"]):
-            if possible_move == curr_game_state["sword_in_the_stone_position"]:
-                possible_moves_dict["possible_moves"].remove(i)
-
-        for i, possible_capture in enumerate(possible_moves_dict["possible_captures"]):
-            if possible_capture[0] == curr_game_state["sword_in_the_stone_position"]:
-                possible_moves_dict["possible_captures"].remove(i)
-
+        possible_moves_dict["possible_moves"] = [move for move in possible_moves_dict["possible_moves"] if move != curr_game_state["sword_in_the_stone_position"]]
+        possible_moves_dict["possible_captures"] = [capture for capture in possible_moves_dict["possible_captures"] if capture[0] != curr_game_state["sword_in_the_stone_position"]]
+        
     # remove duplicates
     possible_captures_with_no_duplicates = []
     for entry in possible_moves_dict["possible_captures"]:
@@ -166,7 +161,7 @@ def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
         path_1_free = True
         path_2_free = True
 
-        # checking to see if path is unblocked to potentional move
+        # checking to see if path is unblocked to potential move
         path_1_positions = []
         path_2_positions = []
 
@@ -185,7 +180,7 @@ def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
         # check if path positions are free
         for i, path_positions in enumerate([path_1_positions, path_2_positions]):
             for path_position in path_positions:
-                if curr_game_state["board_state"][path_position[0]][path_position[1]]:
+                if curr_game_state["board_state"][path_position[0]][path_position[1]] or curr_game_state["sword_in_the_stone_position"] == path_position:
                     if not i:
                         path_1_free = False
                     else:
@@ -236,8 +231,8 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
             if not curr_game_state["board_state"][possible_position[0]][possible_position[1]]:
                 possible_moves.append(possible_position.copy())
             else:
-                # check for a piece from the same side, break out of the current loop if there's one present
-                if any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
+                # check for a piece from the same side or sword in stone buff, break out of the current loop if there's one present
+                if any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]) or possible_position == curr_game_state["sword_in_the_stone_position"]:
                     break
                 # check for a piece from the opposing side, add piece's position to the possible_moves and possible_captures
                 # (UNLESS IT'S A KING) and break out of the current loop 
@@ -291,8 +286,8 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
             if not curr_game_state["board_state"][possible_position[0]][possible_position[1]]:
                 possible_moves.append(possible_position.copy())
             else:
-                # check for a piece from the same side, break out of the current loop if there's one present
-                if any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
+                # check for a piece from the same side or sword in stone buff, break out of the current loop if there's one present
+                if any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]) or possible_position == curr_game_state["sword_in_the_stone_position"]:
                     break
                 # check for a piece from the opposing side, add piece's position to the possible_moves and possible_captures
                 # (UNLESS IT'S A KING) and break out of the current loop 
@@ -340,8 +335,8 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
             if not curr_game_state["board_state"][possible_position[0]][possible_position[1]]:
                 possible_moves.append(possible_position.copy())
             else:
-                # check for a piece from the same side, break out of the current loop if there's one present
-                if any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
+                # check for a piece from the same side or sword in stone buff, break out of the current loop if there's one present
+                if any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]) or possible_position == curr_game_state["sword_in_the_stone_position"]:
                     break
                 # check for a piece from the opposing side, add piece's position to the possible_moves and possible_captures
                 # (UNLESS IT'S A KING) and break out of the current loop 
@@ -399,4 +394,4 @@ def get_moves_for_king(curr_game_state, prev_game_state, curr_position):
         elif any(("neutral" in piece["type"] and piece.get("health", 0) == 1) for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
             possible_moves.append(possible_position.copy())
             possible_captures.append([possible_position.copy(), possible_position.copy()])
-    return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
+    return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures}, is_king=True)

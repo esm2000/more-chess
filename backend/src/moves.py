@@ -219,7 +219,7 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
             break
 
     if not piece_in_play:
-        raise Exception(f"No knight found at position {curr_position}")
+        raise Exception(f"No bishop found at position {curr_position}")
     
     possible_moves = []
     possible_captures = []
@@ -228,11 +228,11 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
     for direction in directions:
         possible_position = [curr_position[0] + direction[0], curr_position[1] + direction[1]]
         while possible_position[0] >= 0 and possible_position[0] <= 7 and possible_position[1] >= 0 and possible_position[1] <= 7:
-            if not curr_game_state["board_state"][possible_position[0]][possible_position[1]]:
+            if not curr_game_state["board_state"][possible_position[0]][possible_position[1]] and possible_position != curr_game_state["sword_in_the_stone_position"]:
                 possible_moves.append(possible_position.copy())
             else:
                 # check for a piece from the same side or sword in stone buff, break out of the current loop if there's one present
-                if any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]) or possible_position == curr_game_state["sword_in_the_stone_position"]:
+                if possible_position == curr_game_state["sword_in_the_stone_position"] or any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                     break
                 # check for a piece from the opposing side, add piece's position to the possible_moves and possible_captures
                 # (UNLESS IT'S A KING) and break out of the current loop 
@@ -283,11 +283,11 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
         possible_position = [curr_position[0] + direction[0], curr_position[1] + direction[1]]
         range_count = 1
         while possible_position[0] >= 0 and possible_position[0] <= 7 and possible_position[1] >= 0 and possible_position[1] <= 7 and range_count <= range_limit:
-            if not curr_game_state["board_state"][possible_position[0]][possible_position[1]]:
+            if not curr_game_state["board_state"][possible_position[0]][possible_position[1]] and possible_position != curr_game_state["sword_in_the_stone_position"]:
                 possible_moves.append(possible_position.copy())
             else:
                 # check for a piece from the same side or sword in stone buff, break out of the current loop if there's one present
-                if any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]) or possible_position == curr_game_state["sword_in_the_stone_position"]:
+                if possible_position == curr_game_state["sword_in_the_stone_position"] or any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                     break
                 # check for a piece from the opposing side, add piece's position to the possible_moves and possible_captures
                 # (UNLESS IT'S A KING) and break out of the current loop 
@@ -332,11 +332,11 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
     for direction in directions:
         possible_position = [curr_position[0] + direction[0], curr_position[1] + direction[1]]
         while possible_position[0] >= 0 and possible_position[0] <= 7 and possible_position[1] >= 0 and possible_position[1] <= 7:
-            if not curr_game_state["board_state"][possible_position[0]][possible_position[1]]:
+            if not curr_game_state["board_state"][possible_position[0]][possible_position[1]] and possible_position != curr_game_state["sword_in_the_stone_position"]:
                 possible_moves.append(possible_position.copy())
             else:
                 # check for a piece from the same side or sword in stone buff, break out of the current loop if there's one present
-                if any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]) or possible_position == curr_game_state["sword_in_the_stone_position"]:
+                if possible_position == curr_game_state["sword_in_the_stone_position"] or any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                     break
                 # check for a piece from the opposing side, add piece's position to the possible_moves and possible_captures
                 # (UNLESS IT'S A KING) and break out of the current loop 
@@ -357,6 +357,7 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
             possible_position[1] += direction[1]
             
     return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
+
 
 def get_moves_for_king(curr_game_state, prev_game_state, curr_position):
     evaluate_current_position(curr_position, curr_game_state)

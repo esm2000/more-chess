@@ -347,6 +347,40 @@ def test_knight_capturing_adjacent_bishop():
 
 
 def test_knight_not_being_allowed_to_move_to_sword_in_stone_square():
+    ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|ss|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|wk|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|
+
+    ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|ss|__|##|__|
+    ## 2 |__|##|__|__|__|##|__|##|
+    ## 3 |##|__|##|bk|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|
+    for i in range(2):
+        for sword_in_the_stone_position in [[1, 4], [2, 5], [4, 5], [5, 2], [5, 4], [4, 1], [2, 1], [1, 2]]:
+            curr_game_state = copy.deepcopy(empty_game)
+            curr_game_state["turn_count"] = 0
+            curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_knight"}]
+            curr_game_state["sword_in_the_stone_position"] = sword_in_the_stone_position
+
+            prev_game_state = copy.deepcopy(curr_game_state)
+            curr_position = [3, 3]
+
+            possible_moves_and_captures = moves.get_moves_for_knight(curr_game_state, prev_game_state, curr_position)
+            assert sword_in_the_stone_position not in possible_moves_and_captures["possible_moves"]
+
+
+def test_knight_blocked_by_sword_in_stone_and_another_piece():
     # sword in stone buff should be able to block knight
     # (when used with another piece due to every possible move having two paths)
     
@@ -381,3 +415,41 @@ def test_knight_not_being_allowed_to_move_to_sword_in_stone_square():
 
         possible_moves_and_captures = moves.get_moves_for_knight(curr_game_state, prev_game_state, curr_position)
         assert [2, 2] not in possible_moves_and_captures["possible_moves"]
+
+
+def test_knight_partially_blocked_by_sword_in_stone():
+    # even thought the sword in stone buff is blocking the knight, 
+    # it should still have access via an alternate route
+
+    ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|ss|__|##|__|##|
+    ## 3 |##|__|##|wk|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|
+
+    ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|ss|__|##|__|##|
+    ## 3 |##|__|##|bk|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|
+    for i in range(2):
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["turn_count"] = 0
+        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_knight"}]
+        curr_game_state["sword_in_the_stone_position"] = [2, 2]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        curr_position = [3, 3]
+
+        possible_moves_and_captures = moves.get_moves_for_knight(curr_game_state, prev_game_state, curr_position)
+        expected_positions = [[1, 2], [1, 4], [2, 1], [2, 5]]
+        for expected_position in expected_positions:
+            assert expected_position in possible_moves_and_captures["possible_moves"]

@@ -662,46 +662,59 @@ def test_stun_cleanse(game):
 
 
 def test_neutral_monster_captures_after_spawning_on_any_non_king_piece(game):
+    # neutral monster should automatically send non-king pieces to the graveyard
     pass
 
 def test_sword_in_the_stone_spawn(game):
+    # run a test 50 times and see that the sword in the stone spawns in a suitable location every time
     pass
 
 
 def test_sword_in_the_stone_retrieval(game):
+    # test that both kings can retrieve the sword in the stone and its accompanying buff
     pass 
 
 
 def test_sword_in_the_stone_check_protection(game):
+    # test that the sword_in_the_stone protects king from check
     pass
 
 
 def test_sword_in_the_stone_stacks(game):
+    # test that the sword in the stone appropiately stacks
     pass
 
 
 def test_white_check(game):
+    # test that white can be checked
     pass
 
 
 def test_black_check(game):
+    # test that black can be checked
     pass
 
 
 def test_white_checkmate(game):
+    # test that white can be checkmated
     pass
 
 def test_black_checkmate(game):
+    # test that black can be checkmated
     pass
 
 def test_king_cant_put_itself_in_check(game):
+    # test that king can't move and put itself into check
     pass
 
 def test_king_cant_get_close_to_king(game):
+    # test that king can't move next to another king
     pass
 
 def test_game_ends_when_monster_spawns_on_top_of_king(game):
+    # test that the game ends when a monster spawns on top of a king
     pass
 
 def test_game_ends_when_king_stays_near_neutral_monster(game):
+    # test that the game ends when a king stays near a neutral monster 
     pass

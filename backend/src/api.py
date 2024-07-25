@@ -91,7 +91,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
         if "More than one" in str(e):
             raise HTTPException(status_code=400, detail=INVALID_GAME_STATE_ERROR_MESSAGE)
         raise e
-            
+
     # moved_pieces = [ 
     #   {
     #       "piece": {"type": "piece_type", ...},
@@ -104,6 +104,9 @@ def update_game_state(id, state: GameState, response: Response, player = True):
 
     # facilitate adjacent capture 
     # (while loop and manual pointer used since moved_pieces might be mutated)
+    # FUNCTION DESIGN - functions do "one thing" to game state (game state is an argument 
+    #                   passed in and since its a mutable object the functions return nothing)
+    # fn - facilitate adjacent capture
     moved_pieces_pointer = 0
     # 1. iterate through moved pieces to check for pieces that have moved
     while moved_pieces_pointer < len(moved_pieces):
@@ -112,7 +115,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
         moved_piece["current_position"][1] is None or \
         moved_piece["side"] == "neutral":
             moved_pieces_pointer += 1
-            continue        
+            continue
     # 2. get the moves and captures possible for the piece in its previous position
         # moves_info = {
         #   "possible_moves": [[row, col], ...] - positions where piece can move
@@ -197,6 +200,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                     piece_pointer += 1
         moved_pieces_pointer += 1
 
+    # fn - bishop energize stacks
     # iterate through moved pieces to check to see if a bishop has moved from its previous position and hasn't been bought/captured 
     # and add energize stacks based on its movement (5 energize stacks for each square moved, 10 energize stacks for each piece captured)
     for i, moved_piece in enumerate(moved_pieces):
@@ -222,7 +226,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
 
                     if piece["energize_stacks"] > 100:
                         piece["energize_stacks"] = 100
-                        
+    # fn - bishop debuff application                    
     # iterate through moved pieces to check to see if bishop is threatening to capture a piece and apply debuff
 
             future_moves_info = moves.get_moves_for_bishop(
@@ -244,6 +248,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                         elif piece["bishop_debuff"] < 3:
                             piece["bishop_debuff"] += 1
     
+    # fn - queen stun
     # iterate through moved pieces to check to see if a queen has moved from its previous position and hasn't been bought/captured,
     # also check to see if it's captured any pieces. If it hasn't captured any pieces, stun all adjacent pieces
     for i, moved_piece in enumerate(moved_pieces):
@@ -294,17 +299,21 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     # }
     is_pawn_exchange = old_game_state["captured_pieces"].copy()
 
+    # fn - clean game possible moves and possible captures from last game state
     # remove possible moves from last turn if any 
     new_game_state["possible_moves"] = []
     new_game_state["possible_captures"] = []
 
+    # fn - append turn count
     # append to turn count
     if len(moved_pieces) > 0:
         new_game_state["turn_count"] = old_game_state["turn_count"] + 1
 
+    # fn - prevent client-side updates to graveyard
     # do not allow for updates to graveyard
     new_game_state["graveyard"] = old_game_state["graveyard"]
 
+    # fn - check if more than one piece has moved
     # if more than one pieces for one side has moved and its not a castle, invalidate
     for side in old_game_state["captured_pieces"]:
         count_of_pieces_on_new_state = 0
@@ -383,11 +392,13 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                 except Exception as e:
                     logger.error(f"Unable to determine move for {moved_piece['piece']['type']} due to: {e}")
                     is_valid_game_state = False
+    # fn - validate moves
         # if move(s) are invalid, invalidate
                 if moved_piece["current_position"] not in moves_info["possible_moves"]:
                     logger.error(f"Square {moved_piece['previous_position']} to square {moved_piece['current_position']} invalid for {moved_piece['piece']['type']}")
                     is_valid_game_state = False
 
+    # fn - account for bought pieces 
         # if a piece has spawned without being exchanged for a pawn
         # take note of gold count that is supposed to be spent to obtain it
             if moved_piece["current_position"][0] is not None \
@@ -418,6 +429,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
         logger.error("More than one side have pieces that have moved")
         is_valid_game_state = False
     
+    # fn - invalidate game if stunned piece has moved
     for moved_piece in moved_pieces:
         # if piece has a origin and a destination (not spawned or captured) and is stunned, invalidate 
         if moved_piece["current_position"][0] is not None \
@@ -426,6 +438,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
             logger.error(f"Stunned piece, {moved_piece['piece']['type']}, has moved")
             is_valid_game_state = False
     
+    # fn - cleanse stunned pieces
     # the side being cleansed is the moving side
     side_being_cleansed = "white" if move_count_for_white else "black"
     
@@ -443,8 +456,10 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     # ensure that if a piece moved to a specific positions, all pieces that are supposed to be eliminated from that move are eliminated
     # since its possible to capture more than one piece a turn
     # (add the captured pieces to moved_pieces array, so that the captured_pieces object can be properly updated (lines 295-296))
+
     was_neutral_monster_killed = False
     for moved_piece in moved_pieces:
+    # fn - invalidate game states with moving monsters
         # if a neutral monster moves invalidate
         if moved_piece["side"] == "neutral" and moved_piece["current_position"][0] is not None and moved_piece["previous_position"][0] is not None:
             logger.error("A neutral monster has moved")
@@ -456,6 +471,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
             abs(moved_piece["current_position"][1] - neutral_monster_slain_position[1]) in [0, 1]:
                 was_neutral_monster_killed = True
 
+    # fn - check for unexplained dissappearing pieces 
         # if any piece captured this turn doesn't have a captor, invalidate (keep in mind that adjacent 
         # capturing is possible so positions in moved_pieces shouldn't be relied on as crutch)
         if moved_piece["side"] != "neutral" and moved_piece["current_position"][0] is None:
@@ -485,6 +501,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
             if not captured_piece_accounted_for:
                 logger.error(f"Piece {moved_piece['piece']['type']} on {moved_piece['previous_position']} has disappeared from board without being captured")
                 is_valid_game_state = False
+    # fn - damage neutral monsters
         # if a piece is on the same square or adjacent to neutral monsters, they should damage or kill them
         if moved_piece["previous_position"][0] is not None and moved_piece["current_position"][0] is not None:
             for neutral_monster in MONSTER_INFO:
@@ -499,7 +516,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
                                 if new_game_state["board_state"][MONSTER_INFO[neutral_monster]["position"][0]][MONSTER_INFO[neutral_monster]["position"][1]][i]["health"] < 1:
                                     new_game_state["board_state"][MONSTER_INFO[neutral_monster]["position"][0]][MONSTER_INFO[neutral_monster]["position"][1]].pop(i)
                                     new_game_state["captured_pieces"][moved_piece["side"]].append(neutral_monster)
-
+    # fn - check of unexplained pieces in the captured pieces array
         # if any new pieces in the captured pieces array have not been captured this turn, invalidate
         # (it's imperative that this code section is placed after we've updated captured_pieces)
     captured_pieces_array = new_game_state["captured_pieces"]["white"].copy() + new_game_state["captured_pieces"]["black"].copy() + new_game_state["graveyard"]
@@ -519,11 +536,13 @@ def update_game_state(id, state: GameState, response: Response, player = True):
         logger.error(f"There are extra captured pieces not accounted for: {captured_pieces_array}")
         is_valid_game_state = False
 
+    # fn - check for unexplained neutral monster deaths
         # if a neutral monster is killed and a piece has not moved to its position, invalidate 
     if neutral_monster_slain_position and not was_neutral_monster_killed:
         logger.error("A neutral monster disappeared from board without being captured")
         is_valid_game_state = False
 
+    # fn - check for invalid king capture
         # if any captured piece is a king, invalidate 
     if has_a_king_been_captured:
         logger.error("A king has been captured or has disappeared from board")
@@ -532,6 +551,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     if not is_valid_game_state:
         raise HTTPException(status_code=400, detail=INVALID_GAME_STATE_ERROR_MESSAGE)
 
+    # fn - determine possibleMoves
     # determine possibleMoves if a position_in_play is not [null, null]
     # and add to new_game_state; 
     if len(moved_pieces) > 0: 
@@ -597,6 +617,9 @@ def update_game_state(id, state: GameState, response: Response, player = True):
         new_game_state["possible_moves"] = moves_info["possible_moves"]
         new_game_state["possible_captures"] = moves_info["possible_captures"]
     
+    # fn - update capture point advantage
+    # fn - update gold count
+    # fn - reassign pawn buffs
     # figure out capture point advantage, update gold count, and reassign pawn buffs
     piece_values = new_game_state["captured_pieces"].copy()
     for side in piece_values:
@@ -649,6 +672,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     #       and there are no pawn exchanges in progress;
     #       sleep for a second at end of loop
 
+    # fn - erase old game's previous state
     # erase cached previous state in previous game state to manage space efficiency
     previous_state_of_old_game = old_game_state.get("previous_state")
     if previous_state_of_old_game:

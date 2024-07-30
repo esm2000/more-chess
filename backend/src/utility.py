@@ -435,16 +435,12 @@ def check_to_see_if_more_than_one_piece_has_moved(
         new_game_state, 
         moved_pieces, 
         is_valid_game_state, 
-        is_pawn_exchange_possible,
-        capture_positions,
-        gold_spent
+        capture_positions
 ):
-    move_count_for_white, move_count_for_black = 0, 0
     for side in old_game_state["captured_pieces"]:
         count_of_pieces_on_new_state = 0
         has_king_moved = False
         has_rook_moved = False
-        is_pawn_exchange_possible[side] = False
         
         for moved_piece in moved_pieces:
             if side != moved_piece["side"]:
@@ -454,17 +450,10 @@ def check_to_see_if_more_than_one_piece_has_moved(
                 count_of_pieces_on_new_state += 1
             if moved_piece["current_position"][0] is None and "pawn" in moved_piece["piece"]["type"]:
                 previous_position = moved_piece['previous_position']
-                # opposite_side = "white" if side == "black" else "black"
                 square_on_current_game_state = new_game_state["board_state"][previous_position[0]][previous_position[1]]
                 if square_on_current_game_state and all(side == piece["type"].split("_")[0] for piece in square_on_current_game_state):
-                    is_pawn_exchange_possible[side] = True
                     new_game_state["turn_count"] = old_game_state["turn_count"]
             if moved_piece["current_position"][0] is not None and moved_piece["previous_position"][0] is not None:
-                if side == "white":
-                    move_count_for_white += 1
-                else:
-                    move_count_for_black += 1
-
                 moves_info = {"possible_moves": [], "possible_captures": []}
                 try:
                     # TODO: incorporate other piece types here
@@ -522,12 +511,6 @@ def check_to_see_if_more_than_one_piece_has_moved(
                 if "queen" in moved_piece["piece"]["type"] or "king" in moved_piece["piece"]["type"]:
                     logger.error(f"A {'queen' if 'queen' in moved_piece['piece']['type'] else 'king'} has been bought")
                     is_valid_game_state = False
-                
-                gold_spent[side] += get_piece_value(moved_piece["piece"]["type"])
-
-                if gold_spent[side] > old_game_state["gold_count"][side]:
-                    logger.error(f"More gold has been spent for {side} than {side} currently has ({gold_spent[side]} gold vs. {old_game_state['gold_count'][side]} gold)")
-                    is_valid_game_state = False
         if count_of_pieces_on_new_state > 1:
             for moved_piece in moved_pieces:
                 if "king" in moved_piece.get("piece"):
@@ -539,11 +522,7 @@ def check_to_see_if_more_than_one_piece_has_moved(
                 logger.error("A castle was not detected and more than one piece has moved")
                 is_valid_game_state = False
 
-    # if more than one side has pieces that's moved, invalidate 
-    if move_count_for_white > 0 and move_count_for_black > 0: 
-        logger.error("More than one side have pieces that have moved")
-        is_valid_game_state = False
-    return is_valid_game_state, move_count_for_white, move_count_for_black
+    return is_valid_game_state
 
 
 def get_neutral_monster_slain_position(moved_pieces):
@@ -573,8 +552,8 @@ def invalidate_game_if_stunned_piece_moves(moved_pieces, is_valid_game_state):
 
 
 # the side being cleansed is the moving side
-def cleanse_stunned_pieces(new_game_state, move_count_for_white):
-    side_being_cleansed = "white" if move_count_for_white else "black"
+def cleanse_stunned_pieces(new_game_state, is_pawn_exchange_possible):
+    side_being_cleansed = "white" if is_pawn_exchange_possible else "black"
     
     # iterate through the entire board
     for row in new_game_state["board_state"]:
@@ -817,3 +796,58 @@ def perform_game_state_update(new_game_state, mongo_client, game_id):
     new_values = {"$set": new_game_state}
     game_database = mongo_client["game_db"]
     game_database["games"].update_one(query, new_values)
+
+
+def get_move_counts(moved_pieces):
+    move_count_for_white, move_count_for_black = 0, 0
+    for moved_piece in moved_pieces:        
+        if moved_piece["current_position"][0] is not None and moved_piece["previous_position"][0] is not None:
+            if moved_piece["side"] == "white":
+                move_count_for_white += 1
+            else:
+                move_count_for_black += 1
+    return move_count_for_white, move_count_for_black
+
+
+def invalidate_game_if_more_than_one_side_moved(move_count_for_white, move_count_for_black, is_valid_game_state):
+    # if more than one side has pieces that's moved, invalidate 
+    if move_count_for_white > 0 and move_count_for_black > 0: 
+        logger.error("More than one side have pieces that have moved")
+        is_valid_game_state = False
+    return is_valid_game_state
+
+
+def check_is_pawn_exhange_is_possible(old_game_state, new_game_state, moved_pieces):
+    is_pawn_exchange_possible = {"white": False, "black": False}
+
+    for side in old_game_state["captured_pieces"]:
+        for moved_piece in moved_pieces:
+            if side != moved_piece["side"]:
+                continue
+                
+            if moved_piece["current_position"][0] is None and "pawn" in moved_piece["piece"]["type"]:
+                previous_position = moved_piece['previous_position']
+                square_on_current_game_state = new_game_state["board_state"][previous_position[0]][previous_position[1]]
+                if square_on_current_game_state and all(side == piece["type"].split("_")[0] for piece in square_on_current_game_state):
+                    is_pawn_exchange_possible[side] = True
+    return is_pawn_exchange_possible
+
+
+def get_gold_spent(old_game_state, moved_pieces):
+    gold_spent = {"white": 0, "black": 0}
+    for moved_piece in moved_pieces:
+    # if a piece has spawned without being exchanged for a pawn
+    # take note of gold count that is supposed to be spent to obtain it
+        if moved_piece["current_position"][0] is not None \
+        and moved_piece["previous_position"][0] is None \
+        and not any(p['previous_position'] == moved_piece["current_position"] for p in moved_pieces if p["previous_position"][0] is not None):          
+            gold_spent[moved_piece["side"]] += get_piece_value(moved_piece["piece"]["type"])
+    return gold_spent
+
+
+def invalidate_game_if_too_much_gold_is_spent(old_game_state, gold_spent, is_valid_game_state):
+    for side in old_game_state["gold_count"]:
+        if gold_spent[side] > old_game_state["gold_count"][side]:
+            logger.error(f"More gold has been spent for {side} than {side} currently has ({gold_spent[side]} gold vs. {old_game_state['gold_count'][side]} gold)")
+            is_valid_game_state = False
+    return is_valid_game_state

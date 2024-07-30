@@ -223,7 +223,6 @@ def test_rook_blocked():
         curr_position = [3, 1]
 
         possible_moves_and_captures = moves.get_moves_for_rook(curr_game_state, prev_game_state, curr_position)
-        print(possible_moves_and_captures["possible_moves"])
         assert sorted([
             [3, 0], 
             [3, 2], [3, 3],

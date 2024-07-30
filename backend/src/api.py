@@ -17,14 +17,19 @@ from src.utility import (
     apply_queen_stun,
     carry_out_neutral_monster_attacks,
     check_for_disappearing_pieces,
+    check_is_pawn_exhange_is_possible,
     check_to_see_if_more_than_one_piece_has_moved,
     clean_possible_moves_and_possible_captures,
     cleanse_stunned_pieces,
     damage_neutral_monsters,
     determine_pieces_that_have_moved,
     determine_possible_moves,
+    get_gold_spent,
+    get_move_counts,
     invalidate_game_if_monster_has_moved,
+    invalidate_game_if_more_than_one_side_moved,
     invalidate_game_if_stunned_piece_moves,
+    invalidate_game_if_too_much_gold_is_spent,
     invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array,
     is_invalid_king_capture,
     is_neutral_monster_killed,
@@ -131,28 +136,28 @@ def update_game_state(id, state: GameState, response: Response, player = True):
 
     is_valid_game_state = True
     capture_positions = []
-    gold_spent = {"white": 0, "black": 0}
-    is_pawn_exchange_possible = {"white": False, "black": False}
 
     clean_possible_moves_and_possible_captures(new_game_state)
     append_to_turn_count(old_game_state, new_game_state, moved_pieces)
     prevent_client_side_updates_to_graveyard(old_game_state, new_game_state)
 
-    # check_to_see_if_more_than_one_piece_has_moved() does too much... please split into individual functions
-        # returns values for is_valid_state, move_count_for_white, move_count_for_black
-        # mutates  is_pawn_exchange_possible object and capture_positions array
-    is_valid_game_state, move_count_for_white, move_count_for_black = check_to_see_if_more_than_one_piece_has_moved(
+    # returns values for is_valid_state
+    # mutates capture_positions array
+    is_valid_game_state = check_to_see_if_more_than_one_piece_has_moved(
         old_game_state, 
         new_game_state, 
         moved_pieces, 
         is_valid_game_state, 
-        is_pawn_exchange_possible,
-        capture_positions,
-        gold_spent
+        capture_positions
     )
-    
+    gold_spent = get_gold_spent(old_game_state, moved_pieces)
+
+    is_pawn_exchange_possible = check_is_pawn_exhange_is_possible(old_game_state, new_game_state, moved_pieces)
+    move_count_for_white, move_count_for_black = get_move_counts(moved_pieces)
+
+    is_valid_game_state = invalidate_game_if_more_than_one_side_moved(move_count_for_white, move_count_for_black, is_valid_game_state)
     is_valid_game_state = invalidate_game_if_stunned_piece_moves(moved_pieces, is_valid_game_state)
-    
+    is_valid_game_state = invalidate_game_if_too_much_gold_is_spent(old_game_state, gold_spent, is_valid_game_state)
     # mutates new_game_state object
     cleanse_stunned_pieces(new_game_state, move_count_for_white)
     
@@ -163,7 +168,13 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     
     is_valid_game_state = invalidate_game_if_monster_has_moved(is_valid_game_state, moved_pieces)
     # mutates capture_positions list
-    is_valid_game_state = check_for_disappearing_pieces(old_game_state, moved_pieces, is_valid_game_state, capture_positions, is_pawn_exchange_possible)
+    is_valid_game_state = check_for_disappearing_pieces(
+        old_game_state, 
+        moved_pieces, 
+        is_valid_game_state, 
+        capture_positions, 
+        is_pawn_exchange_possible
+    )
     # mutates new_game_state object
     damage_neutral_monsters(new_game_state, moved_pieces)
     is_valid_game_state = invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_game_state, new_game_state, moved_pieces, is_valid_game_state, is_pawn_exchange_possible)

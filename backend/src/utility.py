@@ -421,7 +421,7 @@ def clean_possible_moves_and_possible_captures(new_game_state):
     new_game_state["possible_captures"] = []
 
 
-def append_to_turn_count(old_game_state, new_game_state, moved_pieces):
+def increment_turn_count(old_game_state, new_game_state, moved_pieces):
     if len(moved_pieces) > 0:
         new_game_state["turn_count"] = old_game_state["turn_count"] + 1
 
@@ -743,9 +743,15 @@ def get_piece_value_for_each_side(new_game_state):
 
 # updates the gold count for the new game state
 def update_gold_count(old_game_state, new_game_state, gold_spent):
+    def list_difference(list1, list2):
+        result = list1[:]  # Make a copy of list1
+        for item in list2:
+            if item in result:
+                result.remove(item)
+        return result
+    
     for side in new_game_state["captured_pieces"]:
-
-        for piece in list(set(new_game_state["captured_pieces"]) - set(old_game_state["captured_pieces"])):
+        for piece in list_difference(new_game_state["captured_pieces"][side], old_game_state["captured_pieces"][side]):
             new_game_state["gold_count"][side] += get_piece_value(piece) * 2
 
         new_game_state["gold_count"][side] -= gold_spent[side]

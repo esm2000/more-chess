@@ -11,8 +11,7 @@ from src.database import mongo_client
 from src.logging import logger
 from src.utility import (
     INVALID_GAME_STATE_ERROR_MESSAGE,
-    MONSTER_INFO,
-    append_to_turn_count,
+    increment_turn_count,
     apply_bishop_energize_stacks_and_bishop_debuffs,
     apply_queen_stun,
     carry_out_neutral_monster_attacks,
@@ -129,16 +128,30 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     facilitate_adjacent_capture(old_game_state, new_game_state, moved_pieces)
     apply_bishop_energize_stacks_and_bishop_debuffs(old_game_state, new_game_state, moved_pieces)
     apply_queen_stun(old_game_state, new_game_state, moved_pieces)
-    
-    # TODO: if any pieces on the board have gained third bishop debuff, retain last player's turn until they've spared or captured it'
-                   
-    # TODO: if a queen captures or "assists" a piece and is not in danger of being captures, retain last player's turn until they move queen again
-
     is_valid_game_state = True
     capture_positions = []
 
+    should_increment_turn_count = True
+    # TODO: if any pieces on the board have gained third bishop debuff, retain last player's turn until they've spared or captured it
+        # scenario 1 - (can be any) pieces on the board have third bishop debuff and did not have all three last turn 
+        #            - player (or AI) needs to apply debuff
+        #            - turn count is not being incremented
+        # scenario 2 - a piece that had third bishop debuff in the previous game state has no debuffs present in the current game state
+        #            - player spared piece and game needs to clear all other bishop debuffs that are at three
+        #            - turn count is being incremented
+        #            - invalidate game if any pieces have moved
+        # scenario 3 - there is a piece in the moved_pieces array that shows that a piece was captured (via bishop debuffs)
+        #            - player captured piece and game needs to clear all other bishop debuffs and ensure game doesn't invalidate state 
+        #            - turn count is being incremented
+        #            - append captured piece's position to capture_positions
+        # scenario 4 - catch all - illegal move is attempted instead of dealing with bishop debuffs
+        #            - search through moved pieces and invalidate game state if any pieces moved (valid old position and new position) if there's any third bishop buff active in old_game_state
+        # add unit tests for these four scenarios
+    # TODO: if a queen captures or "assists" a piece and is not in danger of being captured, retain last player's turn until they move queen again
+
     clean_possible_moves_and_possible_captures(new_game_state)
-    append_to_turn_count(old_game_state, new_game_state, moved_pieces)
+    if should_increment_turn_count:
+        increment_turn_count(old_game_state, new_game_state, moved_pieces)
     prevent_client_side_updates_to_graveyard(old_game_state, new_game_state)
 
     # returns values for is_valid_state

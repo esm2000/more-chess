@@ -107,6 +107,8 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     new_game_state = dict(state)
     old_game_state = retrieve_game_state(id, response)
 
+    # TODO: skip a player's turn if all his piece's are stunned (use turn count parity to decide who's turn it is)
+
     # validate whether the new game state is valid
     # and return status code 500 if it isn't
     try:
@@ -132,43 +134,80 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     capture_positions = []
 
     should_increment_turn_count = True
-    pieces_with_three_bishop_stacks = []
-    # [{piece: <piece dictionary>, position: }]
-    for i, row in enumerate(new_game_state["board_state"]):
-        for j, square in enumerate(row):
-            if square:
-                for piece in square:
-                    if piece.get("bishop_debuff", 0) == 3:
-                        pieces_with_three_bishop_stacks.append({
-                            "piece": piece.copy(), "position": [i, j]
-                        })
-    def did_piece_get_full_bishop_debuffs_this_turn(old_game_state, piece_info):
-        row = piece_info["position"][0]
-        col = piece_info["position"][1]
+    pieces_with_three_bishop_stacks_this_turn = get_pieces_with_three_bishop_stacks_from_state(new_game_state)
+    pieces_with_three_bishop_stacks_last_turn = get_pieces_with_three_bishop_stacks_from_state(old_game_state)
+    # [
+    #   {
+    #       "piece": <piece dictionary>,
+    #       "position": [i, j]
+    #   }
+    # ]
+
+    def get_pieces_with_three_bishop_stacks_from_state(game_state):
+        output = []
+        # [
+        #   {
+        #       "piece": <piece dictionary>,
+        #       "position": [i, j]
+        #   }
+        # ]
+        for i, row in enumerate(game_state["board_state"]):
+            for j, square in enumerate(row):
+                if square:
+                    for piece in square:
+                        if piece.get("bishop_debuff", 0) == 3:
+                            output.append({
+                                "piece": piece.copy(), "position": [i, j]
+                            })
+        return output
+    
+    
+    def did_piece_get_full_bishop_debuffs_this_turn(old_game_state, new_piece_info):
+        row = new_piece_info["position"][0]
+        col = new_piece_info["position"][1]
         square = old_game_state["board_state"][row][col]
         if not square:
             return False
         for piece in square:
-            if piece["type"] == piece_info["piece"]["type"] and \
-            piece_info["piece"].get("bishop_debuff") == 2:
+            if piece["type"] == new_piece_info["piece"]["type"] and \
+            new_piece_info["piece"].get("bishop_debuff") >= 2:
                 return True
         return False
+    
+    def did_piece_get_spared_this_turn_from_special_bishop_capture(new_game_state, old_piece_info):
+        row = old_piece_info["position"][0]
+        col = old_piece_info["position"][1]
+        square = new_game_state["board_state"][row][col]
+        if not square:
+            return False
+        
+        for piece in square:
+            if piece["type"] == old_piece_info["piece"]["type"] and piece.get("bishop_debuff", 0) == 0:
+                return True
+        return False
+
         # TODO: if any pieces on the board have gained third bishop debuff, retain last player's turn until they've spared or captured it
         # scenario 1 - (can be any) pieces on the board have third bishop debuff and did not have all three last turn 
-        #            - player (or AI) needs to apply debuff
+        #            - or they had all three last turn but another piece with a third bishop debuff was dealt with instead
         #            - turn count is not being incremented
-    if all([did_piece_get_full_bishop_debuffs_this_turn(old_game_state, piece_info) for piece_info in pieces_with_three_bishop_stacks]):
+    if any([did_piece_get_full_bishop_debuffs_this_turn(old_game_state, piece_info) for piece_info in pieces_with_three_bishop_stacks_this_turn]):
         should_increment_turn_count = False
-        # scenario 2 - a piece that had third bishop debuff in the previous game state has no debuffs present in the current game state
-        #            - player spared piece and game needs to clear all other bishop debuffs that are at three
-        #            - turn count is being incremented
-        #            - invalidate game if any pieces have moved
-        # scenario 3 - there is a piece in the moved_pieces array that shows that a piece was captured (via bishop debuffs)
-        #            - player captured piece and game needs to clear all other bishop debuffs and ensure game doesn't invalidate state 
-        #            - turn count is being incremented
-        #            - append captured piece's position to capture_positions
-        # scenario 4 - catch all - illegal move is attempted instead of dealing with bishop debuffs
+        # scenario 2 - illegal move is attempted instead of dealing with bishop debuffs
         #            - search through moved pieces and invalidate game state if any pieces moved (valid old position and new position) if there's any third bishop buff active in old_game_state
+    elif pieces_with_three_bishop_stacks_last_turn and \
+    len([moved_piece for moved_piece in moved_pieces if moved_piece["previous_position"][0] is not None and moved_piece["current_position"][1] is not None]) > 0:
+        logger.error("Illegal move was attempted instead of dealing with full bishop debuff stacks")
+        is_valid_game_state = False
+        # scenario 3 - a piece that had third bishop debuff in the previous game state has no debuffs present in the current game state
+        #            - player spared piece
+        #            - turn count is being incremented
+        #            - (technically allow sparing of multiple pieces since this isn't game breaking behavior)
+    elif all([did_piece_get_spared_this_turn_from_special_bishop_capture(new_game_state, piece_info) for piece_info in pieces_with_three_bishop_stacks_last_turn]):
+        should_increment_turn_count = True
+        # scenario 4 - there is a piece in the moved_pieces array that shows that a piece was captured (via bishop debuffs)
+        #            - player captured piece and game has to ensure that state is not invalidated later on 
+        #              by appending captured piece's position to capture_positions
+        #            - turn count is being incremented
         # scenario 5 - catch all - more than one side has 3 bishop debuffs 
         #            - invalidate game
         # add unit tests for these five scenarios

@@ -132,10 +132,33 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     capture_positions = []
 
     should_increment_turn_count = True
-    # TODO: if any pieces on the board have gained third bishop debuff, retain last player's turn until they've spared or captured it
+    pieces_with_three_bishop_stacks = []
+    # [{piece: <piece dictionary>, position: }]
+    for i, row in enumerate(new_game_state["board_state"]):
+        for j, square in enumerate(row):
+            if square:
+                for piece in square:
+                    if piece.get("bishop_debuff", 0) == 3:
+                        pieces_with_three_bishop_stacks.append({
+                            "piece": piece.copy(), "position": [i, j]
+                        })
+    def did_piece_get_full_bishop_debuffs_this_turn(old_game_state, piece_info):
+        row = piece_info["position"][0]
+        col = piece_info["position"][1]
+        square = old_game_state["board_state"][row][col]
+        if not square:
+            return False
+        for piece in square:
+            if piece["type"] == piece_info["piece"]["type"] and \
+            piece_info["piece"].get("bishop_debuff") == 2:
+                return True
+        return False
+        # TODO: if any pieces on the board have gained third bishop debuff, retain last player's turn until they've spared or captured it
         # scenario 1 - (can be any) pieces on the board have third bishop debuff and did not have all three last turn 
         #            - player (or AI) needs to apply debuff
         #            - turn count is not being incremented
+    if all([did_piece_get_full_bishop_debuffs_this_turn(old_game_state, piece_info) for piece_info in pieces_with_three_bishop_stacks]):
+        should_increment_turn_count = False
         # scenario 2 - a piece that had third bishop debuff in the previous game state has no debuffs present in the current game state
         #            - player spared piece and game needs to clear all other bishop debuffs that are at three
         #            - turn count is being incremented
@@ -146,7 +169,9 @@ def update_game_state(id, state: GameState, response: Response, player = True):
         #            - append captured piece's position to capture_positions
         # scenario 4 - catch all - illegal move is attempted instead of dealing with bishop debuffs
         #            - search through moved pieces and invalidate game state if any pieces moved (valid old position and new position) if there's any third bishop buff active in old_game_state
-        # add unit tests for these four scenarios
+        # scenario 5 - catch all - more than one side has 3 bishop debuffs 
+        #            - invalidate game
+        # add unit tests for these five scenarios
     # TODO: if a queen captures or "assists" a piece and is not in danger of being captured, retain last player's turn until they move queen again
 
     clean_possible_moves_and_possible_captures(new_game_state)

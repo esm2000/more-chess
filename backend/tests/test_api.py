@@ -660,6 +660,7 @@ def test_stun_cleanse(game):
     assert game["board_state"][3][3][0]["type"] == "white_pawn"
     assert not game["board_state"][3][3][0].get("is_stunned", False) 
 
+# add unit tests for 6 full bishop debuff stacks
 
 def test_neutral_monster_captures_after_spawning_on_any_non_king_piece(game):
     # neutral monster should automatically send non-king pieces to the graveyard
@@ -718,3 +719,4 @@ def test_game_ends_when_monster_spawns_on_top_of_king(game):
 def test_game_ends_when_king_stays_near_neutral_monster(game):
     # test that the game ends when a king stays near a neutral monster 
     pass
+

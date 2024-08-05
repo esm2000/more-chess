@@ -858,5 +858,147 @@ def invalidate_game_if_too_much_gold_is_spent(old_game_state, gold_spent, is_val
             is_valid_game_state = False
     return is_valid_game_state
 
+
 def clean_bishop_special_captures(new_game_state):
     new_game_state["bishop_special_captures"] = []
+
+
+def handle_pieces_with_full_bishop_debuff_stacks(
+    old_game_state,
+    new_game_state,
+    moved_pieces,
+    is_valid_game_state,
+    capture_positions
+):
+
+    def get_pieces_with_three_bishop_stacks_from_state(game_state):
+        output = []
+        # [
+        #   {
+        #       "piece": <piece dictionary>,
+        #       "position": [i, j]
+        #   }
+        # ]
+        for i, row in enumerate(game_state["board_state"]):
+            for j, square in enumerate(row):
+                if square:
+                    for piece in square:
+                        if piece.get("bishop_debuff", 0) == 3:
+                            output.append({
+                                "piece": piece.copy(), "position": [i, j]
+                            })
+        return output
+    
+    
+    def did_piece_get_full_bishop_debuffs_this_turn(old_game_state, new_piece_info):
+        row = new_piece_info["position"][0]
+        col = new_piece_info["position"][1]
+        square = old_game_state["board_state"][row][col]
+        if not square:
+            return False
+        for piece in square:
+            if piece["type"] == new_piece_info["piece"]["type"] and \
+            new_piece_info["piece"].get("bishop_debuff") >= 2:
+                return True
+        return False
+    
+    def did_piece_get_spared_this_turn_from_special_bishop_capture(new_game_state, old_piece_info):
+        row = old_piece_info["position"][0]
+        col = old_piece_info["position"][1]
+        square = new_game_state["board_state"][row][col]
+        if not square:
+            return False
+        
+        for piece in square:
+            if piece["type"] == old_piece_info["piece"]["type"] and piece.get("bishop_debuff", 0) == 0:
+                return True
+        return False
+
+    def more_than_one_side_has_pieces_captured(old_game_state, new_game_state):
+        return len(old_game_state["captured_pieces"]["white"]) != len(new_game_state["captured_pieces"]["white"]) and \
+        len(old_game_state["captured_pieces"]["black"]) != len(new_game_state["captured_pieces"]["black"])
+        
+    def have_pieces_have_been_captured(old_game_state, new_game_state):
+        return len(old_game_state["captured_pieces"]["white"]) != len(new_game_state["captured_pieces"]["white"]) or \
+        len(old_game_state["captured_pieces"]["black"]) != len(new_game_state["captured_pieces"]["black"])
+
+    should_increment_turn_count = True
+    pieces_with_three_bishop_stacks_this_turn = get_pieces_with_three_bishop_stacks_from_state(new_game_state)
+    sides_from_with_three_bishop_stacks_this_turn = [piece_info["piece"]["type"].split("_")[0] for piece_info in pieces_with_three_bishop_stacks_this_turn]
+    pieces_with_three_bishop_stacks_last_turn = get_pieces_with_three_bishop_stacks_from_state(old_game_state)
+    # [
+    #   {
+    #       "piece": <piece dictionary>,
+    #       "position": [i, j]
+    #   }
+    # ]
+        # scenario 0 - catch all - more than one side has 3 bishop debuffs 
+        #            - invalidate game
+    if "white" in sides_from_with_three_bishop_stacks_this_turn and \
+        "black" in sides_from_with_three_bishop_stacks_this_turn:
+        logger.error("More than one side has full bishop debuff stacks")
+        is_valid_game_state = False
+        should_increment_turn_count = False
+        # scenario 1 - (can be any) pieces on the board have third bishop debuff and did not have all three last turn 
+        #            - or they had all three last turn but another piece with a third bishop debuff was dealt with instead
+        #            - turn count is not being incremented
+    elif any([did_piece_get_full_bishop_debuffs_this_turn(old_game_state, piece_info) for piece_info in pieces_with_three_bishop_stacks_this_turn]):
+        should_increment_turn_count = False
+        # scenario 2 - illegal move is attempted instead of dealing with bishop debuffs
+        #            - search through moved pieces and invalidate game state if any pieces moved (valid old position and new position) if there's any third bishop buff active in old_game_state
+    elif pieces_with_three_bishop_stacks_last_turn and \
+    len([moved_piece for moved_piece in moved_pieces if moved_piece["previous_position"][0] is not None and moved_piece["current_position"][1] is not None]) > 0:
+        logger.error("Illegal move was attempted instead of dealing with full bishop debuff stacks")
+        is_valid_game_state = False
+        should_increment_turn_count = False
+        # scenario 3 - a piece that had third bishop debuff in the previous game state has no debuffs present in the current game state
+        #            - player spared piece
+        #            - turn count is being incremented
+        #            - (technically allow sparing of multiple pieces since this isn't game breaking behavior)
+    elif all([did_piece_get_spared_this_turn_from_special_bishop_capture(new_game_state, piece_info) for piece_info in pieces_with_three_bishop_stacks_last_turn]):
+        should_increment_turn_count = True
+        # scenario 4 - more than one piece has been captured
+    elif (pieces_with_three_bishop_stacks_this_turn or pieces_with_three_bishop_stacks_last_turn) and \
+    more_than_one_side_has_pieces_captured(old_game_state, new_game_state):
+        logger.error("More than one side has pieces captured after dealing with full bishop debuff stacks")
+        is_valid_game_state = False
+        should_increment_turn_count = False
+        # scenario 5 - there is a piece in the moved_pieces array that shows that a piece was captured (via bishop debuffs)
+        #            - player captured piece and game has to ensure that state is not invalidated later on 
+        #              by appending captured piece's position to capture_positions
+        #            - turn count is being incremented only if there are no other pieces to spare or capture
+    elif pieces_with_three_bishop_stacks_last_turn and \
+    have_pieces_have_been_captured(old_game_state, new_game_state):
+        if not new_game_state["bishop_special_captures"]:
+            logger.error("Bishop special capture positions not properly marked even though piece has been captured")
+            is_valid_game_state = False
+            should_increment_turn_count = False
+        else:
+            captured_side = new_game_state["bishop_special_captures"]["type"].split()[0]
+            opposite_side = "white" if captured_side == "black" else "black"
+
+            is_found = False
+            for row in range(0, len(new_game_state["board_state"])):
+                for col in range(0, len(new_game_state["board_state"])):
+                    if is_found:
+                        break
+                    new_square = new_game_state["board_state"][row][col]
+
+                    if not new_square:
+                        continue
+
+                    for piece in new_square:
+                        if piece.get("type") == f"{opposite_side}_bishop":
+                            possible_moves = moves.get_moves_for_bishop(new_game_state, old_game_state, [row, col])["possible_moves"]
+                            if new_game_state["bishop_special_captures"]["position"] in possible_moves:
+                                should_increment_turn_count = True
+                                # "possible_captures": [[[row, col], [row, col]], ...] - first position is where piece has to move to capture piece in second position
+                                capture_positions.append([[row, col], new_game_state["bishop_special_captures"]["position"]])
+                                is_found = True
+            
+            should_increment_turn_count = len(pieces_with_three_bishop_stacks_this_turn) == 1
+            if not is_found:
+                is_valid_game_state = False
+                logger.error(f'Unable to find a {opposite_side} bishop that could capture {new_game_state["bishop_special_captures"]["type"]}')        
+        
+    return is_valid_game_state, should_increment_turn_count

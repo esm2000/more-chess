@@ -857,3 +857,6 @@ def invalidate_game_if_too_much_gold_is_spent(old_game_state, gold_spent, is_val
             logger.error(f"More gold has been spent for {side} than {side} currently has ({gold_spent[side]} gold vs. {old_game_state['gold_count'][side]} gold)")
             is_valid_game_state = False
     return is_valid_game_state
+
+def clean_bishop_special_captures(new_game_state):
+    new_game_state["bishop_special_captures"] = []

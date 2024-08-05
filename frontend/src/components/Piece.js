@@ -93,6 +93,13 @@ const Piece = (props) => {
             }
             i++
         }
+        
+        newBoardState.bishopSpecialCaptures = [
+            {
+                position: [props.row, props.col],
+                type: props.type
+            }
+        ]
 
         newGoldCount[PLAYERS[0]] += capturedPieceValue ? capturedPieceValue : 0
         gameState.updateGameState({

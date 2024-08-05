@@ -60,6 +60,7 @@ class GameState(BaseModel, extra=Extra.allow):
     player_victory: bool
     player_defeat: bool
     gold_count: dict
+    bishop_special_captures: list
 
 
 @router.post("/game", status_code=201)
@@ -149,7 +150,6 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     # TODO: if a queen captures or "assists" a piece and is not in danger of being captured, retain last player's turn until they move queen again
 
     clean_possible_moves_and_possible_captures(new_game_state)
-    clean_bishop_special_captures(new_game_state)
     if should_increment_turn_count:
         increment_turn_count(old_game_state, new_game_state, moved_pieces)
     prevent_client_side_updates_to_graveyard(old_game_state, new_game_state)
@@ -182,12 +182,15 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     is_valid_game_state = invalidate_game_if_monster_has_moved(is_valid_game_state, moved_pieces)
     # mutates capture_positions list
     is_valid_game_state = check_for_disappearing_pieces(
-        old_game_state, 
+        old_game_state,
+        new_game_state,
         moved_pieces, 
         is_valid_game_state, 
         capture_positions, 
         is_pawn_exchange_possible
     )
+    # mutates new_game_state object
+    clean_bishop_special_captures(new_game_state)
     # mutates new_game_state object
     damage_neutral_monsters(new_game_state, moved_pieces)
     is_valid_game_state = invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_game_state, new_game_state, moved_pieces, is_valid_game_state, is_pawn_exchange_possible)

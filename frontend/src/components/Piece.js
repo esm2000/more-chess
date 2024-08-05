@@ -8,7 +8,8 @@ import {
     MAX_BOSS_HEALTH, 
     determineIsMobile, 
     snakeToCamel,
-    getPiecePrice
+    getPiecePrice,
+    camelToSnake
 } from '../utility';
 
 const Piece = (props) => {
@@ -94,16 +95,17 @@ const Piece = (props) => {
             i++
         }
         
-        newBoardState.bishopSpecialCaptures = [
+        const newBishopSpecialCaptures = [
             {
                 position: [props.row, props.col],
-                type: props.type
+                type: camelToSnake(props.type) 
             }
         ]
-
+        
         newGoldCount[PLAYERS[0]] += capturedPieceValue ? capturedPieceValue : 0
         gameState.updateGameState({
             ...gameState, 
+            bishopSpecialCaptures: newBishopSpecialCaptures,
             boardState: newBoardState,
             capturedPieces: newCapturedPieces,
             goldCount: newGoldCount

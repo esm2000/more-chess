@@ -40,6 +40,7 @@ from src.utility import (
     perform_game_state_update,
     prevent_client_side_updates_to_graveyard,
     reassign_pawn_buffs,
+    record_moved_pieces_this_turn,
     spawn_neutral_monsters,
     update_capture_point_advantage,
     update_gold_count
@@ -61,6 +62,7 @@ class GameState(BaseModel, extra=Extra.allow):
     player_defeat: bool
     gold_count: dict
     bishop_special_captures: list
+    latest_movement: dict
 
 
 @router.post("/game", status_code=201)
@@ -79,7 +81,8 @@ def create_game():
         "player_defeat": False,
         "gold_count": {"white": 0, "black": 0},
         "last_updated": datetime.datetime.now(),
-        "bishop_special_captures": []
+        "bishop_special_captures": [],
+        "latest_movement": {}
     }
     game_database = mongo_client["game_db"]
     game_database["games"].insert_one(game_state)
@@ -224,8 +227,19 @@ def update_game_state(id, state: GameState, response: Response, player = True):
 
     # spawn neutral monsters when appropriate
     spawn_neutral_monsters(new_game_state)
+    
+    # updates gamestate object with any moved pieces and some information 
+        # only moved_pieces with a non-null starting and ending positions in a single dictionary 
+        # records previous position, current position, piece type, and current turn count
+        # allows for proper application of bishop energize stacks after capturing pieces with full bishop debuff stacks
 
-
+        # latest_movement key in new game state is in format of:
+            # {
+            #   "turn_count": 40,
+            #   "record": moved_pieces # (filtered)
+            # }
+    # mutates new_game_state
+    record_moved_pieces_this_turn(new_game_state, moved_pieces)
     # TODO: In another script, use endless loop to update games with
     #       odd number turns if its been 6 seconds since the last update 
     #       and there are no pawn exchanges in progress;

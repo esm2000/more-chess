@@ -381,8 +381,7 @@ def apply_bishop_energize_stacks_and_bishop_debuffs(old_game_state, new_game_sta
                             piece["bishop_debuff"] += 1
     # TODO: cover edge case where bishop may have captured a piece with full bishop debuff stacks
     # and apply energize stacks in this scenario
-    # if new_game_state["bishop_special_captures"]:
-
+    # (utilize latest_movement field in game state)
 
 # iterate through moved pieces to check to see if a queen has moved from its previous position and hasn't been bought/captured,
 # also check to see if it's captured any pieces. If it hasn't captured any pieces, stun all adjacent pieces
@@ -1018,3 +1017,23 @@ def handle_pieces_with_full_bishop_debuff_stacks(
                 logger.error(f'Unable to find a {opposite_side} bishop that could capture {new_game_state["bishop_special_captures"][0]["type"]}')        
         
     return is_valid_game_state, should_increment_turn_count
+
+
+def record_moved_pieces_this_turn(new_game_state, moved_pieces):
+    def is_captured_or_spawned(moved_pieces_entry):
+        return moved_pieces_entry["previous_position"][0] is None \
+        or  moved_pieces_entry["current_position"][0] is None
+    filtered_moved_pieces = [entry for entry in moved_pieces if not is_captured_or_spawned(entry)]
+
+    # in theory filtered_moved_pieces should only have one moved piece
+    # except when performing castling but this behavior is checked elsewhere
+    
+    if filtered_moved_pieces:
+        new_game_state["latest_movement"] = {
+            "turn_count": new_game_state["turn_count"],
+            "record": filtered_moved_pieces
+        }
+    
+    # keep the previous record if there are no new moved pieces
+    # to faciliate record keeping for granting bishop energize stacks
+    # to bishops that perform special captures with their debuff

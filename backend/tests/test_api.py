@@ -720,3 +720,4 @@ def test_game_ends_when_king_stays_near_neutral_monster(game):
     # test that the game ends when a king stays near a neutral monster 
     pass
 
+# INSERT TESTING FOR BISHOP DEBUFFS

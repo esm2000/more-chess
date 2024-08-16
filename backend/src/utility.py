@@ -379,9 +379,7 @@ def apply_bishop_energize_stacks_and_bishop_debuffs(old_game_state, new_game_sta
                             piece["bishop_debuff"] = 1
                         elif piece["bishop_debuff"] < 3:
                             piece["bishop_debuff"] += 1
-    # TODO: cover edge case where bishop may have captured a piece with full bishop debuff stacks
-    # and apply energize stacks in this scenario
-    # (utilize latest_movement field in game state)
+
 
 # iterate through moved pieces to check to see if a queen has moved from its previous position and hasn't been bought/captured,
 # also check to see if it's captured any pieces. If it hasn't captured any pieces, stun all adjacent pieces
@@ -1008,14 +1006,36 @@ def handle_pieces_with_full_bishop_debuff_stacks(
                             possible_moves = moves.get_moves_for_bishop(new_game_state, old_game_state, [row, col])["possible_moves"]
                             if new_game_state["bishop_special_captures"][0]["position"] in possible_moves:
                                 # "possible_captures": [[[row, col], [row, col]], ...] - first position is where piece has to move to capture piece in second position
-                                capture_positions.append([[row, col], new_game_state["bishop_special_captures"][0]["position"]])
+                                new_capture_position = [[row, col], new_game_state["bishop_special_captures"][0]["position"]]
                                 is_found = True
-            
             should_increment_turn_count = len(pieces_with_three_bishop_stacks_this_turn) == 1
             if not is_found:
                 is_valid_game_state = False
                 logger.error(f'Unable to find a {opposite_side} bishop that could capture {new_game_state["bishop_special_captures"][0]["type"]}')        
-        
+            else:
+                capture_positions.append(new_capture_position)
+                # find bishop responsible and apply energize stacks in this scenario
+                for entry in new_game_state["latest_movement"]["record"]:
+                    if entry["piece"]["type"] == f"{opposite_side}_bishop":
+                        # an additional check to see if bishop's current position can apply bishop debuff to captured piece
+                        # TODO: account from adjacent bishop debuff application AND account for blocking pieces
+                        #     : switch to a check that's similar to bishop movement
+                        #     : (yes, bishop debuffs stack with their adjacent capture passive)
+                        row_diff = entry["current_position"][0] - new_capture_position[0][0]
+                        col_diff = entry["current_position"][1] - new_capture_position[0][1]
+                        
+                        
+                        if row_diff != col_diff:
+                            is_valid_game_state = False
+                            logger.error(f'Unable to find a {opposite_side} bishop that to give energize stacks for bishop debuff capture at {entry["current_position"]}')        
+
+                        else:
+                            for piece in new_game_state["board_state"][entry["current_position"][0]][entry["current_position"][1]]:
+                                piece["energize_stacks"] += 10
+
+                                if piece["energize_stacks"] > 100:
+                                    piece["energize_stacks"] = 100
+
     return is_valid_game_state, should_increment_turn_count
 
 

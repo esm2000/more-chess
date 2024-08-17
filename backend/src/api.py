@@ -244,6 +244,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     #       odd number turns if its been 6 seconds since the last update 
     #       and there are no pawn exchanges in progress;
     #       sleep for a second at end of loop
+    #       PROVIDE EXCEPTION FOR TESTS
 
     # mutates old_game_state and new_game_state objects
     manage_game_state(old_game_state, new_game_state)

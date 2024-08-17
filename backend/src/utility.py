@@ -1003,8 +1003,9 @@ def handle_pieces_with_full_bishop_debuff_stacks(
 
                     for piece in new_square:
                         if piece.get("type") == f"{opposite_side}_bishop":
-                            possible_moves = moves.get_moves_for_bishop(new_game_state, old_game_state, [row, col])["possible_moves"]
-                            if new_game_state["bishop_special_captures"][0]["position"] in possible_moves:
+                            moves_info = moves.get_moves_for_bishop(old_game_state, old_game_state.get("previous_state"), [row, col])
+                            if new_game_state["bishop_special_captures"][0]["position"] in moves_info["possible_moves"] or \
+                            new_game_state["bishop_special_captures"][0]["position"] in [possible_capture[1] for possible_capture in moves_info["possible_captures"]]:
                                 # "possible_captures": [[[row, col], [row, col]], ...] - first position is where piece has to move to capture piece in second position
                                 new_capture_position = [[row, col], new_game_state["bishop_special_captures"][0]["position"]]
                                 is_found = True
@@ -1015,20 +1016,22 @@ def handle_pieces_with_full_bishop_debuff_stacks(
             else:
                 capture_positions.append(new_capture_position)
                 # find bishop responsible and apply energize stacks in this scenario
+                # HEAVY ASSUMPTION: only one piece in latest_movement field at a time (except for castling)
                 for entry in new_game_state["latest_movement"]["record"]:
                     if entry["piece"]["type"] == f"{opposite_side}_bishop":
                         # an additional check to see if bishop's current position can apply bishop debuff to captured piece
-                        # TODO: account from adjacent bishop debuff application AND account for blocking pieces
-                        #     : switch to a check that's similar to bishop movement
-                        #     : (yes, bishop debuffs stack with their adjacent capture passive)
-                        row_diff = entry["current_position"][0] - new_capture_position[0][0]
-                        col_diff = entry["current_position"][1] - new_capture_position[0][1]
-                        
-                        
-                        if row_diff != col_diff:
+                        try:
+                            moves_info = moves.get_moves_for_bishop(
+                                curr_game_state=old_game_state, 
+                                prev_game_state=old_game_state.get("previous_state"), 
+                                curr_position=entry["current_position"]
+                            )
+                            
+                            if new_capture_position[1] not in [possible_capture[1] for possible_capture in moves_info["possible_captures"]]:
+                                raise Exception("Last moved bishop cannot capture the captured piece")
+                        except Exception as e:
+                            logger.error(f'Unable to find a {opposite_side} bishop to give energize stacks for bishop debuff capture at {entry["current_position"]}: {e}')        
                             is_valid_game_state = False
-                            logger.error(f'Unable to find a {opposite_side} bishop that to give energize stacks for bishop debuff capture at {entry["current_position"]}')        
-
                         else:
                             for piece in new_game_state["board_state"][entry["current_position"][0]][entry["current_position"][1]]:
                                 piece["energize_stacks"] += 10

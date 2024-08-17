@@ -660,7 +660,31 @@ def test_stun_cleanse(game):
     assert game["board_state"][3][3][0]["type"] == "white_pawn"
     assert not game["board_state"][3][3][0].get("is_stunned", False) 
 
-# add unit tests for 6 full bishop debuff stacks
+def test_full_bishop_debuff_capture():
+    # test the capturing mechanism for pieces with full bishop debuff stacks
+    pass
+
+def test_full_bishop_debuff_capture_adjacent():
+    # test the capturing mechanism still works when a piece is in danger from being
+    # captured adjacently 
+    pass
+
+def test_full_bishop_debuff_spare():
+    # test the ability for pieces with full bishop debuff stacks to be spared
+    pass
+
+def test_multiple_full_bishop_debuffs():
+    # ensure that game can handle multiple pieces with full bishop debuff stacks well
+    pass
+
+def test_full_bishop_debuff_stacks_preventing_other_moves():
+    # ensure that game prevent other moves from either side when full bishop debuff stacks are present
+    pass
+
+def test_full_bishop_debuff_energize_stacks():
+    # test that energize stacks go up by 10 after capturing a piece with full bishop debuff stacks
+    # and that energize stacks are unchanged when a piece with full debuff stacks is spared
+    pass
 
 def test_neutral_monster_captures_after_spawning_on_any_non_king_piece(game):
     # neutral monster should automatically send non-king pieces to the graveyard

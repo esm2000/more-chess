@@ -660,9 +660,42 @@ def test_stun_cleanse(game):
     assert game["board_state"][3][3][0]["type"] == "white_pawn"
     assert not game["board_state"][3][3][0].get("is_stunned", False) 
 
-def test_full_bishop_debuff_capture():
+def test_full_bishop_debuff_capture(game):
     # test the capturing mechanism for pieces with full bishop debuff stacks
-    pass
+    game = clear_game(game)
+    game_on_next_turn = copy.deepcopy(game)
+
+    game_on_next_turn["board_state"][6][0] = [{"type": "black_pawn", "bishop_debuff": 2}]
+    game_on_next_turn["board_state"][4][2] = [{"type": "white_bishop", "energize_stacks": 0}]
+    
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+
+    game_on_next_turn["board_state"][5][1] = game_on_next_turn["board_state"][4][2]
+    game_on_next_turn["board_state"][4][2] = None
+    
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["board_state"][6][0][0]["bishop_debuff"] == 3
+    
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["captured_pieces"]["white"].append("black_pawn")
+    game_on_next_turn["board_state"][6][0] = []
+    game_on_next_turn["bishop_special_captures"].append({
+        "position": [6, 0],
+        "type": "black_pawn"
+    })
+    game_on_next_turn["gold_count"]["white"] += 2
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+    
+    assert not game["board_state"][6][0]
+    assert game["board_state"][5][1][0]["type"] == "white_bishop"
+    assert game["captured_pieces"]["white"] == ["black_pawn"]
+    assert game["bishop_special_captures"] == []
 
 def test_full_bishop_debuff_capture_adjacent():
     # test the capturing mechanism still works when a piece is in danger from being
@@ -743,5 +776,3 @@ def test_game_ends_when_monster_spawns_on_top_of_king(game):
 def test_game_ends_when_king_stays_near_neutral_monster(game):
     # test that the game ends when a king stays near a neutral monster 
     pass
-
-# INSERT TESTING FOR BISHOP DEBUFFS

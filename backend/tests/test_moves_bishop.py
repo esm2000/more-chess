@@ -431,3 +431,6 @@ def test_bishop_not_being_allowed_to_move_to_sword_in_stone_square():
                     assert positions[k] not in possible_moves_and_captures["possible_moves"]
                 for k in range(j):
                     assert positions[k] in possible_moves_and_captures["possible_moves"]
+
+def test_bishop_full_energize_stacks():
+    pass

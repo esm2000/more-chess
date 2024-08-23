@@ -697,10 +697,82 @@ def test_full_bishop_debuff_capture(game):
     assert game["captured_pieces"]["white"] == ["black_pawn"]
     assert game["bishop_special_captures"] == []
 
-def test_full_bishop_debuff_capture_adjacent():
-    # test the capturing mechanism still works when a piece is in danger from being
-    # captured adjacently 
-    pass
+# TODO: test_bishop_full_energize_stacks in test_moves_bishop 
+def test_bishop_debuff_double_stack_prevention(game):
+    # bishops can be captured by landing on a square diagonally adjacent to it
+    # there can be a weird scenario that can lead to double the bishop debuffs 
+    # being applied to enemy bishops
+
+    # example situation: 
+        # black bishop, posiiton [0, 5]
+        # black non-king piece, position [1, 4]
+        # black non-king piece, position [1, 6]
+        # white bishop, moves to position [2, 5]
+        # there can be a bug where the black bishop incorrectly gets two bishop stacks instead of one
+    
+    game = clear_game(game)
+    game_on_next_turn = copy.deepcopy(game)
+
+    game_on_next_turn["board_state"][0][5] = [{"type": "black_bishop", "energize_stacks": 0}]
+    game_on_next_turn["board_state"][1][4] = [{"type": "black_pawn", "pawn_buff": 0}]
+    game_on_next_turn["board_state"][1][6] = [{"type": "black_pawn", "pawn_buff": 0}]
+    game_on_next_turn["board_state"][3][4] = [{"type": "white_bishop", "energize_stacks": 0}]
+    
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+    game_on_next_turn = copy.deepcopy(game)
+
+    game_on_next_turn["board_state"][2][5] = game_on_next_turn["board_state"][3][4]
+    game_on_next_turn["board_state"][3][4] = None
+    
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["board_state"][0][5][0].get("bishop_debuff", 0) == 1
+ 
+# def test_full_bishop_debuff_capture_adjacent(game):
+#     # test the capturing mechanism still works when a piece is in danger from being
+#     # captured adjacently 
+#     game = clear_game(game)
+#     game_on_next_turn = copy.deepcopy(game)
+
+#     game_on_next_turn["board_state"][6][0] = [{"type": "black_pawn", "bishop_debuff": 0}]
+#     game_on_next_turn["board_state"][7][1] = [{"type": "black_knight", "bishop_debuff": 2}]
+
+#     game_on_next_turn["board_state"][4][2] = [{"type": "white_bishop", "energize_stacks": 100}]
+    
+#     game_state = api.GameState(**game_on_next_turn)
+#     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+#     game_on_next_turn = copy.deepcopy(game)
+
+#     game_on_next_turn["board_state"][5][1] = game_on_next_turn["board_state"][4][2]
+#     game_on_next_turn["board_state"][4][2] = None
+    
+#     game_state = api.GameState(**game_on_next_turn)
+#     game = api.update_game_state(game["id"], game_state, Response())
+
+#     assert game["board_state"][6][0][0]["bishop_debuff"] == 1
+#     print(game["board_state"])
+#     assert game["board_state"][7][1][0]["bishop_debuff"] == 3
+    
+#     game_on_next_turn = copy.deepcopy(game)
+#     game_on_next_turn["captured_pieces"]["white"].append("black_knight")
+#     game_on_next_turn["board_state"][7][1] = []
+#     game_on_next_turn["bishop_special_captures"].append({
+#         "position": [7, 1],
+#         "type": "black_knight"
+#     })
+#     game_on_next_turn["gold_count"]["white"] += 6
+#     game_state = api.GameState(**game_on_next_turn)
+#     game = api.update_game_state(game["id"], game_state, Response())
+    
+#     assert not game["board_state"][7][1]
+#     assert game["board_state"][6][0][0]["type"] == "black_pawn"
+#     assert game["board_state"][5][1][0]["type"] == "white_bishop"
+#     assert game["captured_pieces"]["white"] == ["black_knight"]
+#     assert game["bishop_special_captures"] == []
+
 
 def test_full_bishop_debuff_spare():
     # test the ability for pieces with full bishop debuff stacks to be spared

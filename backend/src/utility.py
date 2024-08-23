@@ -336,6 +336,7 @@ def facilitate_adjacent_capture(old_game_state, new_game_state, moved_pieces):
 
 
 def apply_bishop_energize_stacks_and_bishop_debuffs(old_game_state, new_game_state, moved_pieces):
+    positions_with_bishop_debuffs_applied = []
     # iterate through moved pieces to check to see if a bishop has moved from its previous position and hasn't been bought/captured 
     # and add energize stacks based on its movement (5 energize stacks for each square moved, 10 energize stacks for each piece captured)
     for i, moved_piece in enumerate(moved_pieces):
@@ -370,6 +371,9 @@ def apply_bishop_energize_stacks_and_bishop_debuffs(old_game_state, new_game_sta
             if future_moves_info["possible_captures"]:
                 for possible_capture_info in future_moves_info["possible_captures"]:
                     position_of_piece_in_danger = possible_capture_info[1]
+                    if position_of_piece_in_danger in positions_with_bishop_debuffs_applied:
+                        continue
+                    positions_with_bishop_debuffs_applied.append(position_of_piece_in_danger)
                     if not new_game_state["board_state"][position_of_piece_in_danger[0]][position_of_piece_in_danger[1]]:
                         continue
                     for piece in new_game_state["board_state"][position_of_piece_in_danger[0]][position_of_piece_in_danger[1]]:

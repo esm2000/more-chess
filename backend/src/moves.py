@@ -252,8 +252,6 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
             possible_position[0] += direction[0]
             possible_position[1] += direction[1]
 
-    print(piece_in_play)
-
     if piece_in_play.get("energize_stacks", 0) == 100:
         adjacent_diagonal_squares = [[1, 1], [1, -1], [-1, -1], [-1, 1]]
         # iterate through possible moves

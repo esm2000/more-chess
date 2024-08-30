@@ -252,6 +252,28 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
             possible_position[0] += direction[0]
             possible_position[1] += direction[1]
 
+    print(piece_in_play)
+
+    if piece_in_play.get("energize_stacks", 0) == 100:
+        adjacent_diagonal_squares = [[1, 1], [1, -1], [-1, -1], [-1, 1]]
+        # iterate through possible moves
+        for possible_move in possible_moves:
+            # iterate through every adjacent square
+            for adjacent_square in adjacent_diagonal_squares:
+                potential_capture_square = [possible_move[0] + adjacent_square[0], possible_move[1] + adjacent_square[1]]
+                # continue if square is out of bounds 
+                if potential_capture_square[0] < 0 or potential_capture_square[0] > 7 or potential_capture_square[1] < 0 or potential_capture_square[1] > 7:
+                    continue
+                # if there's a bishop from the opposing side present in an adjacent square,
+                # add it to the capture_moves
+                square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
+                if square and \
+                (
+                    any(opposing_side in piece.get("type") for piece in square) or \
+                    any("neutral" in piece.get("type") and piece.get("health", 0) == 1 for piece in square) 
+                ):
+                    possible_captures.append([possible_move, potential_capture_square])
+
     return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
 
 

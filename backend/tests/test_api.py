@@ -730,6 +730,7 @@ def test_bishop_debuff_double_stack_prevention(game):
 
     assert game["board_state"][0][5][0].get("bishop_debuff", 0) == 1
  
+# get test_bishop_full_energize_stack_capture() working before you re-enable this test
 # def test_full_bishop_debuff_capture_adjacent(game):
 #     # test the capturing mechanism still works when a piece is in danger from being
 #     # captured adjacently 

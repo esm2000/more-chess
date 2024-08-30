@@ -172,7 +172,9 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * AI - https://www.chessprogramming.org/Evaluation#Publications
     - rudimentary EASY enemy AI (chooses random moves from possible moves)
     - ADVANCED enemy AI that plays as well as possible
-    - MEDIUM enemy AI 
+    - MEDIUM enemy AI
+* create a data lake for long term storage of game data
+* provide mechanism for user bug reports (frontend sends game id and user feedback to backend and backend records info)
 
 ##### Production-Ready Development
 * Restructure project for deployment ✅

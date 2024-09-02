@@ -660,6 +660,7 @@ def test_stun_cleanse(game):
     assert game["board_state"][3][3][0]["type"] == "white_pawn"
     assert not game["board_state"][3][3][0].get("is_stunned", False) 
 
+
 def test_full_bishop_debuff_capture(game):
     # test the capturing mechanism for pieces with full bishop debuff stacks
     game = clear_game(game)
@@ -681,6 +682,8 @@ def test_full_bishop_debuff_capture(game):
 
     assert game["board_state"][6][0][0]["bishop_debuff"] == 3
     
+    original_energize_stack_value = game["board_state"][5][1][0]["energize_stacks"]
+
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["captured_pieces"]["white"].append("black_pawn")
     game_on_next_turn["board_state"][6][0] = []
@@ -692,12 +695,16 @@ def test_full_bishop_debuff_capture(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state(game["id"], game_state, Response())
     
+    current_energize_stack_value = game["board_state"][5][1][0]["energize_stacks"]
+    energize_stack_difference = current_energize_stack_value - original_energize_stack_value
+
+    assert energize_stack_difference == 10
     assert not game["board_state"][6][0]
     assert game["board_state"][5][1][0]["type"] == "white_bishop"
     assert game["captured_pieces"]["white"] == ["black_pawn"]
     assert game["bishop_special_captures"] == []
 
-# TODO: test_bishop_full_energize_stacks in test_moves_bishop 
+
 def test_bishop_debuff_double_stack_prevention(game):
     # bishops can be captured by landing on a square diagonally adjacent to it
     # there can be a weird scenario that can lead to double the bishop debuffs 
@@ -794,29 +801,111 @@ def test_full_bishop_debuff_spare(game):
     game = api.update_game_state(game["id"], game_state, Response())
 
     assert game["board_state"][6][0][0]["bishop_debuff"] == 3
+    original_energize_stack_value = game["board_state"][5][1][0]["energize_stacks"]
     
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][6][0][0]["bishop_debuff"] = 0
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state(game["id"], game_state, Response())
     
+    current_energize_stack_value = game["board_state"][5][1][0]["energize_stacks"]
+    energize_stack_difference = current_energize_stack_value - original_energize_stack_value
+
+    assert energize_stack_difference == 0
     assert game["board_state"][6][0][0]["type"] == "black_pawn"
     assert game["board_state"][6][0][0]["bishop_debuff"] == 0
     assert game["board_state"][5][1][0]["type"] == "white_bishop"
     assert game["bishop_special_captures"] == []
 
 
-def test_multiple_full_bishop_debuffs():
+def test_multiple_full_bishop_debuffs(game):
     # ensure that game can handle multiple pieces with full bishop debuff stacks well
-    pass
+    game = clear_game(game)
+    game_on_next_turn = copy.deepcopy(game)
+
+    game_on_next_turn["board_state"][6][0] = [{"type": "black_pawn", "bishop_debuff": 2}]
+    game_on_next_turn["board_state"][6][2] = [{"type": "black_pawn", "bishop_debuff": 2}]
+    game_on_next_turn["board_state"][2][4] = [{"type": "black_pawn", "bishop_debuff": 2}]
+    game_on_next_turn["board_state"][4][2] = [{"type": "white_bishop", "energize_stacks": 0}]
+    
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+
+    game_on_next_turn["board_state"][5][1] = game_on_next_turn["board_state"][4][2]
+    game_on_next_turn["board_state"][4][2] = None
+    
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["board_state"][6][0][0]["bishop_debuff"] == 3
+    assert game["board_state"][6][2][0]["bishop_debuff"] == 3
+    assert game["board_state"][2][4][0]["bishop_debuff"] == 3
+
+    original_energize_stack_value = game["board_state"][5][1][0]["energize_stacks"]
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["captured_pieces"]["white"].append("black_pawn")
+    game_on_next_turn["board_state"][6][0] = []
+    game_on_next_turn["bishop_special_captures"].append({
+        "position": [6, 0],
+        "type": "black_pawn"
+    })
+    game_on_next_turn["gold_count"]["white"] += 2
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+    
+    current_energize_stack_value = game["board_state"][5][1][0]["energize_stacks"]
+    energize_stack_difference = current_energize_stack_value - original_energize_stack_value
+
+    assert energize_stack_difference == 10
+    assert not game["board_state"][6][0]
+    assert game["board_state"][5][1][0]["type"] == "white_bishop"
+    assert game["captured_pieces"]["white"] == ["black_pawn"]
+    assert game["bishop_special_captures"] == []
+
+    original_energize_stack_value = game["board_state"][5][1][0]["energize_stacks"]
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["captured_pieces"]["white"].append("black_pawn")
+    game_on_next_turn["board_state"][6][2] = []
+    game_on_next_turn["bishop_special_captures"].append({
+        "position": [6, 2],
+        "type": "black_pawn"
+    })
+    game_on_next_turn["gold_count"]["white"] += 2
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+    
+    current_energize_stack_value = game["board_state"][5][1][0]["energize_stacks"]
+    energize_stack_difference = current_energize_stack_value - original_energize_stack_value
+
+    assert energize_stack_difference == 10
+    assert not game["board_state"][6][2]
+    assert game["board_state"][5][1][0]["type"] == "white_bishop"
+    assert game["captured_pieces"]["white"] == ["black_pawn", "black_pawn"]
+    assert game["bishop_special_captures"] == []
+
+    original_energize_stack_value = game["board_state"][5][1][0]["energize_stacks"]
+    
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][2][4][0]["bishop_debuff"] = 0
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+    
+    current_energize_stack_value = game["board_state"][5][1][0]["energize_stacks"]
+    energize_stack_difference = current_energize_stack_value - original_energize_stack_value
+
+    assert energize_stack_difference == 0
+    assert game["board_state"][2][4][0]["type"] == "black_pawn"
+    assert game["board_state"][2][4][0]["bishop_debuff"] == 0
+    assert game["board_state"][5][1][0]["type"] == "white_bishop"
+    assert game["bishop_special_captures"] == []
+
 
 def test_full_bishop_debuff_stacks_preventing_other_moves():
     # ensure that game prevent other moves from either side when full bishop debuff stacks are present
-    pass
-
-def test_full_bishop_debuff_energize_stacks():
-    # test that energize stacks go up by 10 after capturing a piece with full bishop debuff stacks
-    # and that energize stacks are unchanged when a piece with full debuff stacks is spared
     pass
 
 def test_neutral_monster_captures_after_spawning_on_any_non_king_piece(game):

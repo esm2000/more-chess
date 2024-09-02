@@ -730,8 +730,7 @@ def test_bishop_debuff_double_stack_prevention(game):
 
     assert game["board_state"][0][5][0].get("bishop_debuff", 0) == 1
  
-# provide a mechanism to allow for capture within api
-def test_full_bishop_debuff_adjacent_capture(game):
+def test_full_bishop_debuff_adjacent_application(game):
     # test the capturing mechanism still works when a piece is in danger from being
     # captured adjacently 
     game = clear_game(game)
@@ -775,9 +774,37 @@ def test_full_bishop_debuff_adjacent_capture(game):
     assert game["bishop_special_captures"] == []
 
 
-def test_full_bishop_debuff_spare():
+def test_full_bishop_debuff_spare(game):
     # test the ability for pieces with full bishop debuff stacks to be spared
-    pass
+    game = clear_game(game)
+    game_on_next_turn = copy.deepcopy(game)
+
+    game_on_next_turn["board_state"][6][0] = [{"type": "black_pawn", "bishop_debuff": 2}]
+    game_on_next_turn["board_state"][4][2] = [{"type": "white_bishop", "energize_stacks": 0}]
+    
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+
+    game_on_next_turn["board_state"][5][1] = game_on_next_turn["board_state"][4][2]
+    game_on_next_turn["board_state"][4][2] = None
+    
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["board_state"][6][0][0]["bishop_debuff"] == 3
+    
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][6][0][0]["bishop_debuff"] = 0
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+    
+    assert game["board_state"][6][0][0]["type"] == "black_pawn"
+    assert game["board_state"][6][0][0]["bishop_debuff"] == 0
+    assert game["board_state"][5][1][0]["type"] == "white_bishop"
+    assert game["bishop_special_captures"] == []
+
 
 def test_multiple_full_bishop_debuffs():
     # ensure that game can handle multiple pieces with full bishop debuff stacks well

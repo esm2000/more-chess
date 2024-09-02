@@ -904,9 +904,35 @@ def test_multiple_full_bishop_debuffs(game):
     assert game["bishop_special_captures"] == []
 
 
-def test_full_bishop_debuff_stacks_preventing_other_moves():
+def test_full_bishop_debuff_stacks_prevent_other_moves(game):
     # ensure that game prevent other moves from either side when full bishop debuff stacks are present
-    pass
+    game = clear_game(game)
+    game_on_next_turn = copy.deepcopy(game)
+
+    game_on_next_turn["board_state"][6][0] = [{"type": "black_pawn", "bishop_debuff": 2}]
+    game_on_next_turn["board_state"][4][2] = [{"type": "white_bishop", "energize_stacks": 0}]
+    
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+
+    game_on_next_turn["board_state"][5][1] = game_on_next_turn["board_state"][4][2]
+    game_on_next_turn["board_state"][4][2] = None
+    
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["board_state"][6][0][0]["bishop_debuff"] == 3
+    
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][5][0] = game_on_next_turn["board_state"][6][0]
+    game_on_next_turn["board_state"][6][0] = None
+
+    game_state = api.GameState(**game_on_next_turn)
+    with pytest.raises(HTTPException):
+        game = api.update_game_state(game["id"], game_state, Response())
+
 
 def test_neutral_monster_captures_after_spawning_on_any_non_king_piece(game):
     # neutral monster should automatically send non-king pieces to the graveyard

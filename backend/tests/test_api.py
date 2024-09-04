@@ -72,13 +72,11 @@ def test_game_created(game):
 
 
 def test_alter_game(game):
-    # TODO: implement a locking mechanism to prevent AI from making move on unit test game
-
     # white piece selection and movement
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["position_in_play"] = [6, 0]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
     game_on_previous_turn = game_on_next_turn
 
     assert game["board_state"] == game_on_previous_turn["board_state"]
@@ -91,7 +89,7 @@ def test_alter_game(game):
     game_on_next_turn["board_state"][5][0] = game_on_next_turn["board_state"][6][0]
     game_on_next_turn["board_state"][6][0] = None
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["board_state"][5][0][0]["type"] == "white_pawn"
     assert game["board_state"][6][0] is None
@@ -103,7 +101,7 @@ def test_alter_game(game):
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["position_in_play"] = [1, 0]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = api.update_game_state(game["id"], game_state, Response(), player=False, disable_turn_check=True)
     game_on_previous_turn = game_on_next_turn
 
     assert game["board_state"] == game_on_previous_turn["board_state"]
@@ -116,7 +114,7 @@ def test_alter_game(game):
     game_on_next_turn["board_state"][2][0] = game_on_next_turn["board_state"][1][0]
     game_on_next_turn["board_state"][1][0] = None
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["board_state"][2][0][0]["type"] == "black_pawn"
     assert game["board_state"][1][0] is None
@@ -137,7 +135,7 @@ def test_alter_game(game):
     game_on_next_turn["board_state"][5][1] = game_on_next_turn["board_state"][6][1]
     game_on_next_turn["board_state"][6][1] = None
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["board_state"][4][7][0]["type"] == "neutral_dragon"
     assert game["board_state"][3][0][0]["type"] == "neutral_board_herald"
@@ -150,7 +148,7 @@ def test_alter_game(game):
     game_on_next_turn["board_state"][5][2] = game_on_next_turn["board_state"][6][2]
     game_on_next_turn["board_state"][6][2] = None
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["board_state"][3][0][0]["type"] == "neutral_baron_nashor"
 
@@ -164,7 +162,7 @@ def test_alter_game(game):
         game_on_next_turn["board_state"][5][4] = game_on_next_turn["board_state"][6][4]
         game_on_next_turn["board_state"][6][4] = None
         game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response())
+        game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
             # black
     with pytest.raises(HTTPException):
@@ -174,7 +172,7 @@ def test_alter_game(game):
         game_on_next_turn["board_state"][2][4] = game_on_next_turn["board_state"][1][4]
         game_on_next_turn["board_state"][1][4] = None
         game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response())
+        game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
         # TODO: different piece types
 
@@ -186,7 +184,7 @@ def test_alter_game(game):
         game_on_next_turn["board_state"][6][5] = None
         game_on_next_turn["turn_count"] += 1
         game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response())
+        game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
         # black 
     with pytest.raises(HTTPException):
@@ -195,7 +193,7 @@ def test_alter_game(game):
         game_on_next_turn["board_state"][1][5] = None
         game_on_next_turn["turn_count"] += 1
         game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response())
+        game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     # buying pieces with not enough gold should not be allowed
         # white
@@ -203,14 +201,14 @@ def test_alter_game(game):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][5][6] = [{"type": "white_pawn", "pawn_buff": 0}]
         game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response())
+        game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
         
         # black
     with pytest.raises(HTTPException):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][5][6] = [{"type": "black_pawn", "pawn_buff": 0}]
         game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response())
+        game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     # buying a king or queen should not be allowed
     for side in ["white", "black"]:
@@ -219,7 +217,7 @@ def test_alter_game(game):
                 game_on_next_turn = copy.deepcopy(game)
                 game_on_next_turn["board_state"][5][6] = [{"type": f"{side}_{piece}"}]
                 game_state = api.GameState(**game_on_next_turn)
-                game = api.update_game_state(game["id"], game_state, Response())
+                game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     # buying pieces
     game_on_next_turn = copy.deepcopy(game)
@@ -233,7 +231,7 @@ def test_alter_game(game):
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][5][6] = [{"type": "white_pawn", "pawn_buff": 0}]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["gold_count"]["white"] == 11
     assert game["turn_count"] == 36
@@ -241,7 +239,7 @@ def test_alter_game(game):
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][5][7] = [{"type": "white_knight"}]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["gold_count"]["white"] == 8
     assert game["turn_count"] == 37
@@ -249,7 +247,7 @@ def test_alter_game(game):
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][4][4] = [{"type": "white_bishop"}]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["gold_count"]["white"] == 5
     assert game["turn_count"] == 38
@@ -257,7 +255,7 @@ def test_alter_game(game):
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][4][3] = [{"type": "white_rook"}]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["gold_count"]["white"] == 0
     assert game["turn_count"] == 39
@@ -265,7 +263,7 @@ def test_alter_game(game):
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][2][4] = [{"type": "black_pawn", "pawn_buff": 0}]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["gold_count"]["black"] == 11
     assert game["turn_count"] == 40
@@ -273,7 +271,7 @@ def test_alter_game(game):
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][2][5] = [{"type": "black_knight"}]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["gold_count"]["black"] == 8
     assert game["turn_count"] == 41
@@ -281,7 +279,7 @@ def test_alter_game(game):
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][3][4] = [{"type": "black_bishop"}]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["gold_count"]["black"] == 5
     assert game["turn_count"] == 42
@@ -289,7 +287,7 @@ def test_alter_game(game):
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][3][3] = [{"type": "black_rook"}]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["gold_count"]["black"] == 0
     assert game["turn_count"] == 43
@@ -300,14 +298,14 @@ def test_alter_game(game):
         game_on_next_turn["board_state"][4][6] = game_on_next_turn["board_state"][4][7]
         game_on_next_turn["board_state"][4][7] = None
         game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response())
+        game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     with pytest.raises(HTTPException):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][3][1] = game_on_next_turn["board_state"][3][0]
         game_on_next_turn["board_state"][3][0] = None
         game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response())
+        game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     # assert that additional captured pieces can't be added from nowhere
     for side in ["white", "black"]:
@@ -315,7 +313,7 @@ def test_alter_game(game):
             game_on_next_turn = copy.deepcopy(game)
             game_on_next_turn["captured_pieces"][side].append(f"{'white' if side == 'black' else 'black'}_pawn")
             game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response())
+            game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     # assert that neutral monsters can be hurt
         # white
@@ -324,7 +322,7 @@ def test_alter_game(game):
     game_on_next_turn["board_state"][4][7].append(game_on_next_turn["board_state"][6][7][0])
     game_on_next_turn["board_state"][6][7] = None
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
     neutral_monster_health = game["board_state"][4][7][0]["health"]
 
     assert neutral_monster_health_before == 5
@@ -335,7 +333,7 @@ def test_alter_game(game):
     game_on_next_turn["board_state"][4][6] = game_on_next_turn["board_state"][6][6]
     game_on_next_turn["board_state"][6][6] = None
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
     neutral_monster_health = game["board_state"][4][7][0]["health"]
 
     assert neutral_monster_health_before == 4
@@ -348,7 +346,7 @@ def test_alter_game(game):
     game_on_next_turn["board_state"][3][7] = game_on_next_turn["board_state"][1][7]
     game_on_next_turn["board_state"][1][7] = None
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
     neutral_monster_health = game["board_state"][4][7][0]["health"]
 
     assert neutral_monster_health_before == 3
@@ -359,7 +357,7 @@ def test_alter_game(game):
     game_on_next_turn["board_state"][4][7].append(game_on_next_turn["board_state"][3][7][0])
     game_on_next_turn["board_state"][3][7] = None
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
     neutral_monster_health = game["board_state"][4][7][0]["health"]
 
     assert neutral_monster_health_before == 2
@@ -404,7 +402,7 @@ def test_alter_game(game):
                 game_on_next_turn["captured_pieces"]["black"].append(f"white_{piece_type}")
             game_state = api.GameState(**game_on_next_turn)
             if piece_type != "king":
-                game = api.update_game_state(game["id"], game_state, Response())
+                game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
                 if not i:
                     assert game["board_state"][3][4][0]["type"] == "white_pawn"
                     assert game["board_state"][4][3] is None
@@ -418,7 +416,7 @@ def test_alter_game(game):
         # assert that kings can't be captured
             else:
                 with pytest.raises(HTTPException):
-                    game = api.update_game_state(game["id"], game_state, Response())
+                    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     # validate pawn exchange
             if piece_type == "pawn":
@@ -450,7 +448,7 @@ def test_alter_game(game):
                 game_on_next_turn["board_state"][7][3] = game_on_next_turn["board_state"][6][3]
                 game_on_next_turn["board_state"][6][3] = None
             game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response())
+            game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
             
             turn_count_for_pawn_exchange_initiation = game["turn_count"]
             game_on_next_turn = copy.deepcopy(game)
@@ -459,7 +457,7 @@ def test_alter_game(game):
             else:
                 game_on_next_turn["board_state"][7][3] = [{"type": f"black_{piece_type}"}]
             game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response())
+            game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
             turn_count_for_end_of_pawn_exhange = game["turn_count"]
 
             assert turn_count_for_pawn_exchange_initiation == turn_count_for_end_of_pawn_exhange
@@ -483,7 +481,7 @@ def test_bishop_energize_stacks(game):
     game_on_next_turn["board_state"][3][3] = None
     game_on_next_turn["captured_pieces"]["white"].append(f"black_pawn")
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["board_state"][1][1][0]["energize_stacks"] == 20
 
@@ -505,7 +503,7 @@ def test_bishop_debuff_application(game):
     game_on_next_turn["board_state"][5][1] = None 
     game_on_next_turn["board_state"][3][3] = [{"type": "white_bishop", "energize_stacks": 0}]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["board_state"][0][0][0].get("bishop_debuff") == 1
     assert game["board_state"][0][6][0].get("bishop_debuff") == 2
@@ -528,7 +526,7 @@ def test_adjacent_capture_of_bishop(game):
     game_on_next_turn["board_state"][4][5] = [{"type": "white_knight"}]
     game_on_next_turn["captured_pieces"]["white"].append(f"black_pawn")
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["board_state"][5][5] is None
     assert sorted(game["captured_pieces"]["white"]) == sorted(["black_bishop", "black_pawn"])
@@ -548,7 +546,7 @@ def test_queen_stun(game):
     game_on_next_turn["board_state"][4][7] = None
     game_on_next_turn["board_state"][4][3] = [{"type": "white_queen"}]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["board_state"][3][3][0]["type"] == "black_pawn"
     assert game["board_state"][3][3][0]["is_stunned"]
@@ -566,7 +564,7 @@ def test_queen_stun(game):
     game_on_next_turn["board_state"][4][7] = None
     game_on_next_turn["board_state"][4][6] = [{"type": "white_queen"}]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["board_state"][3][3][0]["type"] == "black_pawn"
     assert not game["board_state"][3][3][0].get("is_stunned", False)
@@ -587,7 +585,7 @@ def test_queen_stun(game):
     game_on_next_turn["board_state"][3][3] = [{"type": "white_queen"}]
     game_on_next_turn[ "captured_pieces"] = {"white": ["black_pawn"], "black": []}
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][1][0] = None
@@ -600,7 +598,7 @@ def test_queen_stun(game):
     game_on_next_turn["board_state"][3][3] = None
     game_on_next_turn["board_state"][3][0] = [{"type": "white_queen"}]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["board_state"][2][0][0]["type"] == "black_pawn"
     assert game["board_state"][2][0][0].get("is_stunned", False) 
@@ -618,14 +616,14 @@ def test_queen_stun(game):
     game_on_next_turn["board_state"][4][7] = None
     game_on_next_turn["board_state"][4][4] = [{"type": "black_queen"}]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][3][3] = None
     game_on_next_turn["board_state"][2][3] = [{"type": "white_pawn"}]
     game_state = api.GameState(**game_on_next_turn)
     with pytest.raises(Exception):
-        game = api.update_game_state(game["id"], game_state, Response())
+        game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
 
 def test_stun_cleanse(game):
@@ -643,19 +641,19 @@ def test_stun_cleanse(game):
     game_on_next_turn["board_state"][4][7] = None
     game_on_next_turn["board_state"][4][4] = [{"type": "black_queen"}]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][3][2] = None
     game_on_next_turn["board_state"][2][2] = [{"type": "white_pawn"}]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][4][4] = None
     game_on_next_turn["board_state"][4][5] = [{"type": "black_queen"}]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["board_state"][3][3][0]["type"] == "white_pawn"
     assert not game["board_state"][3][3][0].get("is_stunned", False) 
@@ -678,7 +676,7 @@ def test_full_bishop_debuff_capture(game):
     game_on_next_turn["board_state"][4][2] = None
     
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["board_state"][6][0][0]["bishop_debuff"] == 3
     
@@ -693,7 +691,7 @@ def test_full_bishop_debuff_capture(game):
     })
     game_on_next_turn["gold_count"]["white"] += 2
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
     
     current_energize_stack_value = game["board_state"][5][1][0]["energize_stacks"]
     energize_stack_difference = current_energize_stack_value - original_energize_stack_value
@@ -733,7 +731,7 @@ def test_bishop_debuff_double_stack_prevention(game):
     game_on_next_turn["board_state"][3][4] = None
     
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["board_state"][0][5][0].get("bishop_debuff", 0) == 1
  
@@ -757,7 +755,7 @@ def test_full_bishop_debuff_adjacent_application(game):
     game_on_next_turn["board_state"][4][2] = None
     
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["board_state"][6][0][0]["bishop_debuff"] == 1
     
@@ -772,7 +770,7 @@ def test_full_bishop_debuff_adjacent_application(game):
     })
     game_on_next_turn["gold_count"]["white"] += 6
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
     
     assert not game["board_state"][7][1]
     assert game["board_state"][6][0][0]["type"] == "black_pawn"
@@ -798,7 +796,7 @@ def test_full_bishop_debuff_spare(game):
     game_on_next_turn["board_state"][4][2] = None
     
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["board_state"][6][0][0]["bishop_debuff"] == 3
     original_energize_stack_value = game["board_state"][5][1][0]["energize_stacks"]
@@ -806,7 +804,7 @@ def test_full_bishop_debuff_spare(game):
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][6][0][0]["bishop_debuff"] = 0
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
     
     current_energize_stack_value = game["board_state"][5][1][0]["energize_stacks"]
     energize_stack_difference = current_energize_stack_value - original_energize_stack_value
@@ -837,7 +835,7 @@ def test_multiple_full_bishop_debuffs(game):
     game_on_next_turn["board_state"][4][2] = None
     
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["board_state"][6][0][0]["bishop_debuff"] == 3
     assert game["board_state"][6][2][0]["bishop_debuff"] == 3
@@ -854,7 +852,7 @@ def test_multiple_full_bishop_debuffs(game):
     })
     game_on_next_turn["gold_count"]["white"] += 2
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
     
     current_energize_stack_value = game["board_state"][5][1][0]["energize_stacks"]
     energize_stack_difference = current_energize_stack_value - original_energize_stack_value
@@ -876,7 +874,7 @@ def test_multiple_full_bishop_debuffs(game):
     })
     game_on_next_turn["gold_count"]["white"] += 2
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
     
     current_energize_stack_value = game["board_state"][5][1][0]["energize_stacks"]
     energize_stack_difference = current_energize_stack_value - original_energize_stack_value
@@ -892,7 +890,7 @@ def test_multiple_full_bishop_debuffs(game):
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][2][4][0]["bishop_debuff"] = 0
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
     
     current_energize_stack_value = game["board_state"][5][1][0]["energize_stacks"]
     energize_stack_difference = current_energize_stack_value - original_energize_stack_value
@@ -921,7 +919,7 @@ def test_full_bishop_debuff_stacks_prevent_other_moves(game):
     game_on_next_turn["board_state"][4][2] = None
     
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
     assert game["board_state"][6][0][0]["bishop_debuff"] == 3
     
@@ -931,7 +929,7 @@ def test_full_bishop_debuff_stacks_prevent_other_moves(game):
 
     game_state = api.GameState(**game_on_next_turn)
     with pytest.raises(HTTPException):
-        game = api.update_game_state(game["id"], game_state, Response())
+        game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
 
 def test_neutral_monster_captures_after_spawning_on_any_non_king_piece(game):

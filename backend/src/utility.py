@@ -413,7 +413,7 @@ def apply_queen_stun(old_game_state, new_game_state, moved_pieces):
                     if square:
                         for piece in square:
                             side = piece["type"].split("_")[0]
-                            if queen_side != side:
+                            if queen_side != side and "king" not in piece["type"]:
                                 piece["is_stunned"] = True
 
 
@@ -424,9 +424,9 @@ def clean_possible_moves_and_possible_captures(new_game_state):
     new_game_state["possible_captures"] = []
 
 
-def increment_turn_count(old_game_state, new_game_state, moved_pieces):
+def increment_turn_count(old_game_state, new_game_state, moved_pieces, number_of_turns):
     if len(moved_pieces) > 0:
-        new_game_state["turn_count"] = old_game_state["turn_count"] + 1
+        new_game_state["turn_count"] = old_game_state["turn_count"] + number_of_turns
 
 # do not allow for updates to graveyard
 def prevent_client_side_updates_to_graveyard(old_game_state, new_game_state):
@@ -705,38 +705,38 @@ def determine_possible_moves(old_game_state, new_game_state, moved_pieces, playe
             # TODO: incorporate other piece types here
             if "pawn" in piece_in_play["type"]:
                 moves_info = moves.get_moves_for_pawn(
-                    curr_game_state=old_game_state, 
-                    prev_game_state=old_game_state.get("previous_state"), 
+                    curr_game_state=new_game_state, 
+                    prev_game_state=old_game_state,
                     curr_position=new_game_state["position_in_play"]
                 )
             if "knight" in piece_in_play["type"]:
                 moves_info = moves.get_moves_for_knight(
-                    curr_game_state=old_game_state, 
-                    prev_game_state=old_game_state.get("previous_state"), 
+                    curr_game_state=new_game_state, 
+                    prev_game_state=old_game_state,
                     curr_position=new_game_state["position_in_play"]
                 )
             if "bishop" in piece_in_play["type"]:
                 moves_info = moves.get_moves_for_bishop(
-                    curr_game_state=old_game_state, 
-                    prev_game_state=old_game_state.get("previous_state"), 
+                    curr_game_state=new_game_state, 
+                    prev_game_state=old_game_state,
                     curr_position=new_game_state["position_in_play"]
                 )
             if "rook" in piece_in_play["type"]:
                 moves_info = moves.get_moves_for_rook(
-                    curr_game_state=old_game_state, 
-                    prev_game_state=old_game_state.get("previous_state"), 
+                    curr_game_state=new_game_state, 
+                    prev_game_state=old_game_state,
                     curr_position=new_game_state["position_in_play"]
                 )
             if "queen" in piece_in_play["type"]:
                 moves_info = moves.get_moves_for_queen(
-                    curr_game_state=old_game_state, 
-                    prev_game_state=old_game_state.get("previous_state"), 
+                    curr_game_state=new_game_state, 
+                    prev_game_state=old_game_state,
                     curr_position=new_game_state["position_in_play"]
                 )
             if "king" in piece_in_play["type"]:
                 moves_info = moves.get_moves_for_king(
-                    curr_game_state=old_game_state, 
-                    prev_game_state=old_game_state.get("previous_state"), 
+                    curr_game_state=new_game_state, 
+                    prev_game_state=old_game_state,
                     curr_position=new_game_state["position_in_play"]
                 )
         except Exception as e:

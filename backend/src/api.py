@@ -110,11 +110,12 @@ def delete_game(id):
 
 
 @router.put("/game/{id}", status_code=200)
-def update_game_state(id, state: GameState, response: Response, player = True):
+def update_game_state(id, state: GameState, response: Response, player=True, disable_turn_check=False):
     new_game_state = dict(state)
     old_game_state = retrieve_game_state(id, response)
 
     # TODO: skip a player's turn if all his piece's are stunned (use turn count parity to decide who's turn it is)
+    #       implement invalidate_game_if_wrong_side_moves(), are_all_non_king_pieces_stunned(), can_king_move()
 
     # validate whether the new game state is valid
     # and return status code 500 if it isn't
@@ -154,7 +155,7 @@ def update_game_state(id, state: GameState, response: Response, player = True):
 
     clean_possible_moves_and_possible_captures(new_game_state)
     if should_increment_turn_count:
-        increment_turn_count(old_game_state, new_game_state, moved_pieces)
+        increment_turn_count(old_game_state, new_game_state, moved_pieces, 1)
     prevent_client_side_updates_to_graveyard(old_game_state, new_game_state)
 
     # returns values for is_valid_state
@@ -173,6 +174,9 @@ def update_game_state(id, state: GameState, response: Response, player = True):
 
     is_valid_game_state = invalidate_game_if_more_than_one_side_moved(move_count_for_white, move_count_for_black, is_valid_game_state)
     is_valid_game_state = invalidate_game_if_stunned_piece_moves(moved_pieces, is_valid_game_state)
+    # old game's turn count is representative of what side should be moving (even is white, odd is black)
+    # if not disable_turn_check:
+    #     is_valid_game_state = invalidate_game_if_wrong_side_moves(moved_pieces, is_valid_game_state, old_game_turn_count)
     is_valid_game_state = invalidate_game_if_too_much_gold_is_spent(old_game_state, gold_spent, is_valid_game_state)
     # mutates new_game_state object
     cleanse_stunned_pieces(new_game_state, move_count_for_white)
@@ -214,6 +218,10 @@ def update_game_state(id, state: GameState, response: Response, player = True):
     # determine possibleMoves if a position_in_play is not [null, null]
     # and add to new_game_state 
     determine_possible_moves(old_game_state, new_game_state, moved_pieces, player)
+
+    # new game's turn count is representative of what side should be moving next turn (even is white, odd is black)
+    # if should_increment_turn_count and are_all_non_king_pieces_stunned(new_game_turn_count) and not can_king_move(side_that_matches_new_game_turn_count):
+    #     increment_turn_count(old_game_state, new_game_state, moved_pieces, 2)
     
     # figure out capture point advantage, update gold count, and reassign pawn buffs
     # all three functions mutate new_game_state

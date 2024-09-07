@@ -1064,3 +1064,56 @@ def record_moved_pieces_this_turn(new_game_state, moved_pieces):
     # keep the previous record if there are no new moved pieces
     # to faciliate record keeping for granting bishop energize stacks
     # to bishops that perform special captures with their debuff
+
+
+# old game's turn count is representative of what side should be moving (even is white, odd is black)
+def invalidate_game_if_wrong_side_moves(moved_pieces, is_valid_game_state, old_game_turn_count):
+    side_that_should_be_moving = "white" if not old_game_turn_count % 2 else "black"
+    for side in [piece_info["side"] for piece_info in moved_pieces]:
+        if side != side_that_should_be_moving:
+            logger.error(f"{side} moved instead of {side_that_should_be_moving}")
+            is_valid_game_state = False
+    return is_valid_game_state
+
+
+# new game's turn count is representative of what side should be moving next turn (even is white, odd is black)
+def are_all_non_king_pieces_stunned(new_game_state):
+    new_game_turn_count = new_game_state["turn_count"]
+    side_that_should_be_moving_next_turn = "white" if not new_game_turn_count % 2 else "black"
+    output = True
+    for i in range(len(new_game_state["board_state"])):
+        for j in range(len(new_game_state["board_state"][0])):
+            square = new_game_state["board_state"][i][j]
+            if square:
+                for piece in square:
+                    if piece.get("type", "").split("_")[0] == side_that_should_be_moving_next_turn and \
+                    "king" not in piece.get("type", "") and \
+                    not piece.get("is_stunned", False):
+                        output = False
+    return output
+
+
+def can_king_move(old_game_state, new_game_state):
+    new_game_turn_count = new_game_state["turn_count"]
+    side_that_should_be_moving_next_turn = "white" if not new_game_turn_count % 2 else "black"
+    output = False
+    for i in range(len(new_game_state["board_state"])):
+        for j in range(len(new_game_state["board_state"][0])):
+            square = new_game_state["board_state"][i][j]
+
+            if square:
+                for piece in square:
+                    if piece.get("type") == f"{side_that_should_be_moving_next_turn}_king":
+                        output = len(
+                                moves.get_moves_for_king(
+                                    new_game_state,
+                                    old_game_state,
+                                    [i, j]
+                                )["possible_moves"]
+                        ) > 0
+    return output
+
+
+def was_a_new_position_in_play_selected(moved_pieces, old_game_state, new_game_state):
+    return not len([mp for mp in moved_pieces if mp["previous_position"][0] is not None and mp["current_position"][0] is not None]) and \
+    old_game_state["position_in_play"] != new_game_state["position_in_play"]

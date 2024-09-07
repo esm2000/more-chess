@@ -406,7 +406,8 @@ def test_alter_game(game):
                 if not i:
                     assert game["board_state"][3][4][0]["type"] == "white_pawn"
                     assert game["board_state"][4][3] is None
-                    assert game["turn_count"] == 1
+                    # none of black's pieces are left so its turn is skipped
+                    assert game["turn_count"] == 2
                     assert game["capture_point_advantage"] == ["white", piece_values[piece_type]]
                 else:
                     assert game["board_state"][4][3][0]["type"] == "black_pawn"
@@ -931,6 +932,13 @@ def test_full_bishop_debuff_stacks_prevent_other_moves(game):
     with pytest.raises(HTTPException):
         game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
+def test_that_two_turns_are_not_allowed_from_the_same_side(game):
+    # test that when the turn check is enabled that two turns are not allowed from the same side
+    pass
+
+def test_skip_one_turn_if_all_non_king_pieces_are_stunned(game):
+    # test that when all non-king pieces are stunned that a turn is skipped (with turn check enabled)
+    pass
 
 def test_neutral_monster_captures_after_spawning_on_any_non_king_piece(game):
     # neutral monster should automatically send non-king pieces to the graveyard
@@ -939,7 +947,6 @@ def test_neutral_monster_captures_after_spawning_on_any_non_king_piece(game):
 def test_sword_in_the_stone_spawn(game):
     # run a test 50 times and see that the sword in the stone spawns in a suitable location every time
     pass
-
 
 def test_sword_in_the_stone_retrieval(game):
     # test that both kings can retrieve the sword in the stone and its accompanying buff
@@ -965,6 +972,19 @@ def test_black_check(game):
     # test that black can be checked
     pass
 
+def test_white_in_check_and_needs_a_non_king_piece_to_get_it_out_of_check(game):
+    # test that when white king is in check and can't move anywhere to get out of check
+    # but another white piece can save it, the game doesn't improperly end
+
+    # also ensure that saving that piece is the only valid move white can make
+    pass
+
+def test_black_in_check_and_needs_a_non_king_piece_to_get_it_out_of_check(game):
+    # test that when black king is in check and can't move anywhere to get out of check
+    # but another black piece can save it, the game doesn't improperly end
+
+    # also ensure that saving that piece is the only valid move black can make
+    pass
 
 def test_white_checkmate(game):
     # test that white can be checkmated

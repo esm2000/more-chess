@@ -11,9 +11,10 @@ from src.database import mongo_client
 from src.logging import logger
 from src.utility import (
     INVALID_GAME_STATE_ERROR_MESSAGE,
-    increment_turn_count,
+    are_all_non_king_pieces_stunned,
     apply_bishop_energize_stacks_and_bishop_debuffs,
     apply_queen_stun,
+    can_king_move,
     carry_out_neutral_monster_attacks,
     check_for_disappearing_pieces,
     check_is_pawn_exhange_is_possible,
@@ -27,10 +28,12 @@ from src.utility import (
     get_gold_spent,
     get_move_counts,
     handle_pieces_with_full_bishop_debuff_stacks,
+    increment_turn_count,
     invalidate_game_if_monster_has_moved,
     invalidate_game_if_more_than_one_side_moved,
     invalidate_game_if_stunned_piece_moves,
     invalidate_game_if_too_much_gold_is_spent,
+    invalidate_game_if_wrong_side_moves,
     invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array,
     is_invalid_king_capture,
     is_neutral_monster_killed,
@@ -43,7 +46,8 @@ from src.utility import (
     record_moved_pieces_this_turn,
     spawn_neutral_monsters,
     update_capture_point_advantage,
-    update_gold_count
+    update_gold_count,
+    was_a_new_position_in_play_selected
 )
 
 router = APIRouter(prefix="/api")
@@ -114,9 +118,6 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     new_game_state = dict(state)
     old_game_state = retrieve_game_state(id, response)
 
-    # TODO: skip a player's turn if all his piece's are stunned (use turn count parity to decide who's turn it is)
-    #       implement invalidate_game_if_wrong_side_moves(), are_all_non_king_pieces_stunned(), can_king_move()
-
     # validate whether the new game state is valid
     # and return status code 500 if it isn't
     try:
@@ -151,6 +152,10 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         capture_positions
     )
 
+    # if no pieces have moved and the position in play has changed, retain the current turn
+    if was_a_new_position_in_play_selected(moved_pieces, old_game_state, new_game_state):
+        should_increment_turn_count = False
+
     # TODO: if a queen captures or "assists" a piece and is not in danger of being captured, retain last player's turn until they move queen again
 
     clean_possible_moves_and_possible_captures(new_game_state)
@@ -175,8 +180,8 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     is_valid_game_state = invalidate_game_if_more_than_one_side_moved(move_count_for_white, move_count_for_black, is_valid_game_state)
     is_valid_game_state = invalidate_game_if_stunned_piece_moves(moved_pieces, is_valid_game_state)
     # old game's turn count is representative of what side should be moving (even is white, odd is black)
-    # if not disable_turn_check:
-    #     is_valid_game_state = invalidate_game_if_wrong_side_moves(moved_pieces, is_valid_game_state, old_game_turn_count)
+    if not disable_turn_check:
+        is_valid_game_state = invalidate_game_if_wrong_side_moves(moved_pieces, is_valid_game_state, old_game_state["turn_count"])
     is_valid_game_state = invalidate_game_if_too_much_gold_is_spent(old_game_state, gold_spent, is_valid_game_state)
     # mutates new_game_state object
     cleanse_stunned_pieces(new_game_state, move_count_for_white)
@@ -220,8 +225,8 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     determine_possible_moves(old_game_state, new_game_state, moved_pieces, player)
 
     # new game's turn count is representative of what side should be moving next turn (even is white, odd is black)
-    # if should_increment_turn_count and are_all_non_king_pieces_stunned(new_game_turn_count) and not can_king_move(side_that_matches_new_game_turn_count):
-    #     increment_turn_count(old_game_state, new_game_state, moved_pieces, 2)
+    if should_increment_turn_count and are_all_non_king_pieces_stunned(new_game_state) and not can_king_move(old_game_state, new_game_state):
+        increment_turn_count(old_game_state, new_game_state, moved_pieces, 2)
     
     # figure out capture point advantage, update gold count, and reassign pawn buffs
     # all three functions mutate new_game_state

@@ -230,7 +230,7 @@ def clear_game(game):
         "black": 0
     }
     game_on_next_turn["captured_pieces"] = {"white": [], "black": []}
-    game_on_next_turn["previous_state"] = game_on_next_turn["board_state"]
+    game_on_next_turn["previous_state"] = copy.deepcopy(game_on_next_turn)
 
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
@@ -1117,3 +1117,15 @@ def can_king_move(old_game_state, new_game_state):
 def was_a_new_position_in_play_selected(moved_pieces, old_game_state, new_game_state):
     return not len([mp for mp in moved_pieces if mp["previous_position"][0] is not None and mp["current_position"][0] is not None]) and \
     old_game_state["position_in_play"] != new_game_state["position_in_play"]
+
+# assumption is that there is a valid position_in_play in the new_game_state before using this function
+def does_position_in_play_match_turn(old_game_state, new_game_state):
+    side_that_should_be_moving = "white" if not old_game_state["turn_count"] % 2 else "black"
+
+    square = old_game_state["board_state"][new_game_state["position_in_play"][0]][new_game_state["position_in_play"][1]] or []
+
+    for piece in square:
+        if side_that_should_be_moving in piece.get("type", ""):
+            return True
+        
+    return False

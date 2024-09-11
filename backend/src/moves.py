@@ -42,7 +42,6 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
 
     if not piece_in_play:
         raise Exception(f"No pawn found at position {curr_position}")
-    
     # TODO: check and record if game-wide buffs are active 
     
     # check and record what buffs that the pawn has 
@@ -50,7 +49,6 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
     
     possible_moves = []
     possible_captures = []
-
     # if square ahead is blank or only has neutral monsters add to list of possible moves
     row_ahead = curr_position[0] + (-1 if side == "white" else 1)
     if row_ahead > -1 and row_ahead < 8:
@@ -101,7 +99,6 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
                     possible_captures.append([diagonal_forward_adjacent_position, diagonal_forward_adjacent_position])
 
     # En passant
-
     # if side is black and on row 4 or side is white and on row 3
     # and there's a opposing side's pawn next to the piece in play
     # that happened to be in its original row in the previous game state
@@ -127,7 +124,6 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
         (all("king" not in piece.get("type", "None") for piece in (curr_game_state["board_state"][curr_position[0]][lateral_position[1]] or []))):
             possible_moves.append([curr_position[0] + (-1 if side == "white" else 1), lateral_position[1]])
             possible_captures.append([[curr_position[0] + (-1 if side == "white" else 1), lateral_position[1]], [curr_position[0] , lateral_position[1]]])
-    
     
     return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
 

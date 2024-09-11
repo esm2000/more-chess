@@ -934,7 +934,58 @@ def test_full_bishop_debuff_stacks_prevent_other_moves(game):
 
 def test_that_two_turns_are_not_allowed_from_the_same_side(game):
     # test that when the turn check is enabled that two turns are not allowed from the same side
-    pass
+    game = clear_game(game)
+    game_on_next_turn = copy.deepcopy(game)
+
+    game_on_next_turn["board_state"][2][0] = [{"type": "black_pawn"}]
+    game_on_next_turn["board_state"][6][0] = [{"type": "white_pawn"}]
+    
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["position_in_play"] = [6, 0]
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][5][0] = game_on_next_turn["board_state"][6][0]
+    game_on_next_turn["board_state"][6][0] = None
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["position_in_play"] = [5, 0]
+
+    game_state = api.GameState(**game_on_next_turn)
+    with pytest.raises(HTTPException):
+        game = api.update_game_state(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][4][0] = game_on_next_turn["board_state"][5][0]
+    game_on_next_turn["board_state"][5][0] = None
+
+    game_state = api.GameState(**game_on_next_turn)
+    with pytest.raises(HTTPException):
+        game = api.update_game_state(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][3][0] = game_on_next_turn["board_state"][2][0]
+    game_on_next_turn["board_state"][2][0] = None
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][4][0] = game_on_next_turn["board_state"][3][0]
+    game_on_next_turn["board_state"][3][0] = None
+
+    game_state = api.GameState(**game_on_next_turn)
+    with pytest.raises(HTTPException):
+        game = api.update_game_state(game["id"], game_state, Response())
+    
 
 def test_skip_one_turn_if_all_non_king_pieces_are_stunned(game):
     # test that when all non-king pieces are stunned that a turn is skipped (with turn check enabled)

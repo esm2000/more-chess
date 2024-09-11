@@ -6,7 +6,8 @@ from pydantic import BaseModel, Extra
 from typing import Union
 
 from mocks.starting_game import starting_game
-import src.moves as moves
+# prevents circular import
+import src.moves as moves 
 from src.database import mongo_client
 from src.logging import logger
 from src.utility import (
@@ -22,6 +23,7 @@ from src.utility import (
     clean_possible_moves_and_possible_captures,
     clean_bishop_special_captures,
     cleanse_stunned_pieces,
+    does_position_in_play_match_turn,
     damage_neutral_monsters,
     determine_pieces_that_have_moved,
     determine_possible_moves,
@@ -155,7 +157,7 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     # if no pieces have moved and the position in play has changed, retain the current turn
     if was_a_new_position_in_play_selected(moved_pieces, old_game_state, new_game_state):
         should_increment_turn_count = False
-
+        is_valid_game_state = does_position_in_play_match_turn(old_game_state, new_game_state) and is_valid_game_state
     # TODO: if a queen captures or "assists" a piece and is not in danger of being captured, retain last player's turn until they move queen again
 
     clean_possible_moves_and_possible_captures(new_game_state)

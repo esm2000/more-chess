@@ -1040,7 +1040,7 @@ def test_queen_assist_reset():
     # test that a queen is able to go again after getting a assist
     pass
 
-def test_queen_limitations():
+def test_queen_turn_reset_limitations():
     # test that a turn reset with a queen does not enable other non-queen pieces to move and test that the turn reset doesn't stack
     pass
 

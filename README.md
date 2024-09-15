@@ -147,6 +147,8 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * create a screen directing users to refresh or try again later when POST request fails
 * shop rework 
 * pawn exchange
+* visual cue for a player being able to go again
+* visual cue for turn being skipped
 * give player option to switch between chess sprites and league sprites (make league sprites default (with button [chess piece] <-> [league character]))
 
 ##### Backend 

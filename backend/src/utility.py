@@ -415,6 +415,7 @@ def apply_queen_stun(old_game_state, new_game_state, moved_pieces):
                             side = piece["type"].split("_")[0]
                             if queen_side != side and "king" not in piece["type"]:
                                 piece["is_stunned"] = True
+                                piece["turn_stunned_for"] = old_game_state["turn_count"] + 1
 
 
 # clean game possible moves and possible captures from last game state
@@ -555,9 +556,7 @@ def invalidate_game_if_stunned_piece_moves(moved_pieces, is_valid_game_state):
 
 
 # the side being cleansed is the moving side
-def cleanse_stunned_pieces(new_game_state, is_pawn_exchange_possible):
-    side_being_cleansed = "white" if is_pawn_exchange_possible else "black"
-    
+def cleanse_stunned_pieces(new_game_state):
     # iterate through the entire board
     for row in new_game_state["board_state"]:
         for square in row:
@@ -565,7 +564,7 @@ def cleanse_stunned_pieces(new_game_state, is_pawn_exchange_possible):
             if square:
                 for piece in square:
                     # if piece is on moving side and is stunned, cleanse
-                    if side_being_cleansed in piece['type'] and piece.get("is_stunned", False):
+                    if piece.get("is_stunned", False) and piece.get("turn_stunned_for", 0) < new_game_state["turn_count"]:
                         del piece['is_stunned']
 
 

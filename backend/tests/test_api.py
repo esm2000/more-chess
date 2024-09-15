@@ -989,6 +989,59 @@ def test_that_two_turns_are_not_allowed_from_the_same_side(game):
 
 def test_skip_one_turn_if_all_non_king_pieces_are_stunned(game):
     # test that when all non-king pieces are stunned that a turn is skipped (with turn check enabled)
+    game = clear_game(game)
+    game_on_next_turn = copy.deepcopy(game)
+
+    game_on_next_turn["board_state"][2][2] = [{"type": "black_pawn"}]
+    game_on_next_turn["board_state"][2][4] = [{"type": "black_pawn"}]
+
+    game_on_next_turn["board_state"][6][3] = [{"type": "white_queen"}]
+    
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+    
+    assert game["turn_count"] == 0
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][2][3] = game_on_next_turn["board_state"][6][3]
+    game_on_next_turn["board_state"][6][3] = None
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["turn_count"] == 2
+    assert game["board_state"][2][2][0].get("is_stunned", False)
+    assert game["board_state"][2][4][0].get("is_stunned", False)
+
+    with pytest.raises(HTTPException):
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][3][2] = game_on_next_turn["board_state"][2][2]
+        game_on_next_turn["board_state"][2][2] = None
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][6][3] = game_on_next_turn["board_state"][2][3]
+    game_on_next_turn["board_state"][2][3] = None
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["turn_count"] == 3
+    assert not game["board_state"][2][2][0].get("is_stunned", False)
+    assert not game["board_state"][2][4][0].get("is_stunned", False)
+
+## complete queen turn reset logic (please make this unstackable) and test (both the effect and the fact that it doesn't stack)
+
+def test_queen_kill_reset():
+    # test that a queen is able to go again after getting a kill
+    pass
+
+def test_queen_assist_reset():
+    # test that a queen is able to go again after getting a assist
+    pass
+
+def test_queen_limitations():
+    # test that a turn reset with a queen does not enable other non-queen pieces to move and test that the turn reset doesn't stack
     pass
 
 def test_neutral_monster_captures_after_spawning_on_any_non_king_piece(game):

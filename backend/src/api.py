@@ -158,7 +158,8 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     if was_a_new_position_in_play_selected(moved_pieces, old_game_state, new_game_state):
         should_increment_turn_count = False
         is_valid_game_state = does_position_in_play_match_turn(old_game_state, new_game_state) and is_valid_game_state
-    # TODO: if a queen captures or "assists" a piece and is not in danger of being captured, retain last player's turn until they move queen again
+    
+    # TODO: (unstackable) if a queen captures or "assists" a piece and is not in danger of being captured, retain last player's turn until they move queen again
 
     clean_possible_moves_and_possible_captures(new_game_state)
     if should_increment_turn_count:
@@ -186,7 +187,7 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         is_valid_game_state = invalidate_game_if_wrong_side_moves(moved_pieces, is_valid_game_state, old_game_state["turn_count"])
     is_valid_game_state = invalidate_game_if_too_much_gold_is_spent(old_game_state, gold_spent, is_valid_game_state)
     # mutates new_game_state object
-    cleanse_stunned_pieces(new_game_state, move_count_for_white)
+    cleanse_stunned_pieces(new_game_state)
     
     # TODO: before capture_positions is altered in this for loop,
     # ensure that if a piece moved to a specific positions, all pieces that are supposed to be eliminated from that move are eliminated

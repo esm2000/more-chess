@@ -1041,7 +1041,7 @@ def test_queen_assist_reset():
     pass
 
 def test_queen_turn_reset_limitations():
-    # test that a turn reset with a queen does not enable other non-queen pieces to move and test that the turn reset doesn't stack
+    # test that a turn reset with a queen does not enable other non-queen pieces to move and that the turn reset doesn't stack
     pass
 
 def test_neutral_monster_captures_after_spawning_on_any_non_king_piece(game):

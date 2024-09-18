@@ -137,12 +137,18 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         if "More than one" in str(e):
             raise HTTPException(status_code=400, detail=INVALID_GAME_STATE_ERROR_MESSAGE)
         raise e
+    
+    is_valid_game_state = True
+    capture_positions = []
 
+    # TODO:
+    # if queen extra turn flag is set, check that proper queen moves
+    # otherwise invalidate game and log error
+
+    # TODO: return separate arrays containing adjacent_captors and adjacent_captives (subsets of moved_pieces) from facilitate_adjacent_capture
     facilitate_adjacent_capture(old_game_state, new_game_state, moved_pieces)
     apply_bishop_energize_stacks_and_bishop_debuffs(old_game_state, new_game_state, moved_pieces)
     apply_queen_stun(old_game_state, new_game_state, moved_pieces)
-    is_valid_game_state = True
-    capture_positions = []
     
     # if any pieces on the board have gained third bishop debuff, retain last player's turn until they've spared or captured it 
     # mutates capture_positions
@@ -159,7 +165,18 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         should_increment_turn_count = False
         is_valid_game_state = does_position_in_play_match_turn(old_game_state, new_game_state) and is_valid_game_state
     
-    # TODO: (unstackable) if a queen captures or "assists" a piece and is not in danger of being captured, retain last player's turn until they move queen again
+    # (unstackable) if a queen captures or "assists" a piece and is not in danger of being captured, retain last player's turn until they move queen again
+    # TODO: 
+    # if queen extra turn flag is set and should increment_turn_count is True 
+        # unset flag for new game
+    # TODO: 
+    # if queen extra turn flag is not set 
+        # check moved pieces for any captured pieces and check that the right queen has moved into their spot
+        # or that right queen is present in adjacent_captors
+            # if so set queen extra turn flag
+        # otherwise check that moved pieces contains captured enemey pieces (relative to the right queen) while
+        # having a queen threaten to capture it using last game's data applied to get_moves_for_queen()
+            # if so set queen extra turn flag
 
     clean_possible_moves_and_possible_captures(new_game_state)
     if should_increment_turn_count:
@@ -256,6 +273,9 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
             # }
     # mutates new_game_state
     record_moved_pieces_this_turn(new_game_state, moved_pieces)
+
+    # TODO: if queen extra turn flag is set, find correct queen and set its position as the position_in_play
+
     # TODO: In another script, use endless loop to update games with
     #       odd number turns if its been 6 seconds since the last update 
     #       and there are no pawn exchanges in progress;

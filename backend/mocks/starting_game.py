@@ -16,6 +16,7 @@ starting_game = {
     "last_updated": datetime.datetime.now(),
     "bishop_special_captures": [],
     "latest_movement": {},
+    "queen_reset": False,
     "board_state": [
         [
             [{"type": "black_rook"}],

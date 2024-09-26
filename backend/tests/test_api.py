@@ -1034,10 +1034,12 @@ def test_skip_one_turn_if_all_non_king_pieces_are_stunned(game):
 
 def test_queen_kill_reset():
     # test that a queen is able to go again after getting a kill
+    # and that queen is automatically in play upon gaining reset
     pass
 
 def test_queen_assist_reset():
     # test that a queen is able to go again after getting a assist
+    # and that queen is automatically in play upon gaining reset
     pass
 
 def test_queen_turn_reset_limitations():

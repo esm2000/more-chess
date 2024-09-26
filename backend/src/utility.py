@@ -240,6 +240,7 @@ def clear_game(game):
 # some pieces are able to capture pieces by being adjacent to them
 # mutates new_game_state object and moved_pieces array
 def facilitate_adjacent_capture(old_game_state, new_game_state, moved_pieces):
+    adjacent_captors, adjacent_captives = [], []
      # (while loop and manual pointer used since moved_pieces might be mutated)
     moved_pieces_pointer = 0
     # 1. iterate through moved pieces to check for pieces that have moved
@@ -330,10 +331,17 @@ def facilitate_adjacent_capture(old_game_state, new_game_state, moved_pieces):
                             "previous_position": possible_capture[1],
                             "current_position": [None, None]
                         })
+                        adjacent_captives.append({
+                            "piece": piece,
+                            "side": piece["type"].split("_")[0],
+                            "previous_position": possible_capture[1],
+                            "current_position": [None, None]
+                        })
+                        adjacent_captors.append(copy.deepcopy(moved_piece))
                         new_game_state["captured_pieces"][moved_piece["side"]].append(piece["type"])
                     piece_pointer += 1
         moved_pieces_pointer += 1
-
+    return adjacent_captors, adjacent_captives
 
 def apply_bishop_energize_stacks_and_bishop_debuffs(old_game_state, new_game_state, moved_pieces):
     positions_with_bishop_debuffs_applied = []
@@ -1117,6 +1125,7 @@ def was_a_new_position_in_play_selected(moved_pieces, old_game_state, new_game_s
     return not len([mp for mp in moved_pieces if mp["previous_position"][0] is not None and mp["current_position"][0] is not None]) and \
     old_game_state["position_in_play"] != new_game_state["position_in_play"]
 
+
 # assumption is that there is a valid position_in_play in the new_game_state before using this function
 def does_position_in_play_match_turn(old_game_state, new_game_state):
     side_that_should_be_moving = "white" if not old_game_state["turn_count"] % 2 else "black"
@@ -1128,3 +1137,37 @@ def does_position_in_play_match_turn(old_game_state, new_game_state):
             return True
         
     return False
+
+
+def verify_queen_reset_turn_is_valid(
+    old_game_state,
+    new_game_state,
+    moved_pieces,
+    is_valid_game_state
+):
+    moving_side = "white" if not bool(old_game_state["turn_count"] % 2) else "black"
+    # check for proper queen moving or that proper queen is set as the position in play
+    proper_queen_found = False
+    is_proper_queen_in_play = False
+
+    for moved_piece in moved_pieces:
+        if moved_piece["side"] == moving_side and \
+        moved_piece["previous_position"][0] is not None and \
+        moved_piece["current_position"][0] is not None:
+            piece_type = moved_piece["piece"].get("type")
+            if "queen" in piece_type:
+                proper_queen_found = True
+            else:
+                is_valid_game_state = False
+                logger.error(f"A non-queen piece moved for {moving_side} instead of the queen using its turn reset")
+    
+    if new_game_state["position_in_play"][0] is not None:
+        position_in_play = new_game_state["position_in_play"]
+        square_in_play = new_game_state["board_state"][position_in_play[0]][position_in_play[1]]
+        is_proper_queen_in_play = any(f"{moving_side}_queen" == piece.get("type") for piece in square_in_play)
+
+    if not proper_queen_found and not is_proper_queen_in_play:
+        is_valid_game_state = False
+        logger.error(f"{moving_side}'s queen is not in play and has not moved despite its turn reset")
+
+    return is_valid_game_state

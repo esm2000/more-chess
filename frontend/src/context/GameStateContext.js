@@ -23,7 +23,8 @@ const GameStateContext = createContext({
     playerDefeat: false,
     goldCount: null,
     bishopSpecialCaptures: [],
-    latestMovement: null
+    latestMovement: null,
+    queenReset: false
 })
 
 export function GameStateContextData() {
@@ -93,7 +94,8 @@ export function GameStateProvider({children}) {
             [PLAYERS[1]]: 0
         },
         bishopSpecialCaptures: [],
-        latestMovement: {}
+        latestMovement: {},
+        queenReset: false
     }
     const [gameState, setGameState] = useState(initGameState);
 

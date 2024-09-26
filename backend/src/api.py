@@ -49,6 +49,7 @@ from src.utility import (
     spawn_neutral_monsters,
     update_capture_point_advantage,
     update_gold_count,
+    verify_queen_reset_turn_is_valid,
     was_a_new_position_in_play_selected
 )
 
@@ -69,6 +70,7 @@ class GameState(BaseModel, extra=Extra.allow):
     gold_count: dict
     bishop_special_captures: list
     latest_movement: dict
+    queen_reset: bool
 
 
 @router.post("/game", status_code=201)
@@ -88,7 +90,8 @@ def create_game():
         "gold_count": {"white": 0, "black": 0},
         "last_updated": datetime.datetime.now(),
         "bishop_special_captures": [],
-        "latest_movement": {}
+        "latest_movement": {},
+        "queen_reset": False
     }
     game_database = mongo_client["game_db"]
     game_database["games"].insert_one(game_state)
@@ -141,12 +144,17 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     is_valid_game_state = True
     capture_positions = []
 
-    # TODO:
     # if queen extra turn flag is set, check that proper queen moves
-    # otherwise invalidate game and log error
-
-    # TODO: return separate arrays containing adjacent_captors and adjacent_captives (subsets of moved_pieces) from facilitate_adjacent_capture
-    facilitate_adjacent_capture(old_game_state, new_game_state, moved_pieces)
+    # otherwise invalidate game and log error    
+    if new_game_state.get("queen_reset"):
+        is_valid_game_state = verify_queen_reset_turn_is_valid(
+            old_game_state,
+            new_game_state,
+            moved_pieces,
+            is_valid_game_state
+        )
+        
+    adjacent_captors, adjacent_captives = facilitate_adjacent_capture(old_game_state, new_game_state, moved_pieces)
     apply_bishop_energize_stacks_and_bishop_debuffs(old_game_state, new_game_state, moved_pieces)
     apply_queen_stun(old_game_state, new_game_state, moved_pieces)
     
@@ -166,11 +174,13 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         is_valid_game_state = does_position_in_play_match_turn(old_game_state, new_game_state) and is_valid_game_state
     
     # (unstackable) if a queen captures or "assists" a piece and is not in danger of being captured, retain last player's turn until they move queen again
-    # TODO: 
     # if queen extra turn flag is set and should increment_turn_count is True 
+    if new_game_state["queen_reset"] and should_increment_turn_count:
         # unset flag for new game
-    # TODO: 
-    # if queen extra turn flag is not set 
+        new_game_state["queen_reset"] = False
+    else:
+        pass
+    # TODO: (1/2)
         # check moved pieces for any captured pieces and check that the right queen has moved into their spot
         # or that right queen is present in adjacent_captors
             # if so set queen extra turn flag
@@ -274,7 +284,7 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     # mutates new_game_state
     record_moved_pieces_this_turn(new_game_state, moved_pieces)
 
-    # TODO: if queen extra turn flag is set, find correct queen and set its position as the position_in_play
+    # TODO: (2/2) if queen extra turn flag is set, find correct queen and set its position as the position_in_play
 
     # TODO: In another script, use endless loop to update games with
     #       odd number turns if its been 6 seconds since the last update 

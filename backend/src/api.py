@@ -46,6 +46,7 @@ from src.utility import (
     prevent_client_side_updates_to_graveyard,
     reassign_pawn_buffs,
     record_moved_pieces_this_turn,
+    reset_queen_turn_on_kill_or_assist,
     spawn_neutral_monsters,
     update_capture_point_advantage,
     update_gold_count,
@@ -154,7 +155,7 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
             is_valid_game_state
         )
         
-    adjacent_captors, adjacent_captives = facilitate_adjacent_capture(old_game_state, new_game_state, moved_pieces)
+    facilitate_adjacent_capture(old_game_state, new_game_state, moved_pieces)
     apply_bishop_energize_stacks_and_bishop_debuffs(old_game_state, new_game_state, moved_pieces)
     apply_queen_stun(old_game_state, new_game_state, moved_pieces)
     
@@ -179,14 +180,14 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         # unset flag for new game
         new_game_state["queen_reset"] = False
     else:
-        pass
-    # TODO: (1/2)
-        # check moved pieces for any captured pieces and check that the right queen has moved into their spot
-        # or that right queen is present in adjacent_captors
-            # if so set queen extra turn flag
-        # otherwise check that moved pieces contains captured enemey pieces (relative to the right queen) while
-        # having a queen threaten to capture it using last game's data applied to get_moves_for_queen()
-            # if so set queen extra turn flag
+        # old_game_state
+        # new_game_state
+        # moved_pieces
+        reset_queen_turn_on_kill_or_assist(
+            old_game_state,
+            new_game_state,
+            moved_pieces
+        )
 
     clean_possible_moves_and_possible_captures(new_game_state)
     if should_increment_turn_count:
@@ -284,7 +285,16 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     # mutates new_game_state
     record_moved_pieces_this_turn(new_game_state, moved_pieces)
 
-    # TODO: (2/2) if queen extra turn flag is set, find correct queen and set its position as the position_in_play
+    # if queen extra turn flag is set, find correct queen and set its position as the position_in_play
+    if new_game_state["queen_reset"]:
+        moving_side = "white" if not bool(old_game_state["turn_count"] % 2) else "black"
+        for i in range(len(old_game_state["board_state"])):
+            row = old_game_state["board_state"][i]
+            for j in len(row):
+                square = row[j]
+                for piece in square:
+                    if piece["type"] == f"{moving_side}_queen":
+                        new_game_state["position_in_play"] = [i, j]
 
     # TODO: In another script, use endless loop to update games with
     #       odd number turns if its been 6 seconds since the last update 

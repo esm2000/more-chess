@@ -240,8 +240,7 @@ def clear_game(game):
 # some pieces are able to capture pieces by being adjacent to them
 # mutates new_game_state object and moved_pieces array
 def facilitate_adjacent_capture(old_game_state, new_game_state, moved_pieces):
-    adjacent_captors, adjacent_captives = [], []
-     # (while loop and manual pointer used since moved_pieces might be mutated)
+    # (while loop and manual pointer used since moved_pieces might be mutated)
     moved_pieces_pointer = 0
     # 1. iterate through moved pieces to check for pieces that have moved
     while moved_pieces_pointer < len(moved_pieces):
@@ -331,17 +330,9 @@ def facilitate_adjacent_capture(old_game_state, new_game_state, moved_pieces):
                             "previous_position": possible_capture[1],
                             "current_position": [None, None]
                         })
-                        adjacent_captives.append({
-                            "piece": piece,
-                            "side": piece["type"].split("_")[0],
-                            "previous_position": possible_capture[1],
-                            "current_position": [None, None]
-                        })
-                        adjacent_captors.append(copy.deepcopy(moved_piece))
                         new_game_state["captured_pieces"][moved_piece["side"]].append(piece["type"])
                     piece_pointer += 1
         moved_pieces_pointer += 1
-    return adjacent_captors, adjacent_captives
 
 def apply_bishop_energize_stacks_and_bishop_debuffs(old_game_state, new_game_state, moved_pieces):
     positions_with_bishop_debuffs_applied = []
@@ -1171,3 +1162,29 @@ def verify_queen_reset_turn_is_valid(
         logger.error(f"{moving_side}'s queen is not in play and has not moved despite its turn reset")
 
     return is_valid_game_state
+
+
+# conditionally mutates new_game_state
+def reset_queen_turn_on_kill_or_assist(old_game_state, new_game_state, moved_pieces):
+    moving_side = "white" if not bool(old_game_state["turn_count"] % 2) else "black"
+    for i in range(len(old_game_state["board_state"])):
+        row = old_game_state["board_state"][i]
+        for j in len(row):
+            square = row[j]
+            for piece in square:
+                if piece["type"] == f"{moving_side}_queen":
+                    queen_possible_moves_and_captures = moves.get_moves_for_queen(
+                        curr_game_state=old_game_state, 
+                        prev_game_state=old_game_state.get("previous_state"), 
+                        curr_position=[i, j]
+                    )
+
+                    for moved_piece in moved_pieces:
+                        if moved_piece["current_position"][0] is None and \
+                        (
+                            # assist condition for queen reset
+                            moved_piece["previous_position"] in queen_possible_moves_and_captures["possible_moves"] or \
+                            # capture condition for queen reset
+                            moved_piece["previous_position"] in [capture_info[1] for capture_info in queen_possible_moves_and_captures["possible_captures"]]
+                        ):
+                            new_game_state["queen_reset"] = True

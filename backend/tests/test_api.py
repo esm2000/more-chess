@@ -1031,11 +1031,44 @@ def test_skip_one_turn_if_all_non_king_pieces_are_stunned(game):
     assert not game["board_state"][2][4][0].get("is_stunned", False)
 
 ## complete queen turn reset logic (please make this unstackable) and test (both the effect and the fact that it doesn't stack)
-
-def test_queen_kill_reset():
+def test_queen_kill_reset(game):
     # test that a queen is able to go again after getting a kill
     # and that queen is automatically in play upon gaining reset
-    pass
+    game = clear_game(game)
+    game_on_next_turn = copy.deepcopy(game)
+
+    game_on_next_turn["board_state"][1][3] = [{"type": "black_pawn"}]
+    game_on_next_turn["board_state"][1][7] = [{"type": "black_pawn"}]
+
+    game_on_next_turn["board_state"][3][3] = [{"type": "white_queen"}]
+    
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    assert game["turn_count"] == 0
+    
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][1][3] = game_on_next_turn["board_state"][3][3]
+    game_on_next_turn["board_state"][3][3] = None
+    game_on_next_turn["captured_pieces"]["white"].append(f"black_pawn")
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["position_in_play"] == [1, 3]
+    assert game["queen_reset"]
+    assert game["turn_count"] == 0
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][4][0] = game_on_next_turn["board_state"][1][3]
+    game_on_next_turn["board_state"][1][3] = None
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert not game["queen_reset"]
+    assert game["turn_count"] == 1
+
 
 def test_queen_assist_reset():
     # test that a queen is able to go again after getting a assist

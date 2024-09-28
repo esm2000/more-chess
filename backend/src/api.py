@@ -47,6 +47,7 @@ from src.utility import (
     reassign_pawn_buffs,
     record_moved_pieces_this_turn,
     reset_queen_turn_on_kill_or_assist,
+    set_queen_as_position_in_play,
     spawn_neutral_monsters,
     update_capture_point_advantage,
     update_gold_count,
@@ -183,10 +184,11 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         # old_game_state
         # new_game_state
         # moved_pieces
-        reset_queen_turn_on_kill_or_assist(
+        should_increment_turn_count = reset_queen_turn_on_kill_or_assist(
             old_game_state,
             new_game_state,
-            moved_pieces
+            moved_pieces,
+            should_increment_turn_count
         )
 
     clean_possible_moves_and_possible_captures(new_game_state)
@@ -284,17 +286,10 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
             # }
     # mutates new_game_state
     record_moved_pieces_this_turn(new_game_state, moved_pieces)
-
+    
     # if queen extra turn flag is set, find correct queen and set its position as the position_in_play
     if new_game_state["queen_reset"]:
-        moving_side = "white" if not bool(old_game_state["turn_count"] % 2) else "black"
-        for i in range(len(old_game_state["board_state"])):
-            row = old_game_state["board_state"][i]
-            for j in len(row):
-                square = row[j]
-                for piece in square:
-                    if piece["type"] == f"{moving_side}_queen":
-                        new_game_state["position_in_play"] = [i, j]
+        set_queen_as_position_in_play(old_game_state, new_game_state)
 
     # TODO: In another script, use endless loop to update games with
     #       odd number turns if its been 6 seconds since the last update 

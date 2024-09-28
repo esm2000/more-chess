@@ -1067,8 +1067,8 @@ def record_moved_pieces_this_turn(new_game_state, moved_pieces):
 # old game's turn count is representative of what side should be moving (even is white, odd is black)
 def invalidate_game_if_wrong_side_moves(moved_pieces, is_valid_game_state, old_game_turn_count):
     side_that_should_be_moving = "white" if not old_game_turn_count % 2 else "black"
-    for side in [piece_info["side"] for piece_info in moved_pieces]:
-        if side != side_that_should_be_moving:
+    for side in [piece_info["side"] for piece_info in moved_pieces if piece_info["previous_position"][0] is not None and piece_info["current_position"][0] is not None]:
+        if side != side_that_should_be_moving and side != "neutral":
             logger.error(f"{side} moved instead of {side_that_should_be_moving}")
             is_valid_game_state = False
     return is_valid_game_state
@@ -1154,7 +1154,7 @@ def verify_queen_reset_turn_is_valid(
     
     if new_game_state["position_in_play"][0] is not None:
         position_in_play = new_game_state["position_in_play"]
-        square_in_play = new_game_state["board_state"][position_in_play[0]][position_in_play[1]]
+        square_in_play = new_game_state["board_state"][position_in_play[0]][position_in_play[1]] or []
         is_proper_queen_in_play = any(f"{moving_side}_queen" == piece.get("type") for piece in square_in_play)
 
     if not proper_queen_found and not is_proper_queen_in_play:
@@ -1165,12 +1165,12 @@ def verify_queen_reset_turn_is_valid(
 
 
 # conditionally mutates new_game_state
-def reset_queen_turn_on_kill_or_assist(old_game_state, new_game_state, moved_pieces):
+def reset_queen_turn_on_kill_or_assist(old_game_state, new_game_state, moved_pieces, should_increment_turn_count):
     moving_side = "white" if not bool(old_game_state["turn_count"] % 2) else "black"
     for i in range(len(old_game_state["board_state"])):
         row = old_game_state["board_state"][i]
-        for j in len(row):
-            square = row[j]
+        for j in range(len(row)):
+            square = row[j] or []
             for piece in square:
                 if piece["type"] == f"{moving_side}_queen":
                     queen_possible_moves_and_captures = moves.get_moves_for_queen(
@@ -1188,3 +1188,15 @@ def reset_queen_turn_on_kill_or_assist(old_game_state, new_game_state, moved_pie
                             moved_piece["previous_position"] in [capture_info[1] for capture_info in queen_possible_moves_and_captures["possible_captures"]]
                         ):
                             new_game_state["queen_reset"] = True
+                            should_increment_turn_count = False
+    return should_increment_turn_count
+
+def set_queen_as_position_in_play(old_game_state, new_game_state):
+    moving_side = "white" if not bool(old_game_state["turn_count"] % 2) else "black"
+    for i in range(len(new_game_state["board_state"])):
+        row = new_game_state["board_state"][i]
+        for j in range(len(row)):
+            square = row[j] or []
+            for piece in square:
+                if piece["type"] == f"{moving_side}_queen":
+                    new_game_state["position_in_play"] = [i, j]

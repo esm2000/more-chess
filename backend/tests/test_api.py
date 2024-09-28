@@ -1030,7 +1030,7 @@ def test_skip_one_turn_if_all_non_king_pieces_are_stunned(game):
     assert not game["board_state"][2][2][0].get("is_stunned", False)
     assert not game["board_state"][2][4][0].get("is_stunned", False)
 
-## complete queen turn reset logic (please make this unstackable) and test (both the effect and the fact that it doesn't stack)
+
 def test_queen_kill_reset(game):
     # test that a queen is able to go again after getting a kill
     # and that queen is automatically in play upon gaining reset
@@ -1070,14 +1070,113 @@ def test_queen_kill_reset(game):
     assert game["turn_count"] == 1
 
 
-def test_queen_assist_reset():
+def test_queen_assist_reset(game):
     # test that a queen is able to go again after getting a assist
     # and that queen is automatically in play upon gaining reset
-    pass
+    game = clear_game(game)
+    game_on_next_turn = copy.deepcopy(game)
 
-def test_queen_turn_reset_limitations():
+    game_on_next_turn["board_state"][1][3] = [{"type": "black_pawn"}]
+    game_on_next_turn["board_state"][1][7] = [{"type": "black_pawn"}]
+
+    game_on_next_turn["board_state"][3][3] = [{"type": "white_queen"}]
+    game_on_next_turn["board_state"][1][2] = [{"type": "white_rook"}]
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    assert game["turn_count"] == 0
+    
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][1][3] = game_on_next_turn["board_state"][1][2]
+    game_on_next_turn["board_state"][1][2] = None
+    game_on_next_turn["captured_pieces"]["white"].append(f"black_pawn")
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["position_in_play"] == [3, 3]
+    assert game["queen_reset"]
+    assert game["turn_count"] == 0
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][4][3] = game_on_next_turn["board_state"][3][3]
+    game_on_next_turn["board_state"][3][3] = None
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert not game["queen_reset"]
+    assert game["turn_count"] == 1
+
+
+def test_queen_turn_reset_limitations(game):
     # test that a turn reset with a queen does not enable other non-queen pieces to move and that the turn reset doesn't stack
-    pass
+    game = clear_game(game)
+    game_on_next_turn = copy.deepcopy(game)
+
+    game_on_next_turn["board_state"][1][3] = [{"type": "black_pawn"}]
+    game_on_next_turn["board_state"][1][7] = [{"type": "black_pawn"}]
+
+    game_on_next_turn["board_state"][3][3] = [{"type": "white_queen"}]
+    game_on_next_turn["board_state"][1][2] = [{"type": "white_rook"}]
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    assert game["turn_count"] == 0
+    
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][1][3] = game_on_next_turn["board_state"][1][2]
+    game_on_next_turn["board_state"][1][2] = None
+    game_on_next_turn["captured_pieces"]["white"].append(f"black_pawn")
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["position_in_play"] == [3, 3]
+    assert game["queen_reset"]
+    assert game["turn_count"] == 0
+
+    with pytest.raises(HTTPException):
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["position_in_play"] = [1, 3]
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response())
+    
+    with pytest.raises(HTTPException):
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][1][4] = game_on_next_turn["board_state"][1][3]
+        game_on_next_turn["board_state"][1][3] = None
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][4][3] = game_on_next_turn["board_state"][3][3]
+    game_on_next_turn["board_state"][3][3] = None
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert not game["queen_reset"]
+    assert game["turn_count"] == 1
+
+    with pytest.raises(HTTPException):
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][5][3] = game_on_next_turn["board_state"][4][3]
+        game_on_next_turn["board_state"][4][3] = None
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response())
+    
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][2][7] = game_on_next_turn["board_state"][1][7]
+    game_on_next_turn["board_state"][1][7] = None
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert not game["queen_reset"]
+    assert game["turn_count"] == 2
+
 
 def test_neutral_monster_captures_after_spawning_on_any_non_king_piece(game):
     # neutral monster should automatically send non-king pieces to the graveyard

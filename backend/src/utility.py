@@ -246,6 +246,9 @@ def clear_game(game):
     }
     game_on_next_turn["captured_pieces"] = {"white": [], "black": []}
     game_on_next_turn["previous_state"] = copy.deepcopy(game_on_next_turn)
+    
+    game_on_next_turn["player_victory"] = False
+    game_on_next_turn["player_defeat"] = False
 
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())

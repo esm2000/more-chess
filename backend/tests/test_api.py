@@ -1180,7 +1180,29 @@ def test_queen_turn_reset_limitations(game):
 
 def test_neutral_monster_captures_after_spawning_on_any_non_king_piece(game):
     # neutral monster should automatically send non-king pieces to the graveyard
-    pass
+    game = clear_game(game)
+    game_on_next_turn = copy.deepcopy(game)
+
+    game_on_next_turn["board_state"][3][7] = [{"type": "black_pawn"}]
+    game_on_next_turn["board_state"][1][1] = [{"type": "black_king"}]
+    game_on_next_turn["board_state"][7][1] = [{"type": "white_king"}]
+ 
+    game_on_next_turn["turn_count"] = 9
+    assert not game["graveyard"]
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][4][7] = game_on_next_turn["board_state"][3][7]
+    game_on_next_turn["board_state"][3][7] = None
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["turn_count"] == 10
+    assert game["board_state"][4][7][0].get("type") == "neutral_dragon"
+    assert "black_pawn" in game["graveyard"] 
 
 
 def test_neutral_monster_ends_game_after_spawning_on_king(game):

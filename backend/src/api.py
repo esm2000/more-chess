@@ -257,6 +257,7 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     determine_possible_moves(old_game_state, new_game_state, moved_pieces, player)
 
     # new game's turn count is representative of what side should be moving next turn (even is white, odd is black)
+    # TODO: update can_king_move() to account for check
     if should_increment_turn_count and are_all_non_king_pieces_stunned(new_game_state) and not can_king_move(old_game_state, new_game_state):
         increment_turn_count(old_game_state, new_game_state, moved_pieces, 2)
     

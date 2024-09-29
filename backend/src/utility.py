@@ -142,15 +142,30 @@ def spawn_neutral_monsters(game_state):
 
     for monster in monsters:
         monster_piece = [{"type": monster, "health": monster_info[monster]["max_health"], "turn_spawned": turn_count}]
-        if game_state["board_state"][monster_info[monster]["position"][0]][monster_info[monster]["position"][1]] is None:
-            game_state["board_state"][monster_info[monster]["position"][0]][monster_info[monster]["position"][1]] = monster_piece
-        elif all(piece.get('type') != monster for piece in game_state["board_state"][monster_info[monster]["position"][0]][monster_info[monster]["position"][1]]):
-            game_state["board_state"][monster_info[monster]["position"][0]][monster_info[monster]["position"][1]] = monster_piece + game_state["board_state"][monster_info[monster]["position"][0]][monster_info[monster]["position"][1]]
-            
+        monster_position_row = monster_info[monster]["position"][0]
+        monster_position_col = monster_info[monster]["position"][1]
+        if game_state["board_state"][monster_position_row][monster_position_col] is None:
+            game_state["board_state"][monster_position_row][monster_position_col] = monster_piece
+        elif all(piece.get('type') != monster for piece in game_state["board_state"][monster_position_row][monster_position_col]):            
+            i = 0
+            while i < len(game_state["board_state"][monster_position_row][monster_position_col]):
+                piece = game_state["board_state"][monster_position_row][monster_position_col][i]
+                if "king" in piece.get("type"):
+                    if "white" in piece["type"]:
+                        game_state["player_defeat"] = True
+                    else:
+                        game_state["player_victory"] = True
+                    i += 1
+                else:
+                    game_state["graveyard"].append(piece.get("type"))
+                    game_state["board_state"][monster_position_row][monster_position_col].pop(i)
+
+            game_state["board_state"][monster_position_row][monster_position_col] = monster_piece
+
             if monster == "neutral_baron_nashor":
-                for i in range(len(game_state["board_state"][monster_info[monster]["position"][0]][monster_info[monster]["position"][1]])):
-                    if game_state["board_state"][monster_info[monster]["position"][0]][monster_info[monster]["position"][1]][i].get("type") == "neutral_board_herald":
-                        game_state["board_state"][monster_info[monster]["position"][0]][monster_info[monster]["position"][1]].pop(i)
+                for i in range(len(game_state["board_state"][monster_position_row][monster_position_col])):
+                    if game_state["board_state"][monster_position_row][monster_position_col][i].get("type") == "neutral_board_herald":
+                        game_state["board_state"][monster_position_row][monster_position_col].pop(i)
 
 
 def carry_out_neutral_monster_attacks(game_state):

@@ -125,6 +125,10 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     new_game_state = dict(state)
     old_game_state = retrieve_game_state(id, response)
 
+    # prevent updates to game once game has ended
+    if old_game_state["player_victory"] or old_game_state["player_defeat"]:
+        return old_game_state
+
     # validate whether the new game state is valid
     # and return status code 500 if it isn't
     try:

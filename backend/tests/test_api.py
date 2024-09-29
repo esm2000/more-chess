@@ -1182,6 +1182,12 @@ def test_neutral_monster_captures_after_spawning_on_any_non_king_piece(game):
     # neutral monster should automatically send non-king pieces to the graveyard
     pass
 
+
+def test_neutral_monster_ends_game_after_spawning_on_king(game):
+    # neutral monster should automatically send non-king pieces to the graveyard
+    pass
+
+
 def test_sword_in_the_stone_spawn(game):
     # run a test 50 times and see that the sword in the stone spawns in a suitable location every time
     pass

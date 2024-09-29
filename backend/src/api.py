@@ -219,11 +219,6 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     # mutates new_game_state object
     cleanse_stunned_pieces(new_game_state)
     
-    # TODO: before capture_positions is altered in this for loop,
-    # ensure that if a piece moved to a specific positions, all pieces that are supposed to be eliminated from that move are eliminated
-    # since its possible to capture more than one piece a turn
-    # (add the captured pieces to moved_pieces array, so that the captured_pieces object can be properly updated (lines 295-296))
-    
     is_valid_game_state = invalidate_game_if_monster_has_moved(is_valid_game_state, moved_pieces)
     # mutates capture_positions list
     is_valid_game_state = check_for_disappearing_pieces(

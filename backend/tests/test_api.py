@@ -1253,13 +1253,13 @@ def test_sword_in_the_stone_retrieval(game):
     pass 
 
 
-def test_sword_in_the_stone_check_protection(game):
-    # test that the sword_in_the_stone protects king from check
+def test_sword_in_the_stone_stacks(game):
+    # test that the sword in the stone appropiately stacks
     pass
 
 
-def test_sword_in_the_stone_stacks(game):
-    # test that the sword in the stone appropiately stacks
+def test_sword_in_the_stone_check_protection(game):
+    # test that the sword_in_the_stone protects king from check
     pass
 
 

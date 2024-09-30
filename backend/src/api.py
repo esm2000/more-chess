@@ -27,6 +27,7 @@ from src.utility import (
     damage_neutral_monsters,
     determine_pieces_that_have_moved,
     determine_possible_moves,
+    exhaust_sword_in_the_stone,
     get_gold_spent,
     get_move_counts,
     handle_pieces_with_full_bishop_debuff_stacks,
@@ -49,6 +50,7 @@ from src.utility import (
     reset_queen_turn_on_kill_or_assist,
     set_queen_as_position_in_play,
     spawn_neutral_monsters,
+    spawn_sword_in_the_stone,
     update_capture_point_advantage,
     update_gold_count,
     verify_queen_reset_turn_is_valid,
@@ -140,7 +142,7 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         #       "current_position": []
         #   },
         #   ...
-        # }
+        # ]
         moved_pieces = determine_pieces_that_have_moved(new_game_state["board_state"], old_game_state["board_state"])
     except Exception as e:
         if "More than one" in str(e):
@@ -290,7 +292,13 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     # if queen extra turn flag is set, find correct queen and set its position as the position_in_play
     if new_game_state["queen_reset"]:
         set_queen_as_position_in_play(old_game_state, new_game_state)
+    
+    # spawn sword in the stone when appropriate
+    spawn_sword_in_the_stone(new_game_state)
 
+    # exhaust sword in stone when appropriate
+    exhaust_sword_in_the_stone(new_game_state, moved_pieces)
+    
     # TODO: In another script, use endless loop to update games with
     #       odd number turns if its been 6 seconds since the last update 
     #       and there are no pawn exchanges in progress;

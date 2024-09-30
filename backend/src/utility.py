@@ -1209,6 +1209,8 @@ def reset_queen_turn_on_kill_or_assist(old_game_state, new_game_state, moved_pie
                             should_increment_turn_count = False
     return should_increment_turn_count
 
+
+# conditionally mutates new_game_state
 def set_queen_as_position_in_play(old_game_state, new_game_state):
     moving_side = "white" if not bool(old_game_state["turn_count"] % 2) else "black"
     for i in range(len(new_game_state["board_state"])):
@@ -1218,3 +1220,27 @@ def set_queen_as_position_in_play(old_game_state, new_game_state):
             for piece in square:
                 if piece["type"] == f"{moving_side}_queen":
                     new_game_state["position_in_play"] = [i, j]
+
+
+# conditionally mutates new_game_state
+def spawn_sword_in_the_stone(new_game_state):
+    if new_game_state["turn_count"] and new_game_state["turn_count"] % 10:
+        row_range = range(2, 6)
+
+        for i in row_range:
+            for j in range(8):
+                if not new_game_state["board_state"][i][j]:
+                    new_game_state["sword_in_the_stone_position"] = [i, j]
+
+
+def exhaust_sword_in_the_stone(new_game_state, moved_pieces):
+    for moved_piece in moved_pieces:
+        if new_game_state["sword_in_the_stone_position"] == moved_piece["current_position"] and \
+        "king" in moved_piece["piece"].get("type"):
+                new_game_state["sword_in_the_stone_position"] = None
+                for piece in new_game_state["board_state"][moved_piece["current_position"][0]][moved_piece["current_position"][1]]:
+                    if piece.get("type") == moved_piece["piece"].get("type"):
+                        if "check_protection" in piece and isinstance(piece["check_protection"], int):
+                            piece["check_protection"] += 1
+                        else:
+                            piece["check_protection"] = 1

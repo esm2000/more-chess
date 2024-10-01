@@ -250,6 +250,8 @@ def clear_game(game):
     game_on_next_turn["player_victory"] = False
     game_on_next_turn["player_defeat"] = False
 
+    game_on_next_turn["sword_in_the_stone_position"] = None
+
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
     return game

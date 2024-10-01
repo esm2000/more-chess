@@ -1246,7 +1246,7 @@ def test_neutral_monster_ends_game_after_spawning_on_king(game):
 def test_sword_in_the_stone_spawn(game):
     # run a test 50 times and see that the sword in the stone spawns in a suitable location every time
     locations = {}
-    for i in range(5):
+    for _ in range(5):
         for turn in [9, 19, 29, 39, 49]:
             game = clear_game(game)
             game_on_next_turn = copy.deepcopy(game)

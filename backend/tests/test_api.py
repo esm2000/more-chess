@@ -1326,12 +1326,6 @@ def test_sword_in_the_stone_stacks(game):
 
         assert game["sword_in_the_stone_position"] is None
         assert game["board_state"][3][4][0]["check_protection"] == 2
-    
-
-
-def test_sword_in_the_stone_check_protection(game):
-    # test that the sword_in_the_stone protects king from check
-    pass
 
 
 def test_white_check(game):
@@ -1342,6 +1336,17 @@ def test_white_check(game):
 def test_black_check(game):
     # test that black can be checked
     pass
+
+
+def test_white_check_protection_against_check(game):
+    # test that check protection works against check for white
+    pass
+
+
+def test_white_check_protection_against_check(game):
+    # test that check protection works against check for black
+    pass
+
 
 def test_white_in_check_and_needs_a_non_king_piece_to_get_it_out_of_check(game):
     # test that when white king is in check and can't move anywhere to get out of check
@@ -1363,6 +1368,15 @@ def test_white_checkmate(game):
 
 def test_black_checkmate(game):
     # test that black can be checkmated
+    pass
+
+def test_white_check_protection_against_checkmate(game):
+    # test that check protection works against checkmate for white
+    pass
+
+
+def test_white_check_protection_against_checkmate(game):
+    # test that check protection works against checkmate for black
     pass
 
 def test_king_cant_put_itself_in_check(game):

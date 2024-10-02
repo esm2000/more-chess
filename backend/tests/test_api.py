@@ -1244,7 +1244,7 @@ def test_neutral_monster_ends_game_after_spawning_on_king(game):
 
 
 def test_sword_in_the_stone_spawn(game):
-    # run a test 50 times and see that the sword in the stone spawns in a suitable location every time
+    # run a test 25 times and see that the sword in the stone spawns in a suitable location every time
     locations = {}
     for _ in range(5):
         for turn in [9, 19, 29, 39, 49]:
@@ -1264,15 +1264,18 @@ def test_sword_in_the_stone_spawn(game):
             game_state = api.GameState(**game_on_next_turn)
             game = api.update_game_state(game["id"], game_state, Response())
 
-            if game["sword_in_the_stone_position"] in locations:
-                game["sword_in_the_stone_position"] += 1
+            if tuple(game["sword_in_the_stone_position"]) in locations:
+                locations[tuple(game["sword_in_the_stone_position"])] += 1
             else:
-                game["sword_in_the_stone_position"] = 1
+                locations[tuple(game["sword_in_the_stone_position"])] = 1
 
             assert game["turn_count"] == turn + 1
-            assert game["sword_in_the_stone_position"]
+            assert game["sword_in_the_stone_position"] is not None
+            
     for location in locations:
         assert locations[location] < 13
+    assert (4, 3) not in locations
+    assert (3, 4) not in locations
 
 
 def test_sword_in_the_stone_retrieval(game):

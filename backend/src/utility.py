@@ -3,6 +3,7 @@ import copy
 import datetime
 from fastapi import HTTPException, Response
 from mocks.empty_game import empty_game
+import random
 from src.logging import logger
 import src.api as api
 import src.moves as moves
@@ -1226,13 +1227,15 @@ def set_queen_as_position_in_play(old_game_state, new_game_state):
 
 # conditionally mutates new_game_state
 def spawn_sword_in_the_stone(new_game_state):
-    if new_game_state["turn_count"] and new_game_state["turn_count"] % 10:
+    if new_game_state["turn_count"] and not new_game_state["turn_count"] % 10:
         row_range = range(2, 6)
-
+        candidate_squares = []
         for i in row_range:
             for j in range(8):
                 if not new_game_state["board_state"][i][j]:
-                    new_game_state["sword_in_the_stone_position"] = [i, j]
+                    candidate_squares.append([i, j])
+        if candidate_squares:
+            new_game_state["sword_in_the_stone_position"] = random.choice(candidate_squares)
 
 
 def exhaust_sword_in_the_stone(new_game_state, moved_pieces):

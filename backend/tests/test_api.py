@@ -1271,7 +1271,7 @@ def test_sword_in_the_stone_spawn(game):
 
             assert game["turn_count"] == turn + 1
             assert game["sword_in_the_stone_position"] is not None
-            
+
     for location in locations:
         assert locations[location] < 13
     assert (4, 3) not in locations
@@ -1280,7 +1280,27 @@ def test_sword_in_the_stone_spawn(game):
 
 def test_sword_in_the_stone_retrieval(game):
     # test that both kings can retrieve the sword in the stone and its accompanying buff
-    pass 
+    for retrieval_side in ["white", "black"]:
+        opposite_side = "white" if retrieval_side == "black" else "black"
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][3][3] = [{"type": f"{retrieval_side}_king"}]
+        game_on_next_turn["board_state"][3][6] = [{"type": f"{opposite_side}_king"}]
+        game_on_next_turn["turn_count"] = 10 if retrieval_side == "white" else 11
+        game_on_next_turn["sword_in_the_stone_position"] = [3, 4]
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][3][4] = game_on_next_turn["board_state"][3][3]
+        game_on_next_turn["board_state"][3][3] = None
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response())
+
+        assert game["sword_in_the_stone_position"] is None
+        assert game["board_state"][3][4][0]["check_protection"] == 1
 
 
 def test_sword_in_the_stone_stacks(game):

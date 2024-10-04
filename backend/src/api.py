@@ -127,6 +127,11 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     new_game_state = dict(state)
     old_game_state = retrieve_game_state(id, response)
 
+    # TODO: - fix all tests before moving forward
+    #       - utilize get_unsafe_positions() to handle check towards end of function (make check a flag in board state like gold_spent)
+    #       - if it is a side's current turn and it is in check, force their king into the position in play 
+    #       - at a beginning of function, check for checkmate by seeing if the king has anywhere to go (using get_moves())
+
     # prevent updates to game once game has ended
     if old_game_state["player_victory"] or old_game_state["player_defeat"]:
         return old_game_state
@@ -208,8 +213,7 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         old_game_state, 
         new_game_state, 
         moved_pieces, 
-        is_valid_game_state, 
-        capture_positions
+        is_valid_game_state
     )
     gold_spent = get_gold_spent(old_game_state, moved_pieces)
 
@@ -298,7 +302,7 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
 
     # exhaust sword in stone when appropriate
     exhaust_sword_in_the_stone(new_game_state, moved_pieces)
-    
+
     # TODO: In another script, use endless loop to update games with
     #       odd number turns if its been 6 seconds since the last update 
     #       and there are no pawn exchanges in progress;

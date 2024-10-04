@@ -277,43 +277,7 @@ def facilitate_adjacent_capture(old_game_state, new_game_state, moved_pieces):
         #   "possible_captures": [[[row, col], [row, col]], ...] - first position is where piece has to move to capture piece in second position
         # }
         try:
-            # TODO: incorporate other piece types here
-            if "pawn" in moved_piece["piece"]["type"]:
-                moves_info = moves.get_moves_for_pawn(
-                    curr_game_state=old_game_state, 
-                    prev_game_state=old_game_state.get("previous_state"), 
-                    curr_position=moved_piece["previous_position"]
-                )
-            if "knight" in moved_piece["piece"]["type"]:
-                moves_info = moves.get_moves_for_knight(
-                    curr_game_state=old_game_state, 
-                    prev_game_state=old_game_state.get("previous_state"), 
-                    curr_position=moved_piece["previous_position"]
-                )
-            if "bishop" in moved_piece["piece"]["type"]:
-                moves_info = moves.get_moves_for_bishop(
-                    curr_game_state=old_game_state, 
-                    prev_game_state=old_game_state.get("previous_state"), 
-                    curr_position=moved_piece["previous_position"]
-                )
-            if "rook" in moved_piece["piece"]["type"]:
-                moves_info = moves.get_moves_for_rook(
-                    curr_game_state=old_game_state, 
-                    prev_game_state=old_game_state.get("previous_state"), 
-                    curr_position=moved_piece["previous_position"]
-                )
-            if "queen" in moved_piece["piece"]["type"]:
-                moves_info = moves.get_moves_for_queen(
-                    curr_game_state=old_game_state, 
-                    prev_game_state=old_game_state.get("previous_state"), 
-                    curr_position=moved_piece["previous_position"]
-                )
-            if "king" in moved_piece["piece"]["type"]:
-                moves_info = moves.get_moves_for_king(
-                    curr_game_state=old_game_state, 
-                    prev_game_state=old_game_state.get("previous_state"), 
-                    curr_position=moved_piece["previous_position"]
-                )
+            moves_info = moves.get_moves(old_game_state, new_game_state, moved_piece["previous_position"], moved_piece["piece"])
         except Exception as e:
             logger.error(f"Unable to determine move for {moved_piece['piece']} due to: {e}")
             moved_pieces_pointer += 1
@@ -458,8 +422,7 @@ def check_to_see_if_more_than_one_piece_has_moved(
         old_game_state, 
         new_game_state, 
         moved_pieces, 
-        is_valid_game_state, 
-        capture_positions
+        is_valid_game_state
 ):
     for side in old_game_state["captured_pieces"]:
         count_of_pieces_on_new_state = 0
@@ -480,46 +443,7 @@ def check_to_see_if_more_than_one_piece_has_moved(
             if moved_piece["current_position"][0] is not None and moved_piece["previous_position"][0] is not None:
                 moves_info = {"possible_moves": [], "possible_captures": []}
                 try:
-                    # TODO: incorporate other piece types here
-                    if "pawn" in moved_piece["piece"]["type"]:
-                        moves_info = moves.get_moves_for_pawn(
-                            curr_game_state=old_game_state, 
-                            prev_game_state=old_game_state.get("previous_state"), 
-                            curr_position=moved_piece["previous_position"]
-                        )
-                    if "knight" in moved_piece["piece"]["type"]:
-                        moves_info = moves.get_moves_for_knight(
-                            curr_game_state=old_game_state, 
-                            prev_game_state=old_game_state.get("previous_state"), 
-                            curr_position=moved_piece["previous_position"]
-                        )
-                    if "bishop" in moved_piece["piece"]["type"]:
-                        moves_info = moves.get_moves_for_bishop(
-                            curr_game_state=old_game_state, 
-                            prev_game_state=old_game_state.get("previous_state"), 
-                            curr_position=moved_piece["previous_position"]
-                        )
-                    if "rook" in moved_piece["piece"]["type"]:
-                        moves_info = moves.get_moves_for_rook(
-                            curr_game_state=old_game_state, 
-                            prev_game_state=old_game_state.get("previous_state"), 
-                            curr_position=moved_piece["previous_position"]
-                        )
-                    if "queen" in moved_piece["piece"]["type"]:
-                        moves_info = moves.get_moves_for_queen(
-                            curr_game_state=old_game_state, 
-                            prev_game_state=old_game_state.get("previous_state"), 
-                            curr_position=moved_piece["previous_position"]
-                        )
-                    if "king" in moved_piece["piece"]["type"]:
-                        moves_info = moves.get_moves_for_king(
-                            curr_game_state=old_game_state, 
-                            prev_game_state=old_game_state.get("previous_state"), 
-                            curr_position=moved_piece["previous_position"]
-                        )
-                    for possible_capture_info in moves_info["possible_captures"]:
-                        capture_positions.append(possible_capture_info)
-                        
+                    moves_info = moves.get_moves(old_game_state, new_game_state, moved_piece["previous_position"], moved_piece["piece"])    
                 except Exception as e:
                     logger.error(f"Unable to determine move for {moved_piece['piece']['type']} due to: {e}")
                     is_valid_game_state = False
@@ -721,43 +645,7 @@ def determine_possible_moves(old_game_state, new_game_state, moved_pieces, playe
             raise HTTPException(status_code=500, detail=error_msg)
         
         try:
-            # TODO: incorporate other piece types here
-            if "pawn" in piece_in_play["type"]:
-                moves_info = moves.get_moves_for_pawn(
-                    curr_game_state=new_game_state, 
-                    prev_game_state=old_game_state,
-                    curr_position=new_game_state["position_in_play"]
-                )
-            if "knight" in piece_in_play["type"]:
-                moves_info = moves.get_moves_for_knight(
-                    curr_game_state=new_game_state, 
-                    prev_game_state=old_game_state,
-                    curr_position=new_game_state["position_in_play"]
-                )
-            if "bishop" in piece_in_play["type"]:
-                moves_info = moves.get_moves_for_bishop(
-                    curr_game_state=new_game_state, 
-                    prev_game_state=old_game_state,
-                    curr_position=new_game_state["position_in_play"]
-                )
-            if "rook" in piece_in_play["type"]:
-                moves_info = moves.get_moves_for_rook(
-                    curr_game_state=new_game_state, 
-                    prev_game_state=old_game_state,
-                    curr_position=new_game_state["position_in_play"]
-                )
-            if "queen" in piece_in_play["type"]:
-                moves_info = moves.get_moves_for_queen(
-                    curr_game_state=new_game_state, 
-                    prev_game_state=old_game_state,
-                    curr_position=new_game_state["position_in_play"]
-                )
-            if "king" in piece_in_play["type"]:
-                moves_info = moves.get_moves_for_king(
-                    curr_game_state=new_game_state, 
-                    prev_game_state=old_game_state,
-                    curr_position=new_game_state["position_in_play"]
-                )
+            moves_info = moves.get_moves(old_game_state, new_game_state, new_game_state["position_in_play"], piece)
         except Exception as e:
             logger.error(f"Unable to determine move for {moved_piece['piece']} due to: {e}")
         
@@ -1116,6 +1004,7 @@ def can_king_move(old_game_state, new_game_state):
     new_game_turn_count = new_game_state["turn_count"]
     side_that_should_be_moving_next_turn = "white" if not new_game_turn_count % 2 else "black"
     output = False
+    unsafe_positions = get_unsafe_positions(old_game_state, new_game_state)
     for i in range(len(new_game_state["board_state"])):
         for j in range(len(new_game_state["board_state"][0])):
             square = new_game_state["board_state"][i][j]
@@ -1124,13 +1013,77 @@ def can_king_move(old_game_state, new_game_state):
                 for piece in square:
                     if piece.get("type") == f"{side_that_should_be_moving_next_turn}_king":
                         output = len(
-                                moves.get_moves_for_king(
+                            [
+                                move for move in moves.get_moves_for_king(
                                     new_game_state,
                                     old_game_state,
                                     [i, j]
-                                )["possible_moves"]
+                                )["possible_moves"] if move not in unsafe_positions[side_that_should_be_moving_next_turn]
+                            ]
                         ) > 0
     return output
+
+
+def get_unsafe_positions(old_game_state, new_game_state):
+    output = {
+        "white": {},
+        "black": {}
+    }
+    # iterate through board
+    for row in range(len(new_game_state["board_state"])):
+        for col in range(len(new_game_state["board_state"][0])):
+            # for every square iterate through the pieces
+            square = new_game_state["board_state"][row][col]
+            for piece in square:
+                # if piece is white or black
+                if "white" in piece.get("type", "") or "black" in piece.get("type", ""):
+                    side = piece["type"].split("_")[0]
+                    opposite_side = "white" if side == "black" else "black"
+                    moves_info = moves.get_moves(old_game_state, new_game_state, [row, col], piece)
+                    # get second positions from all possible captures
+                    # get all positions from possible moves (kings are not included in possible captures)
+                    # add both to opposite side's unsafe position array
+                    output[opposite_side] = output[opposite_side].union({tuple(possible_capture[1]) for possible_capture in moves_info["possible_captures"]})
+                    output[opposite_side] = output[opposite_side].union({tuple(possible_move) for possible_move in moves_info["possible_moves"]})
+                # if piece is neutral
+                elif "neutral" in piece.get("type", ""):
+                    # add current square and all adjacent squares to both sides of unsafe position array
+                    deltas = [[0, 0], [1, 0], [0, 1], [-1, 0], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]
+
+                    for delta in deltas:
+                        position = (row+delta[0], col+delta[1])
+                        if position[0] < 0 or position[0] >= 8 or position[1] < 0 or position[1] >= 8:
+                            continue
+                        output["white"] = output["white"].union({position})
+                        output["black"] = output["black"].union({position})
+    
+    output = {side: [list(position_tuple) for position_tuple in output[side]] for side in output}
+    # return {
+    #   "white": [[row1, col1], ... ]
+    #   "black": [[row1, col1], ... ]
+    # }
+    return output
+
+
+def trim_moves(moves_info, unsafe_position_for_one_side):
+    moves_info_copy = copy.deepcopy(moves_info)
+    unsafe_positions_set = set([tuple(position) for position in unsafe_position_for_one_side])
+
+    i = 0
+    while i < len(moves_info_copy["possible_moves"]):
+        if moves_info_copy["possible_moves"] in unsafe_positions_set:
+            moves_info_copy["possible_moves"].pop(i)
+        else:
+            i += 1
+
+    i = 0
+    while i < len(moves_info_copy["possible_captures"]):
+        if moves_info_copy["possible_captures"][0] in unsafe_positions_set:
+            moves_info_copy["possible_captures"].pop(i)
+        else:
+            i += 1
+    
+    return moves_info_copy
 
 
 def was_a_new_position_in_play_selected(moved_pieces, old_game_state, new_game_state):

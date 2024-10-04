@@ -1,10 +1,53 @@
 import copy
 
-from src.utility import enable_adjacent_bishop_captures, evaluate_current_position
+from src.utility import enable_adjacent_bishop_captures, evaluate_current_position, get_unsafe_positions, trim_moves
 
-
-def get_moves():
-    pass
+# get_moves() returns possible_moves_dict
+# {
+#   "possible_moves": [[row, col], ...] - positions where piece can move
+#   "possible_captures": [[[row, col], [row, col]], ...] - first position is where piece has to move to capture piece in second position
+# }
+def get_moves(old_game_state, new_game_state, curr_position, piece):
+    side = piece["type"].split("_")[0]
+    if "pawn" in piece["type"]:
+        moves_info = get_moves_for_pawn(
+            curr_game_state=new_game_state, 
+            prev_game_state=old_game_state,
+            curr_position=curr_position
+        )
+    if "knight" in piece["type"]:
+        moves_info = get_moves_for_knight(
+            curr_game_state=new_game_state, 
+            prev_game_state=old_game_state,
+            curr_position=curr_position
+        )
+    if "bishop" in piece["type"]:
+        moves_info = get_moves_for_bishop(
+            curr_game_state=new_game_state, 
+            prev_game_state=old_game_state,
+            curr_position=curr_position
+        )
+    if "rook" in piece["type"]:
+        moves_info = get_moves_for_rook(
+            curr_game_state=new_game_state, 
+            prev_game_state=old_game_state,
+            curr_position=curr_position
+        )
+    if "queen" in piece["type"]:
+        moves_info = get_moves_for_queen(
+            curr_game_state=new_game_state, 
+            prev_game_state=old_game_state,
+            curr_position=curr_position
+        )
+    if "king" in piece["type"]:
+        moves_info = get_moves_for_king(
+            curr_game_state=new_game_state, 
+            prev_game_state=old_game_state,
+            curr_position=curr_position
+        )
+        unsafe_positions = get_unsafe_positions(old_game_state, new_game_state)
+        moves_info = trim_moves(moves_info, unsafe_positions[side])
+    return moves_info
 
 
 def process_possible_moves_dict(curr_game_state, side, possible_moves_dict, is_king=False):
@@ -375,6 +418,8 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
     return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
 
 
+# must be called with get_unsafe_posiitons() where unsafe positions are filtered out
+# (unable to do that within this function without circular importing in can_king_move())
 def get_moves_for_king(curr_game_state, prev_game_state, curr_position):
     evaluate_current_position(curr_position, curr_game_state)
     piece_in_play = None

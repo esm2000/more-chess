@@ -129,8 +129,10 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
 
     # TODO: - fix all tests before moving forward
     #       - utilize get_unsafe_positions() to handle check towards end of function (make check a flag in board state like gold_spent)
+    #           - if a king has check protection, exhaust one stack and prevent check for that turn
     #       - if it is a side's current turn and it is in check, force their king into the position in play 
     #       - at a beginning of function, check for checkmate by seeing if the king has anywhere to go (using get_moves())
+    #           - (only check for checkmate when a king is in check and its their turn)
 
     # prevent updates to game once game has ended
     if old_game_state["player_victory"] or old_game_state["player_defeat"]:

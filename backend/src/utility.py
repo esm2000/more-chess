@@ -7,6 +7,8 @@ import random
 from src.logging import logger
 import src.api as api
 import src.moves as moves
+import traceback
+
 
 INVALID_GAME_STATE_ERROR_MESSAGE = "New game state is invalid"
 
@@ -281,7 +283,6 @@ def facilitate_adjacent_capture(old_game_state, new_game_state, moved_pieces):
             if "king" in moved_piece["piece"].get("type"):
                 moves_info = trim_king_moves(moves_info, old_game_state.get("previous_state"), old_game_state, moved_piece["side"])
         except Exception as e:
-            import traceback
             logger.error(f"Unable to determine move for {moved_piece['piece']} due to: {traceback.format_exc(e)}")
             moved_pieces_pointer += 1
             continue
@@ -453,7 +454,6 @@ def check_to_see_if_more_than_one_piece_has_moved(
                     for possible_capture_info in moves_info["possible_captures"]:
                         capture_positions.append(possible_capture_info) 
                 except Exception as e:
-                    import traceback
                     logger.error(f"Unable to determine move for {moved_piece['piece']['type']} due to: {traceback.format_exc(e)}")
                     is_valid_game_state = False
         # if move(s) are invalid, invalidate
@@ -658,7 +658,6 @@ def determine_possible_moves(old_game_state, new_game_state, moved_pieces, playe
             if "king" in piece.get("type"):
                 moves_info = trim_king_moves(moves_info, old_game_state, new_game_state, moved_piece["side"])
         except Exception as e:
-            import traceback
             logger.error(f"Unable to determine move for {piece} due to: {traceback.format_exc(e)}")
         
         new_game_state["possible_moves"] = moves_info["possible_moves"]

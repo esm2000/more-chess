@@ -1,14 +1,12 @@
 import copy
 
-from src.utility import enable_adjacent_bishop_captures, evaluate_current_position, get_unsafe_positions, trim_moves
-
+from src.utility import enable_adjacent_bishop_captures, evaluate_current_position
 # get_moves() returns possible_moves_dict
 # {
 #   "possible_moves": [[row, col], ...] - positions where piece can move
 #   "possible_captures": [[[row, col], [row, col]], ...] - first position is where piece has to move to capture piece in second position
 # }
 def get_moves(old_game_state, new_game_state, curr_position, piece):
-    side = piece["type"].split("_")[0]
     if "pawn" in piece["type"]:
         moves_info = get_moves_for_pawn(
             curr_game_state=new_game_state, 
@@ -45,8 +43,6 @@ def get_moves(old_game_state, new_game_state, curr_position, piece):
             prev_game_state=old_game_state,
             curr_position=curr_position
         )
-        unsafe_positions = get_unsafe_positions(old_game_state, new_game_state)
-        moves_info = trim_moves(moves_info, unsafe_positions[side])
     return moves_info
 
 

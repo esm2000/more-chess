@@ -277,9 +277,12 @@ def facilitate_adjacent_capture(old_game_state, new_game_state, moved_pieces):
         #   "possible_captures": [[[row, col], [row, col]], ...] - first position is where piece has to move to capture piece in second position
         # }
         try:
-            moves_info = moves.get_moves(old_game_state, new_game_state, moved_piece["previous_position"], moved_piece["piece"])
+            moves_info = moves.get_moves(old_game_state.get("previous_state"), old_game_state, moved_piece["previous_position"], moved_piece["piece"])
+            if "king" in moved_piece["piece"].get("type"):
+                moves_info = trim_king_moves(moves_info, old_game_state.get("previous_state"), old_game_state, moved_piece["side"])
         except Exception as e:
-            logger.error(f"Unable to determine move for {moved_piece['piece']} due to: {e}")
+            import traceback
+            logger.error(f"Unable to determine move for {moved_piece['piece']} due to: {traceback.format_exc(e)}")
             moved_pieces_pointer += 1
             continue
     # 3. iterate through possible captures, looking for the ones that match the current position
@@ -421,7 +424,8 @@ def prevent_client_side_updates_to_graveyard(old_game_state, new_game_state):
 def check_to_see_if_more_than_one_piece_has_moved(
         old_game_state, 
         new_game_state, 
-        moved_pieces, 
+        moved_pieces,
+        capture_positions,
         is_valid_game_state
 ):
     for side in old_game_state["captured_pieces"]:
@@ -443,9 +447,14 @@ def check_to_see_if_more_than_one_piece_has_moved(
             if moved_piece["current_position"][0] is not None and moved_piece["previous_position"][0] is not None:
                 moves_info = {"possible_moves": [], "possible_captures": []}
                 try:
-                    moves_info = moves.get_moves(old_game_state, new_game_state, moved_piece["previous_position"], moved_piece["piece"])    
+                    moves_info = moves.get_moves(old_game_state.get("previous_state"), old_game_state, moved_piece["previous_position"], moved_piece["piece"])
+                    if "king" in moved_piece["piece"].get("type"):
+                        moves_info = trim_king_moves(moves_info, old_game_state.get("previous_state"), old_game_state, moved_piece["side"])   
+                    for possible_capture_info in moves_info["possible_captures"]:
+                        capture_positions.append(possible_capture_info) 
                 except Exception as e:
-                    logger.error(f"Unable to determine move for {moved_piece['piece']['type']} due to: {e}")
+                    import traceback
+                    logger.error(f"Unable to determine move for {moved_piece['piece']['type']} due to: {traceback.format_exc(e)}")
                     is_valid_game_state = False
         # if move(s) are invalid, invalidate
                 if moved_piece["current_position"] not in moves_info["possible_moves"]:
@@ -646,8 +655,11 @@ def determine_possible_moves(old_game_state, new_game_state, moved_pieces, playe
         
         try:
             moves_info = moves.get_moves(old_game_state, new_game_state, new_game_state["position_in_play"], piece)
+            if "king" in piece.get("type"):
+                moves_info = trim_king_moves(moves_info, old_game_state, new_game_state, moved_piece["side"])
         except Exception as e:
-            logger.error(f"Unable to determine move for {moved_piece['piece']} due to: {e}")
+            import traceback
+            logger.error(f"Unable to determine move for {piece} due to: {traceback.format_exc(e)}")
         
         new_game_state["possible_moves"] = moves_info["possible_moves"]
         new_game_state["possible_captures"] = moves_info["possible_captures"]
@@ -1004,7 +1016,7 @@ def can_king_move(old_game_state, new_game_state):
     new_game_turn_count = new_game_state["turn_count"]
     side_that_should_be_moving_next_turn = "white" if not new_game_turn_count % 2 else "black"
     output = False
-    unsafe_positions = get_unsafe_positions(old_game_state, new_game_state)
+    unsafe_positions = get_unsafe_positions_for_king(old_game_state, new_game_state)
     for i in range(len(new_game_state["board_state"])):
         for j in range(len(new_game_state["board_state"][0])):
             square = new_game_state["board_state"][i][j]
@@ -1024,19 +1036,19 @@ def can_king_move(old_game_state, new_game_state):
     return output
 
 
-def get_unsafe_positions(old_game_state, new_game_state):
+def get_unsafe_positions_for_king(old_game_state, new_game_state):
     output = {
-        "white": {},
-        "black": {}
+        "white": set(),
+        "black": set()
     }
     # iterate through board
     for row in range(len(new_game_state["board_state"])):
         for col in range(len(new_game_state["board_state"][0])):
             # for every square iterate through the pieces
-            square = new_game_state["board_state"][row][col]
+            square = new_game_state["board_state"][row][col] or []
             for piece in square:
                 # if piece is white or black
-                if "white" in piece.get("type", "") or "black" in piece.get("type", ""):
+                if "king" not in piece.get("type") and ("white" in piece.get("type", "") or "black" in piece.get("type", "")):
                     side = piece["type"].split("_")[0]
                     opposite_side = "white" if side == "black" else "black"
                     moves_info = moves.get_moves(old_game_state, new_game_state, [row, col], piece)
@@ -1071,15 +1083,15 @@ def trim_moves(moves_info, unsafe_position_for_one_side):
 
     i = 0
     while i < len(moves_info_copy["possible_moves"]):
-        if moves_info_copy["possible_moves"] in unsafe_positions_set:
+        if tuple(moves_info_copy["possible_moves"][i]) in unsafe_positions_set:
             moves_info_copy["possible_moves"].pop(i)
         else:
             i += 1
 
     i = 0
     while i < len(moves_info_copy["possible_captures"]):
-        if moves_info_copy["possible_captures"][0] in unsafe_positions_set:
-            moves_info_copy["possible_captures"].pop(i)
+        if tuple(moves_info_copy["possible_captures"][0][i]) in unsafe_positions_set:
+            moves_info_copy["possible_captures"][0].pop(i)
         else:
             i += 1
     
@@ -1202,3 +1214,9 @@ def exhaust_sword_in_the_stone(new_game_state, moved_pieces):
                             piece["check_protection"] += 1
                         else:
                             piece["check_protection"] = 1
+
+
+def trim_king_moves(moves_info, old_game_state, new_game_state, side):
+    unsafe_positions = get_unsafe_positions_for_king(old_game_state, new_game_state)
+    trimmed_moves_info = trim_moves(moves_info, unsafe_positions[side])
+    return trimmed_moves_info

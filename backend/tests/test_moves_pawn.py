@@ -546,3 +546,6 @@ def test_pawn_not_being_allowed_to_move_to_sword_in_stone_square():
 
             possible_moves_and_captures = moves.get_moves_for_pawn(curr_game_state, prev_game_state, curr_position)
             assert sword_in_the_stone_position not in possible_moves_and_captures["possible_moves"]
+
+
+# TODO: test pawn file control with 1st stack of dragon buff

@@ -46,7 +46,26 @@ def get_moves(old_game_state, new_game_state, curr_position, piece):
     return moves_info
 
 
-def process_possible_moves_dict(curr_game_state, side, possible_moves_dict, is_king=False):
+# moves list is either list of possible moves or list of possible captures
+def filter_moves_for_file_control(moves_list, curr_position, is_capture=False):
+        center_squares = [[3, 3], [3, 4], [4, 3], [4, 4]]
+        index = 0
+        while index < len(moves_list):
+            move = moves_list[index] if not is_capture else moves_list[index][0]
+
+            # determine if it's a vertical move
+            if curr_position[1] == move[1]:
+                # eliminate move if row 3 or 4 is passed and curr_position is not a center square
+                if (
+                    (curr_position[0] < 3 and move[0] > 4) or 
+                    (curr_position[0] > 4 and move[0] < 3)
+                ) and (curr_position in center_squares):
+                    moves_list.pop(index)
+                    continue
+            index += 1
+
+
+def process_possible_moves_dict(curr_game_state, curr_position, side, possible_moves_dict, is_king=False):
     possible_moves_dict = enable_adjacent_bishop_captures(curr_game_state, side, possible_moves_dict)
 
     # remove moves and captures that involve moving to a sword in stone buff unless we're dealing with a king
@@ -60,6 +79,12 @@ def process_possible_moves_dict(curr_game_state, side, possible_moves_dict, is_k
         if entry not in possible_captures_with_no_duplicates:
             possible_captures_with_no_duplicates.append(copy.deepcopy(entry))
     possible_moves_dict["possible_captures"] = possible_captures_with_no_duplicates
+
+    # enforce file control - no vertical moves past the center of the board unless piece originates in center
+    # apply filtering to both possible_moves and possible_captures
+    filter_moves_for_file_control(possible_moves_dict["possible_moves"], curr_position)
+    filter_moves_for_file_control(possible_moves_dict["possible_captures"], curr_position, is_capture=True)
+
     return possible_moves_dict
 
 
@@ -164,7 +189,7 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
             possible_moves.append([curr_position[0] + (-1 if side == "white" else 1), lateral_position[1]])
             possible_captures.append([[curr_position[0] + (-1 if side == "white" else 1), lateral_position[1]], [curr_position[0] , lateral_position[1]]])
     
-    return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
+    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
 
 
 def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
@@ -240,7 +265,7 @@ def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
                         if piece.get("health", 0) == 1:
                             possible_captures.append([potential_position, potential_position])
 
-    return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
+    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
                     
 def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
     evaluate_current_position(curr_position, curr_game_state)
@@ -307,7 +332,7 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
                 ):
                     possible_captures.append([possible_move, potential_capture_square])
 
-    return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
+    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
 
 
 def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
@@ -363,7 +388,7 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
             possible_position[0] += direction[0]
             possible_position[1] += direction[1]
             
-    return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
+    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
 
 
 def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
@@ -411,7 +436,7 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
             possible_position[0] += direction[0]
             possible_position[1] += direction[1]
             
-    return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
+    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
 
 
 # must be called with get_unsafe_posiitons() where unsafe positions are filtered out
@@ -452,4 +477,4 @@ def get_moves_for_king(curr_game_state, prev_game_state, curr_position):
         elif any(("neutral" in piece["type"] and piece.get("health", 0) == 1) for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
             possible_moves.append(possible_position.copy())
             possible_captures.append([possible_position.copy(), possible_position.copy()])
-    return process_possible_moves_dict(curr_game_state, side, {"possible_moves": possible_moves, "possible_captures": possible_captures}, is_king=True)
+    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures}, is_king=True)

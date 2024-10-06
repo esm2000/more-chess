@@ -1328,6 +1328,10 @@ def test_sword_in_the_stone_stacks(game):
         assert game["board_state"][3][4][0]["check_protection"] == 2
 
 
+def test_neutral_monster_health_regen(game):
+    pass
+
+
 def test_white_check(game):
     # test that white can be checked
     pass

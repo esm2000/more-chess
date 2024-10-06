@@ -339,4 +339,40 @@ def test_queen_not_being_allowed_to_move_to_sword_in_stone_square():
 
 
 def test_queen_file_control():
-    pass
+    ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|__|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|wq|##|__|##|__|
+
+    ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|__|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|bq|##|__|##|__|
+
+    for i in range(2):
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][7][3] = [{"type": f"{'white' if not i else 'black'}_queen"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        curr_position = [7, 3]
+
+        possible_moves_and_captures = moves.get_moves_for_queen(curr_game_state, prev_game_state, curr_position)
+        assert sorted([
+            # not allowed to cross the center to reach [[2, 3], [1, 3], [0, 3]]
+            [6, 3], [5, 3], [4, 3], [3, 3],
+            [7, 2], [7, 1], [7, 0],
+            [7, 4], [7, 5], [7, 6], [7, 7],
+            [6, 2], [5, 1], [4, 0],
+            [6, 4], [5, 5], [4, 6], [3, 7]
+        ]) == sorted(possible_moves_and_captures["possible_moves"])
+        assert len(possible_moves_and_captures["possible_captures"]) == 0

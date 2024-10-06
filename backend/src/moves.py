@@ -59,7 +59,7 @@ def filter_moves_for_file_control(moves_list, curr_position, is_capture=False):
                 if (
                     (curr_position[0] < 3 and move[0] > 4) or 
                     (curr_position[0] > 4 and move[0] < 3)
-                ) and (curr_position in center_squares):
+                ) and (curr_position not in center_squares):
                     moves_list.pop(index)
                     continue
             index += 1

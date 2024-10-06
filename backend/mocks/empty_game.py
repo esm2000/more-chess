@@ -17,6 +17,7 @@ empty_game = {
     "bishop_special_captures": [],
     "latest_movement": {},
     "queen_reset": False,
+    "neutral_attack_log": {},
     "board_state": [
         [None] * 8,
         [None] * 8,

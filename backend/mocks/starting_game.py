@@ -17,6 +17,7 @@ starting_game = {
     "bishop_special_captures": [],
     "latest_movement": {},
     "queen_reset": False,
+    "neutral_attack_log": {},
     "board_state": [
         [
             [{"type": "black_rook"}],

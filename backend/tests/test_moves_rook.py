@@ -489,4 +489,3 @@ def test_rook_file_control_center():
             [3, 2], [3, 1], [3, 0]
         ]) == sorted(possible_moves_and_captures["possible_moves"])
         assert len(possible_moves_and_captures["possible_captures"]) == 0
-    

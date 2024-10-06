@@ -31,6 +31,7 @@ from src.utility import (
     get_gold_spent,
     get_move_counts,
     handle_pieces_with_full_bishop_debuff_stacks,
+    heal_neutral_monsters,
     increment_turn_count,
     invalidate_game_if_monster_has_moved,
     invalidate_game_if_more_than_one_side_moved,
@@ -87,6 +88,7 @@ def create_game():
         "possible_captures": [],
         "captured_pieces": {"white": [], "black": []},
         "graveyard": [],
+        "neutral_attack_log": {},
         "sword_in_the_stone_position": None,
         "capture_point_advantage": None,
         "player_victory": False,
@@ -283,6 +285,9 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     # spawn neutral monsters when appropriate
     spawn_neutral_monsters(new_game_state)
     
+    # heal neutral monsters after they've haven't been attacked for 3 turns
+    heal_neutral_monsters(old_game_state, new_game_state)
+
     # updates gamestate object with any moved pieces and some information 
         # only moved_pieces with a non-null starting and ending positions in a single dictionary 
         # records previous position, current position, piece type, and current turn count

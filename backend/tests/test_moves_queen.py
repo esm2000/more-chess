@@ -368,8 +368,8 @@ def test_queen_file_control():
 
         possible_moves_and_captures = moves.get_moves_for_queen(curr_game_state, prev_game_state, curr_position)
         assert sorted([
-            # not allowed to cross the center to reach [[2, 3], [1, 3], [0, 3]]
-            [6, 3], [5, 3], [4, 3], [3, 3],
+            # not allowed to cross the center to reach [[1, 3], [0, 3]]
+            [6, 3], [5, 3], [4, 3], [3, 3], [2, 3],
             [7, 2], [7, 1], [7, 0],
             [7, 4], [7, 5], [7, 6], [7, 7],
             [6, 2], [5, 1], [4, 0],

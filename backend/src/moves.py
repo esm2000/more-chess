@@ -48,7 +48,12 @@ def get_moves(old_game_state, new_game_state, curr_position, piece):
 
 # moves list is either list of possible moves or list of possible captures
 def filter_moves_for_file_control(moves_list, curr_position, is_capture=False):
-        center_squares = [[3, 3], [3, 4], [4, 3], [4, 4]]
+        center_squares = [
+            [2, 2], [2, 3], [2, 4], [2, 5],
+            [3, 2], [3, 3], [3, 4], [3, 5],
+            [4, 2], [4, 3], [4, 4], [4, 5],
+            [5, 2], [5, 3], [5, 4], [5, 5]
+        ]
         index = 0
         while index < len(moves_list):
             move = moves_list[index] if not is_capture else moves_list[index][0]
@@ -57,8 +62,8 @@ def filter_moves_for_file_control(moves_list, curr_position, is_capture=False):
             if curr_position[1] == move[1]:
                 # eliminate move if row 3 or 4 is passed and curr_position is not a center square
                 if (
-                    (curr_position[0] < 3 and move[0] > 4) or 
-                    (curr_position[0] > 4 and move[0] < 3)
+                    (curr_position[0] < 2 and move[0] > 5) or 
+                    (curr_position[0] > 5 and move[0] < 2)
                 ) and (curr_position not in center_squares):
                     moves_list.pop(index)
                     continue

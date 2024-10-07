@@ -78,7 +78,7 @@ def test_rook_range():
         ],
         6: [
             [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6],
-            [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0]
+            [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], # [6, 0] file control
         ]
     }
 
@@ -445,8 +445,8 @@ def test_rook_file_control_non_center():
 
         possible_moves_and_captures = moves.get_moves_for_rook(curr_game_state, prev_game_state, curr_position)
         assert sorted([
-            # not allowed to cross the center to reach [[2, 3], [1, 3], [0, 3]]
-            [6, 3], [5, 3], [4, 3], [3, 3],
+            # not allowed to cross the center to reach [[1, 3], [0, 3]]
+            [6, 3], [5, 3], [4, 3], [3, 3], [2, 3],
             [7, 2], [7, 1], [7, 0],
             [7, 4], [7, 5], [7, 6], [7, 7]
         ]) == sorted(possible_moves_and_captures["possible_moves"])

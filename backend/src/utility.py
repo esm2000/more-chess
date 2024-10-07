@@ -1219,3 +1219,47 @@ def trim_king_moves(moves_info, old_game_state, new_game_state, side):
     unsafe_positions = get_unsafe_positions_for_king(old_game_state, new_game_state)
     trimmed_moves_info = trim_moves(moves_info, unsafe_positions[side])
     return trimmed_moves_info
+
+
+# conditionally mutates new_game_state
+def heal_neutral_monsters(old_game_state, new_game_state):
+    turn_count = new_game_state["turn_count"]
+    monster_info = copy.deepcopy(MONSTER_INFO)
+
+    # neutral_attack_log example: {
+    #   "neutral_dragon": {"turn": 12},
+    #   "neutral_baron_harold": {"turn": 14}
+    # }
+    for monster in monster_info:
+        position = monster_info[monster]["position"]
+        max_health = monster_info[monster]["max_health"]
+        last_turn_attacked = new_game_state["neutral_attack_log"].get(monster, {"turn": turn_count})["turn"]
+
+        # attempt to find neutral monster for old_game_state and new_game_state
+        old_index, new_index = None, None
+        old_square = old_game_state["board_state"][position[0]][position[1]] or []
+        for index in range(len(old_square)):
+            if old_square[index].get("type") == monster:
+                old_index = index
+                break
+        
+        if old_index is None:
+            continue
+
+        new_square = new_game_state["board_state"][position[0]][position[1]] or []
+        for index in range(len(new_square)):
+            if new_square[index].get("type") == monster:
+                new_index = index
+                break
+
+        # if you can't find neutral monster in new_game_state remove record of that neutral monster from neutral_attack_log in new game
+        if new_index is None:
+            new_game_state["neutral_attack_log"].pop(monster, None)
+
+        # if the monster has been attacked, take note of the turn in neutral_attack_log
+        elif old_square[old_index]["health"] > new_square[new_index]["health"]:
+            new_game_state["neutral_attack_log"][monster] = {"turn": turn_count}
+            
+        # if the monster has not been attacked and the last turn it got attacked is at least 3 turns before the current one, regenerate the monster's health
+        elif old_square[old_index]["health"] == new_square[new_index]["health"] and turn_count - last_turn_attacked >= 3:
+            new_square[new_index]["health"] = max_health

@@ -151,6 +151,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * pawn exchange
 * visual cue for a player being able to go again
 * visual cue for turn being skipped
+* redo assets for rules
 * give player option to switch between chess sprites and league sprites (make league sprites default (with button [chess piece] <-> [league character]))
 
 ##### Backend 

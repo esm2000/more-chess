@@ -995,7 +995,7 @@ def test_skip_one_turn_if_all_non_king_pieces_are_stunned(game):
     game_on_next_turn["board_state"][2][2] = [{"type": "black_pawn"}]
     game_on_next_turn["board_state"][2][4] = [{"type": "black_pawn"}]
 
-    game_on_next_turn["board_state"][6][3] = [{"type": "white_queen"}]
+    game_on_next_turn["board_state"][6][7] = [{"type": "white_queen"}]
     
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
@@ -1003,8 +1003,8 @@ def test_skip_one_turn_if_all_non_king_pieces_are_stunned(game):
     assert game["turn_count"] == 0
 
     game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][2][3] = game_on_next_turn["board_state"][6][3]
-    game_on_next_turn["board_state"][6][3] = None
+    game_on_next_turn["board_state"][2][3] = game_on_next_turn["board_state"][6][7]
+    game_on_next_turn["board_state"][6][7] = None
 
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state(game["id"], game_state, Response())
@@ -1021,7 +1021,7 @@ def test_skip_one_turn_if_all_non_king_pieces_are_stunned(game):
         game = api.update_game_state(game["id"], game_state, Response())
 
     game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][6][3] = game_on_next_turn["board_state"][2][3]
+    game_on_next_turn["board_state"][6][7] = game_on_next_turn["board_state"][2][3]
     game_on_next_turn["board_state"][2][3] = None
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state(game["id"], game_state, Response())

@@ -14,6 +14,10 @@ empty_game = {
     "player_defeat": False,
     "gold_count": {"white": 0, "black": 0},
     "last_updated": datetime.datetime.now(),
+    "bishop_special_captures": [],
+    "latest_movement": {},
+    "queen_reset": False,
+    "neutral_attack_log": {},
     "board_state": [
         [None] * 8,
         [None] * 8,

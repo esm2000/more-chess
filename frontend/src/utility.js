@@ -223,7 +223,12 @@ const determineBackgroundColor = (row, col, positionInPlay, possibleCaptures, is
         }
     }
 
-    if ([[3, 3], [4, 3], [3, 4], [4, 4]].toString().includes([row, col].toString())) {
+    if ([
+        [2, 2], [2, 3], [2, 4], [2, 5],
+        [3, 2], [3, 3], [3, 4], [3, 5],
+        [4, 2], [4, 3], [4, 4], [4, 5],
+        [5, 2], [5, 3], [5, 4], [5, 5]
+    ].toString().includes([row, col].toString())) {
         green = DARK_GREEN_SQUARE_COLOR
         white = DARK_WHITE_SQUARE_COLOR
     }

@@ -8,7 +8,8 @@ import {
     MAX_BOSS_HEALTH, 
     determineIsMobile, 
     snakeToCamel,
-    getPiecePrice
+    getPiecePrice,
+    camelToSnake
 } from '../utility';
 
 const Piece = (props) => {
@@ -70,12 +71,7 @@ const Piece = (props) => {
                 newBoardState[props.row][props.col][i].bishop_debuff = 0
             }
         }
-        // const bishopPosition = findThreateningBishop(newBoardState, props.side, props.row, props.col)
         
-        // if (bishopPosition) {
-        //     newBoardState[bishopPosition[0]][bishopPosition[1]] = newBoardState[bishopPosition[0]][bishopPosition[1]]?.filter(piece => !piece.type.toLowerCase().includes("bishop"))
-        // }
-
         gameState.updateGameState({
             ...gameState, 
             boardState: newBoardState
@@ -88,18 +84,28 @@ const Piece = (props) => {
         var newGoldCount = {...gameState.goldCount}
         var capturedPiece
         var capturedPieceValue
-        for (let i = 0; i < newBoardState[props.row][props.col]?.length; i++) {
+        var i = 0 
+        while (i < newBoardState[props.row][props.col]?.length) {
             if (snakeToCamel(newBoardState[props.row][props.col][i]?.type) === props.type) {
                 capturedPiece = newBoardState[props.row][props.col][i]
                 capturedPieceValue = getPiecePrice(snakeToCamel(capturedPiece.type))
                 newCapturedPieces[PLAYERS[0]].push(capturedPiece.type)
                 newBoardState[props.row][props.col].splice(i, 1);
             }
+            i++
         }
-
+        
+        const newBishopSpecialCaptures = [
+            {
+                position: [props.row, props.col],
+                type: camelToSnake(props.type) 
+            }
+        ]
+        
         newGoldCount[PLAYERS[0]] += capturedPieceValue ? capturedPieceValue : 0
         gameState.updateGameState({
             ...gameState, 
+            bishopSpecialCaptures: newBishopSpecialCaptures,
             boardState: newBoardState,
             capturedPieces: newCapturedPieces,
             goldCount: newGoldCount

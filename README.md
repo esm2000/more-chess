@@ -71,7 +71,7 @@ Queens have long been a strong piece and because of the dynamic gameplay they of
 * Additionally, Queens now reset on kills and assists. If a Queen captures a piece and is not in danger of being capture herself afterward, she gains the ability to move or capture again. Assists are defined as being able to capture a piece, but allowing another unit to last hit it instead.
 
 #### Kings
-We felt Kings were not making a big enough impact and we boring and uninteresting to play, so we are adding minigames to them.
+We felt Kings were not making a big enough impact and were boring and uninteresting to play, so we are adding minigames to them.
 * Every 10 turns, a Sword in the Stone appears on a random location on the map. The King can pick up the sword and prove himself as the rightful ruler of the throne. Upon picking up the sword, he gets the Divine Right buff, which allows him to prevent 1 instance of check or checkmate.
 * Additionally, Kings now benefit from his teammates killing enemy units. For every enemy unit that is captured that is not captured by the King, the King gets +1 gold. The King can use his gold to purchase additional units upon visiting his base (starting square), with an exchange rate of 2 gold per 1 point value of the piece being bought. However, Queens cannot be bought in this way.
 
@@ -143,9 +143,15 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * shop (with light/normal green square for shop square) ✅
 * rename game to League of Chess
 * change favicon and website/tab title
+* add castle button
+* add UI for draw
+* neutral monster buff UI (small monster icons next to pieces, with an accompanying number for stacked effects)
 * create a screen directing users to refresh or try again later when POST request fails
 * shop rework 
 * pawn exchange
+* visual cue for a player being able to go again
+* visual cue for turn being skipped
+* redo assets for rules
 * give player option to switch between chess sprites and league sprites (make league sprites default (with button [chess piece] <-> [league character]))
 
 ##### Backend 
@@ -163,15 +169,19 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
         - getPossibleMovesForBishop() ✅
         - getPossibleMovesForRook() ✅
         - getPossibleMovesForQueen() ✅
-        - getPossibleMovesForKing() - to determine check and checkmate will possibly involve looping through every enemy piece's getPossibleMoves()
+        - getPossibleMovesForKing() ✅
+    - add check and checkmate logic
     - handle possibility that a piece can move to a square containing a neutral monster and another piece (where it captures the other piece and damages the neutral monster)
-    - expand getPossibleMoves() to be able to dynamically take into consideration neutral monster buffs
+    - finalize shop and pawn exchange logic (and UI)
+    - expand getPossibleMoves() to be able to dynamically take into consideration neutral monster buffs (while finalizing UI)
     - clean up PUT game endpoint for easier readibility and maintainability
 * Enhance instructions with local database setup
 * AI - https://www.chessprogramming.org/Evaluation#Publications
     - rudimentary EASY enemy AI (chooses random moves from possible moves)
     - ADVANCED enemy AI that plays as well as possible
-    - MEDIUM enemy AI 
+    - MEDIUM enemy AI
+* create a data lake for long term storage of game data
+* provide mechanism for user bug reports (frontend sends game id and user feedback to backend and backend records info)
 
 ##### Production-Ready Development
 * Restructure project for deployment ✅

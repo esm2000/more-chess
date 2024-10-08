@@ -4,7 +4,7 @@ import pytest
 
 from mocks.empty_game import empty_game
 import src.api as api
-from src.utility import clear_game
+from src.utils import clear_game
 
 
 @pytest.fixture

@@ -10,53 +10,7 @@ from mocks.starting_game import starting_game
 import src.moves as moves 
 from src.database import mongo_client
 from src.logging import logger
-from src.utility import (
-    INVALID_GAME_STATE_ERROR_MESSAGE,
-    are_all_non_king_pieces_stunned,
-    apply_bishop_energize_stacks_and_bishop_debuffs,
-    apply_queen_stun,
-    can_king_move,
-    carry_out_neutral_monster_attacks,
-    check_for_disappearing_pieces,
-    check_is_pawn_exhange_is_possible,
-    check_to_see_if_more_than_one_piece_has_moved,
-    clean_possible_moves_and_possible_captures,
-    clean_bishop_special_captures,
-    cleanse_stunned_pieces,
-    does_position_in_play_match_turn,
-    damage_neutral_monsters,
-    determine_pieces_that_have_moved,
-    determine_possible_moves,
-    exhaust_sword_in_the_stone,
-    get_gold_spent,
-    get_move_counts,
-    handle_pieces_with_full_bishop_debuff_stacks,
-    heal_neutral_monsters,
-    increment_turn_count,
-    invalidate_game_if_monster_has_moved,
-    invalidate_game_if_more_than_one_side_moved,
-    invalidate_game_if_stunned_piece_moves,
-    invalidate_game_if_too_much_gold_is_spent,
-    invalidate_game_if_wrong_side_moves,
-    invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array,
-    is_invalid_king_capture,
-    is_neutral_monster_killed,
-    facilitate_adjacent_capture,
-    get_neutral_monster_slain_position,
-    manage_game_state,
-    perform_game_state_update,
-    prevent_client_side_updates_to_graveyard,
-    reassign_pawn_buffs,
-    record_moved_pieces_this_turn,
-    reset_queen_turn_on_kill_or_assist,
-    set_queen_as_position_in_play,
-    spawn_neutral_monsters,
-    spawn_sword_in_the_stone,
-    update_capture_point_advantage,
-    update_gold_count,
-    verify_queen_reset_turn_is_valid,
-    was_a_new_position_in_play_selected
-)
+import src.utils as utils
 
 router = APIRouter(prefix="/api")
 
@@ -152,10 +106,10 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         #   },
         #   ...
         # ]
-        moved_pieces = determine_pieces_that_have_moved(new_game_state["board_state"], old_game_state["board_state"])
+        moved_pieces = utils.determine_pieces_that_have_moved(new_game_state["board_state"], old_game_state["board_state"])
     except Exception as e:
         if "More than one" in str(e):
-            raise HTTPException(status_code=400, detail=INVALID_GAME_STATE_ERROR_MESSAGE)
+            raise HTTPException(status_code=400, detail=utils.INVALID_GAME_STATE_ERROR_MESSAGE)
         raise e
     
     is_valid_game_state = True
@@ -164,20 +118,20 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     # if queen extra turn flag is set, check that proper queen moves
     # otherwise invalidate game and log error    
     if new_game_state.get("queen_reset"):
-        is_valid_game_state = verify_queen_reset_turn_is_valid(
+        is_valid_game_state = utils.verify_queen_reset_turn_is_valid(
             old_game_state,
             new_game_state,
             moved_pieces,
             is_valid_game_state
         )
         
-    facilitate_adjacent_capture(old_game_state, new_game_state, moved_pieces)
-    apply_bishop_energize_stacks_and_bishop_debuffs(old_game_state, new_game_state, moved_pieces)
-    apply_queen_stun(old_game_state, new_game_state, moved_pieces)
+    utils.facilitate_adjacent_capture(old_game_state, new_game_state, moved_pieces)
+    utils.apply_bishop_energize_stacks_and_bishop_debuffs(old_game_state, new_game_state, moved_pieces)
+    utils.apply_queen_stun(old_game_state, new_game_state, moved_pieces)
     
     # if any pieces on the board have gained third bishop debuff, retain last player's turn until they've spared or captured it 
     # mutates capture_positions
-    is_valid_game_state, should_increment_turn_count = handle_pieces_with_full_bishop_debuff_stacks(
+    is_valid_game_state, should_increment_turn_count = utils.handle_pieces_with_full_bishop_debuff_stacks(
         old_game_state,
         new_game_state,
         moved_pieces,
@@ -186,9 +140,9 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     )
 
     # if no pieces have moved and the position in play has changed, retain the current turn
-    if was_a_new_position_in_play_selected(moved_pieces, old_game_state, new_game_state):
+    if utils.was_a_new_position_in_play_selected(moved_pieces, old_game_state, new_game_state):
         should_increment_turn_count = False
-        is_valid_game_state = does_position_in_play_match_turn(old_game_state, new_game_state) and is_valid_game_state
+        is_valid_game_state = utils.does_position_in_play_match_turn(old_game_state, new_game_state) and is_valid_game_state
     
     # (unstackable) if a queen captures or "assists" a piece and is not in danger of being captured, retain last player's turn until they move queen again
     # if queen extra turn flag is set and should increment_turn_count is True 
@@ -199,44 +153,44 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         # old_game_state
         # new_game_state
         # moved_pieces
-        should_increment_turn_count = reset_queen_turn_on_kill_or_assist(
+        should_increment_turn_count = utils.reset_queen_turn_on_kill_or_assist(
             old_game_state,
             new_game_state,
             moved_pieces,
             should_increment_turn_count
         )
 
-    clean_possible_moves_and_possible_captures(new_game_state)
+    utils.clean_possible_moves_and_possible_captures(new_game_state)
     if should_increment_turn_count:
-        increment_turn_count(old_game_state, new_game_state, moved_pieces, 1)
-    prevent_client_side_updates_to_graveyard(old_game_state, new_game_state)
+        utils.increment_turn_count(old_game_state, new_game_state, moved_pieces, 1)
+    utils.prevent_client_side_updates_to_graveyard(old_game_state, new_game_state)
 
     # returns values for is_valid_state
     # mutates capture_positions array
-    is_valid_game_state = check_to_see_if_more_than_one_piece_has_moved(
+    is_valid_game_state = utils.check_to_see_if_more_than_one_piece_has_moved(
         old_game_state, 
         new_game_state, 
         moved_pieces, 
         capture_positions,
         is_valid_game_state
     )
-    gold_spent = get_gold_spent(old_game_state, moved_pieces)
+    gold_spent = utils.get_gold_spent(old_game_state, moved_pieces)
 
-    is_pawn_exchange_possible = check_is_pawn_exhange_is_possible(old_game_state, new_game_state, moved_pieces)
-    move_count_for_white, move_count_for_black = get_move_counts(moved_pieces)
+    is_pawn_exchange_possible = utils.check_is_pawn_exhange_is_possible(old_game_state, new_game_state, moved_pieces)
+    move_count_for_white, move_count_for_black = utils.get_move_counts(moved_pieces)
 
-    is_valid_game_state = invalidate_game_if_more_than_one_side_moved(move_count_for_white, move_count_for_black, is_valid_game_state)
-    is_valid_game_state = invalidate_game_if_stunned_piece_moves(moved_pieces, is_valid_game_state)
+    is_valid_game_state = utils.invalidate_game_if_more_than_one_side_moved(move_count_for_white, move_count_for_black, is_valid_game_state)
+    is_valid_game_state = utils.invalidate_game_if_stunned_piece_moves(moved_pieces, is_valid_game_state)
     # old game's turn count is representative of what side should be moving (even is white, odd is black)
     if not disable_turn_check:
-        is_valid_game_state = invalidate_game_if_wrong_side_moves(moved_pieces, is_valid_game_state, old_game_state["turn_count"])
-    is_valid_game_state = invalidate_game_if_too_much_gold_is_spent(old_game_state, gold_spent, is_valid_game_state)
+        is_valid_game_state = utils.invalidate_game_if_wrong_side_moves(moved_pieces, is_valid_game_state, old_game_state["turn_count"])
+    is_valid_game_state = utils.invalidate_game_if_too_much_gold_is_spent(old_game_state, gold_spent, is_valid_game_state)
     # mutates new_game_state object
-    cleanse_stunned_pieces(new_game_state)
+    utils.cleanse_stunned_pieces(new_game_state)
     
-    is_valid_game_state = invalidate_game_if_monster_has_moved(is_valid_game_state, moved_pieces)
+    is_valid_game_state = utils.invalidate_game_if_monster_has_moved(is_valid_game_state, moved_pieces)
     # mutates capture_positions list
-    is_valid_game_state = check_for_disappearing_pieces(
+    is_valid_game_state = utils.check_for_disappearing_pieces(
         old_game_state,
         new_game_state,
         moved_pieces, 
@@ -245,48 +199,48 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         is_pawn_exchange_possible
     )
     # mutates new_game_state object
-    clean_bishop_special_captures(new_game_state)
+    utils.clean_bishop_special_captures(new_game_state)
     # mutates new_game_state object
-    damage_neutral_monsters(new_game_state, moved_pieces)
-    is_valid_game_state = invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_game_state, new_game_state, moved_pieces, is_valid_game_state, is_pawn_exchange_possible)
+    utils.damage_neutral_monsters(new_game_state, moved_pieces)
+    is_valid_game_state = utils.invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_game_state, new_game_state, moved_pieces, is_valid_game_state, is_pawn_exchange_possible)
 
     # if a neutral monster is killed and a piece has not moved to its position, invalidate 
-    if get_neutral_monster_slain_position(moved_pieces) and not is_neutral_monster_killed(moved_pieces):
+    if utils.get_neutral_monster_slain_position(moved_pieces) and not utils.is_neutral_monster_killed(moved_pieces):
         logger.error("A neutral monster disappeared from board without being captured")
         is_valid_game_state = False
     
     # if any captured piece is a king, invalidate 
-    if is_invalid_king_capture(moved_pieces):
+    if utils.is_invalid_king_capture(moved_pieces):
         logger.error("A king has been captured or has disappeared from board")
         is_valid_game_state = False
 
     if not is_valid_game_state:
-        raise HTTPException(status_code=400, detail=INVALID_GAME_STATE_ERROR_MESSAGE)
+        raise HTTPException(status_code=400, detail=utils.INVALID_GAME_STATE_ERROR_MESSAGE)
 
     # determine possibleMoves if a position_in_play is not [null, null]
     # and add to new_game_state 
-    determine_possible_moves(old_game_state, new_game_state, moved_pieces, player)
+    utils.determine_possible_moves(old_game_state, new_game_state, moved_pieces, player)
 
     # new game's turn count is representative of what side should be moving next turn (even is white, odd is black)
     # TODO: update can_king_move() to account for check
-    if should_increment_turn_count and are_all_non_king_pieces_stunned(new_game_state) and not can_king_move(old_game_state, new_game_state):
-        increment_turn_count(old_game_state, new_game_state, moved_pieces, 2)
+    if should_increment_turn_count and utils.are_all_non_king_pieces_stunned(new_game_state) and not utils.can_king_move(old_game_state, new_game_state):
+        utils.increment_turn_count(old_game_state, new_game_state, moved_pieces, 2)
     
     # figure out capture point advantage, update gold count, and reassign pawn buffs
     # all three functions mutate new_game_state
-    update_gold_count(old_game_state, new_game_state, gold_spent)
-    update_capture_point_advantage(new_game_state)
-    reassign_pawn_buffs(new_game_state)
+    utils.update_gold_count(old_game_state, new_game_state, gold_spent)
+    utils.update_capture_point_advantage(new_game_state)
+    utils.reassign_pawn_buffs(new_game_state)
 
     # have neutral monsters slay adjacent normal pieces
     if len(moved_pieces) > 0:
-        carry_out_neutral_monster_attacks(new_game_state)
+        utils.carry_out_neutral_monster_attacks(new_game_state)
 
     # spawn neutral monsters when appropriate
-    spawn_neutral_monsters(new_game_state)
+    utils.spawn_neutral_monsters(new_game_state)
     
     # heal neutral monsters after they've haven't been attacked for 3 turns
-    heal_neutral_monsters(old_game_state, new_game_state)
+    utils.heal_neutral_monsters(old_game_state, new_game_state)
 
     # updates gamestate object with any moved pieces and some information 
         # only moved_pieces with a non-null starting and ending positions in a single dictionary 
@@ -299,17 +253,17 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
             #   "record": moved_pieces # (filtered)
             # }
     # mutates new_game_state
-    record_moved_pieces_this_turn(new_game_state, moved_pieces)
+    utils.record_moved_pieces_this_turn(new_game_state, moved_pieces)
     
     # if queen extra turn flag is set, find correct queen and set its position as the position_in_play
     if new_game_state["queen_reset"]:
-        set_queen_as_position_in_play(old_game_state, new_game_state)
+        utils.set_queen_as_position_in_play(old_game_state, new_game_state)
     
     # spawn sword in the stone when appropriate
-    spawn_sword_in_the_stone(new_game_state)
+    utils.spawn_sword_in_the_stone(new_game_state)
 
     # exhaust sword in stone when appropriate
-    exhaust_sword_in_the_stone(new_game_state, moved_pieces)
+    utils.exhaust_sword_in_the_stone(new_game_state, moved_pieces)
 
     # TODO: In another script, use endless loop to update games with
     #       odd number turns if its been 6 seconds since the last update 
@@ -318,9 +272,9 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     #       PROVIDE EXCEPTION FOR TESTS
 
     # mutates old_game_state and new_game_state objects
-    manage_game_state(old_game_state, new_game_state)
+    utils.manage_game_state(old_game_state, new_game_state)
 
-    perform_game_state_update(new_game_state, mongo_client, id)
+    utils.perform_game_state_update(new_game_state, mongo_client, id)
     return retrieve_game_state(id, response)
 
 

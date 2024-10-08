@@ -1329,7 +1329,58 @@ def test_sword_in_the_stone_stacks(game):
 
 
 def test_neutral_monster_health_regen(game):
-    pass
+    # test that neutral monster heals after 3 turns of not being damaged
+    game = clear_game(game)
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["turn_count"] = 11
+    game_on_next_turn["board_state"][4][7] = [{"type": "neutral_dragon", "health": 5}]
+
+    game_on_next_turn["board_state"][0][0] = [{"type": "black_king"}]
+    game_on_next_turn["board_state"][7][7] = [{"type": "white_king"}]
+    game_on_next_turn["board_state"][2][7] = [{"type": "black_pawn"}]
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][3][7] = game_on_next_turn["board_state"][2][7]
+    game_on_next_turn["board_state"][2][7] = None
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["board_state"][4][7][0]["health"] == 4
+    assert game["turn_count"] == 12
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][7][6] = game_on_next_turn["board_state"][7][7]
+    game_on_next_turn["board_state"][7][7] = None
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["board_state"][4][7][0]["health"] == 4
+    assert game["turn_count"] == 13
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][0][1] = game_on_next_turn["board_state"][0][0]
+    game_on_next_turn["board_state"][0][0] = None
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["board_state"][4][7][0]["health"] == 4
+    assert game["turn_count"] == 14
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][7][5] = game_on_next_turn["board_state"][7][6]
+    game_on_next_turn["board_state"][7][6] = None
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["board_state"][4][7][0]["health"] == 5
+    assert game["turn_count"] == 15
 
 
 def test_white_check(game):

@@ -1015,7 +1015,7 @@ def can_king_move(old_game_state, new_game_state):
     new_game_turn_count = new_game_state["turn_count"]
     side_that_should_be_moving_next_turn = "white" if not new_game_turn_count % 2 else "black"
     output = False
-    unsafe_positions = get_unsafe_positions_for_king(old_game_state, new_game_state)
+    unsafe_positions = get_unsafe_positions_for_kings(old_game_state, new_game_state)
     for i in range(len(new_game_state["board_state"])):
         for j in range(len(new_game_state["board_state"][0])):
             square = new_game_state["board_state"][i][j]
@@ -1035,7 +1035,7 @@ def can_king_move(old_game_state, new_game_state):
     return output
 
 
-def get_unsafe_positions_for_king(old_game_state, new_game_state):
+def get_unsafe_positions_for_kings(old_game_state, new_game_state):
     output = {
         "white": set(),
         "black": set()
@@ -1216,7 +1216,7 @@ def exhaust_sword_in_the_stone(new_game_state, moved_pieces):
 
 
 def trim_king_moves(moves_info, old_game_state, new_game_state, side):
-    unsafe_positions = get_unsafe_positions_for_king(old_game_state, new_game_state)
+    unsafe_positions = get_unsafe_positions_for_kings(old_game_state, new_game_state)
     trimmed_moves_info = trim_moves(moves_info, unsafe_positions[side])
     return trimmed_moves_info
 

@@ -174,8 +174,6 @@ def test_alter_game(game):
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
 
-        # TODO: different piece types
-
     # invalid moves should not be allowed
         # white
     with pytest.raises(HTTPException):
@@ -1385,11 +1383,13 @@ def test_neutral_monster_health_regen(game):
 
 def test_white_check(game):
     # test that white can be checked
+    # and that the only valid move is to get out of check
     pass
 
 
 def test_black_check(game):
     # test that black can be checked
+    # and that the only valid move is to get out of check
     pass
 
 
@@ -1429,7 +1429,6 @@ def test_white_check_protection_against_checkmate(game):
     # test that check protection works against checkmate for white
     pass
 
-
 def test_white_check_protection_against_checkmate(game):
     # test that check protection works against checkmate for black
     pass
@@ -1448,6 +1447,14 @@ def test_game_ends_when_monster_spawns_on_top_of_king(game):
 
 def test_game_ends_when_king_stays_near_neutral_monster(game):
     # test that the game ends when a king stays near a neutral monster 
+    pass
+
+def test_draw_with_only_kings(game):
+    # test that the game ends in a draw when only kings are left
+    pass
+
+def test_draw_with_check_and_no_possible_moves(game):
+    # test that the game ends in a draw when a king is in check but has no moves available to get out of it
     pass
 
 def test_capture_behavior_when_neutral_and_normal_piece_are_on_same_square(game):

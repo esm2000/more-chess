@@ -96,7 +96,11 @@ export function GameStateProvider({children}) {
         bishopSpecialCaptures: [],
         latestMovement: {},
         queenReset: false,
-        neutralAttackLog: {}
+        neutralAttackLog: {},
+        check: {
+            [PLAYERS[0]]: false,
+            [PLAYERS[1]]: false
+        }
     }
     const [gameState, setGameState] = useState(initGameState);
 

@@ -188,7 +188,6 @@ const Piece = (props) => {
                 }): null
             }
             {
-                // TODO: add onClick functions that make API calls to capture or spare piece
                 props.bishopDebuff === 3 && props.side === PLAYERS[1]?
                 <div>
                     <button

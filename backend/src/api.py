@@ -51,7 +51,8 @@ def create_game():
         "last_updated": datetime.datetime.now(),
         "bishop_special_captures": [],
         "latest_movement": {},
-        "queen_reset": False
+        "queen_reset": False,
+        "check": {"white": False, "black": False}
     }
     game_database = mongo_client["game_db"]
     game_database["games"].insert_one(game_state)
@@ -83,12 +84,9 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     new_game_state = dict(state)
     old_game_state = retrieve_game_state(id, response)
 
-    # TODO: - fix all tests before moving forward
-    #       - utilize get_unsafe_positions_for_king() to handle check towards end of function (make check a flag in board state like gold_spent)
-    #           - if a king has check protection, exhaust one stack and prevent check for that turn
-    #       - if it is a side's current turn and it is in check, force their king into the position in play 
-    #       - at a beginning of function, check for checkmate by seeing if the king has anywhere to go (using get_moves())
-    #           - (only check for checkmate when a king is in check and its their turn)
+    # TODO: handle draw conditions (draws are when both players lose)
+    #   - only kings are left on board
+    #   - only moves available will place current player in check
 
     # prevent updates to game once game has ended
     if old_game_state["player_victory"] or old_game_state["player_defeat"]:
@@ -214,6 +212,42 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         logger.error("A king has been captured or has disappeared from board")
         is_valid_game_state = False
 
+    # utilize get_unsafe_positions_for_kings() to handle check towards end of function
+    # if a king has check protection, exhaust one stack and prevent check for that turn
+    unsafe_positions = utils.get_unsafe_positions_for_kings(old_game_state, new_game_state)
+    not_in_check = {"white": True, "black": True}
+    for side in unsafe_positions:
+        for unsafe_position in unsafe_positions[side]:
+            square = new_game_state["board_state"][unsafe_position[0]][unsafe_position[1]]
+
+            for piece in square:
+                if piece.get("type") == f"{side}_king":
+                    if not piece.get("check_protection", 0):
+                        new_game_state["check"][side] = True
+                        not_in_check[side] = False
+                    else:
+                        piece["check_protection"] -= 1
+    
+    for side in not_in_check:
+        if not_in_check[side]:
+            new_game_state["check"][side] = False
+
+    # if the side that moved this turn is in check invalidate game
+    side_that_should_be_moving = "white" if not old_game_state["turn_count"] % 2 else "black"
+    if new_game_state["check"][side_that_should_be_moving]:
+        logger.error(f"{side_that_should_be_moving} has gotten its own king into check")
+        is_valid_game_state = False
+
+    # check for checkmate by seeing if the king has anywhere to go
+    side_that_should_be_moving_next_turn = "white" if not new_game_state["turn_count"] % 2 else "black"
+    if new_game_state["check"][side_that_should_be_moving_next_turn] and not utils.can_king_move(old_game_state, new_game_state):
+        if side_that_should_be_moving_next_turn == "white":
+            new_game_state["player_defeat"] = True
+        else:
+            new_game_state["player_victory"] = True
+
+    # TODO: if pieces have moved and player was in check last turn and is in check this turn invalidate game
+
     if not is_valid_game_state:
         raise HTTPException(status_code=400, detail=utils.INVALID_GAME_STATE_ERROR_MESSAGE)
 
@@ -222,7 +256,6 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     utils.determine_possible_moves(old_game_state, new_game_state, moved_pieces, player)
 
     # new game's turn count is representative of what side should be moving next turn (even is white, odd is black)
-    # TODO: update can_king_move() to account for check
     if should_increment_turn_count and utils.are_all_non_king_pieces_stunned(new_game_state) and not utils.can_king_move(old_game_state, new_game_state):
         utils.increment_turn_count(old_game_state, new_game_state, moved_pieces, 2)
     
@@ -258,7 +291,17 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     # if queen extra turn flag is set, find correct queen and set its position as the position_in_play
     if new_game_state["queen_reset"]:
         utils.set_queen_as_position_in_play(old_game_state, new_game_state)
-    
+
+    side_moving_next_turn = "white" if not bool(new_game_state["turn_count"] % 2) else "black"
+    if new_game_state["check"][side_moving_next_turn]:
+        for i in range(len(new_game_state["board_state"])):
+            row = new_game_state["board_state"][i]
+            for j in range(len(row)):
+                square = row[j] or []
+                for piece in square:
+                    if piece["type"] == f"{side_moving_next_turn}_king":
+                        new_game_state["position_in_play"] = [i, j]
+
     # spawn sword in the stone when appropriate
     utils.spawn_sword_in_the_stone(new_game_state)
 

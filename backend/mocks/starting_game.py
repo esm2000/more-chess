@@ -18,6 +18,7 @@ starting_game = {
     "latest_movement": {},
     "queen_reset": False,
     "neutral_attack_log": {},
+    "check": {"white": False, "black": False},
     "board_state": [
         [
             [{"type": "black_rook"}],

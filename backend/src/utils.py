@@ -1,5 +1,6 @@
 from bson.objectid import ObjectId
-import copy 
+import collections
+import copy
 import datetime
 from fastapi import HTTPException, Response
 from mocks.empty_game import empty_game
@@ -1263,3 +1264,99 @@ def heal_neutral_monsters(old_game_state, new_game_state):
         # if the monster has not been attacked and the last turn it got attacked is at least 3 turns before the current one, regenerate the monster's health
         elif old_square[old_index]["health"] == new_square[new_index]["health"] and turn_count - last_turn_attacked >= 3:
             new_square[new_index]["health"] = max_health
+
+
+# mutates new_game_state conditionally
+def manage_check_status(old_game_state, new_game_state):
+    unsafe_positions = get_unsafe_positions_for_kings(old_game_state, new_game_state)
+    not_in_check = {"white": True, "black": True}
+    for side in unsafe_positions:
+        for unsafe_position in unsafe_positions[side]:
+            square = new_game_state["board_state"][unsafe_position[0]][unsafe_position[1]] or []
+
+            for piece in square:
+                if piece.get("type") == f"{side}_king":
+                    if not piece.get("check_protection", 0):
+                        new_game_state["check"][side] = True
+                        not_in_check[side] = False
+                    else:
+                        piece["check_protection"] -= 1
+    
+    for side in not_in_check:
+        if not_in_check[side]:
+            new_game_state["check"][side] = False
+
+
+# conditionally mutates new_game_state
+def end_game_on_checkmate(old_game_state, new_game_state):
+    side_that_should_be_moving_next_turn = "white" if old_game_state["turn_count"] % 2 else "black"
+    if new_game_state["check"][side_that_should_be_moving_next_turn] and not can_king_move(old_game_state, new_game_state):
+        if side_that_should_be_moving_next_turn == "white":
+            new_game_state["white_defeat"] = True
+        else:
+            new_game_state["black_defeat"] = True
+
+
+def invalidate_game_if_player_moves_and_is_in_check(is_valid_game_state, new_game_state, moved_pieces):
+    for moved_piece in moved_pieces:
+        if moved_piece["previous_position"][0] is not None and moved_piece["previous_position"][1] is not None:
+            for side in ["white", "black"]:
+                if side in moved_piece["piece"].get("type") and new_game_state["check"][side]:
+                    logger.error(f"{side} moved but is in check")
+                    is_valid_game_state = False
+    return is_valid_game_state
+
+# conditionally mutates new_game_state
+def set_next_king_as_position_in_play_if_in_check(new_game_state):
+    side_moving_next_turn = "white" if not bool(new_game_state["turn_count"] % 2) else "black"
+    if new_game_state["check"][side_moving_next_turn]:
+        for i in range(len(new_game_state["board_state"])):
+            row = new_game_state["board_state"][i]
+            for j in range(len(row)):
+                square = row[j] or []
+                for piece in square:
+                    if piece["type"] == f"{side_moving_next_turn}_king":
+                        new_game_state["position_in_play"] = [i, j]
+
+# conditionally mutates new_game_state
+def handle_draw_conditions(old_game_state, new_game_state):
+    # condition: only kings are left on board
+    piece_log = collections.Counter()
+        
+    for row in new_game_state["board_state"]:
+        for col_index in range(len(row)):
+            square = row[col_index] or []
+            for piece in square:
+                piece_type = piece.get("type", "")
+                if "white" in piece_type or "black" in piece_type:
+                    piece_log[piece_type] += 1
+
+    if "white_king" in piece_log and "black_king" in piece_log and len(piece_log) == 2:
+        new_game_state["white_defeat"] = True
+        new_game_state["black_defeat"] = True
+
+    # condition: where only moves available will place current player in check
+    side_that_should_be_moving_next_turn = "white" if not new_game_state["turn_count"] % 2 else "black"
+    only_king_can_move = True
+    is_king_immobile = False
+    for row_index in range(len(new_game_state["board_state"])):
+        row = new_game_state["board_state"][row_index]
+        if not only_king_can_move:
+            break
+        for col_index in range(len(row)):
+            if not only_king_can_move:
+                break
+            square = row[col_index] or []
+            for piece in square:
+                piece_type = piece.get("type", "")
+                if side_that_should_be_moving_next_turn in piece_type:
+                    moves_info = moves.get_moves(old_game_state, new_game_state, [row_index, col_index], piece)
+                    if moves_info["possible_moves"] and "king" not in piece_type:
+                        only_king_can_move = False
+                        break
+                    elif not moves_info["possible_moves"] and "king" in piece_type:
+                        is_king_immobile = True
+    
+    if only_king_can_move and is_king_immobile:
+        new_game_state["white_defeat"] = True
+        new_game_state["black_defeat"] = True

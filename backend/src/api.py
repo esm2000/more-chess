@@ -212,7 +212,7 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         logger.error("A king has been captured or has disappeared from board")
         is_valid_game_state = False
 
-    # utilize get_unsafe_positions_for_kings() to handle check towards end of function
+    # utilize get_unsafe_positions_for_kings() to handle granting and removing check
     # if a king has check protection, exhaust one stack and prevent check for that turn
     unsafe_positions = utils.get_unsafe_positions_for_kings(old_game_state, new_game_state)
     not_in_check = {"white": True, "black": True}
@@ -232,21 +232,27 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         if not_in_check[side]:
             new_game_state["check"][side] = False
 
-    # if the side that moved this turn is in check invalidate game
+    # if the side that moved this turn is in check invalidate game (prevents player from getting themselves into check)
     side_that_should_be_moving = "white" if not old_game_state["turn_count"] % 2 else "black"
     if new_game_state["check"][side_that_should_be_moving]:
         logger.error(f"{side_that_should_be_moving} has gotten its own king into check")
         is_valid_game_state = False
 
     # check for checkmate by seeing if the king has anywhere to go
-    side_that_should_be_moving_next_turn = "white" if not new_game_state["turn_count"] % 2 else "black"
+    side_that_should_be_moving_next_turn = "white" if old_game_state["turn_count"] % 2 else "black"
     if new_game_state["check"][side_that_should_be_moving_next_turn] and not utils.can_king_move(old_game_state, new_game_state):
         if side_that_should_be_moving_next_turn == "white":
             new_game_state["player_defeat"] = True
         else:
             new_game_state["player_victory"] = True
 
-    # TODO: if pieces have moved and player was in check last turn and is in check this turn invalidate game
+    # if pieces have moved and player was in check last turn and is in check this turn invalidate game
+    for moved_piece in moved_pieces:
+        if moved_piece["previous_position"][0] is not None and moved_piece["previous_position"][1] is not None:
+            for side in ["white", "black"]:
+                if side in moved_piece["piece"].get("type") and old_game_state["check"][side] and new_game_state["check"][side]:
+                    logger.error(f"{side} moved but is still in check")
+                    is_valid_game_state = False
 
     if not is_valid_game_state:
         raise HTTPException(status_code=400, detail=utils.INVALID_GAME_STATE_ERROR_MESSAGE)

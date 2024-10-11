@@ -19,8 +19,8 @@ const GameStateContext = createContext({
     capturedPieces: [],
     SwordInTheStonePosition: null,
     capturePointAdvantage: null,
-    playerVictory: false,
-    playerDefeat: false,
+    blackDefeat: false,
+    whiteDefeat: false,
     goldCount: null,
     bishopSpecialCaptures: [],
     latestMovement: null,
@@ -87,8 +87,8 @@ export function GameStateProvider({children}) {
         graveyard: [],
         swordInTheStonePosition: null,
         capturePointAdvantage: null,
-        playerVictory: false,
-        playerDefeat: false,
+        blackDefeat: false,
+        whiteDefeat: false,
         goldCount: {
             [PLAYERS[0]]: 0,
             [PLAYERS[1]]: 0

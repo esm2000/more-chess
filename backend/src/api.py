@@ -1,4 +1,5 @@
 from bson.objectid import ObjectId
+import collections
 import datetime
 from fastapi import APIRouter, HTTPException, Response
 import logging
@@ -24,8 +25,8 @@ class GameState(BaseModel, extra=Extra.allow):
     captured_pieces: dict
     sword_in_the_stone_position: Union[list, None]
     capture_point_advantage: Union[list, None]
-    player_victory: bool
-    player_defeat: bool
+    black_defeat: bool
+    white_defeat: bool
     gold_count: dict
     bishop_special_captures: list
     latest_movement: dict
@@ -45,8 +46,8 @@ def create_game():
         "neutral_attack_log": {},
         "sword_in_the_stone_position": None,
         "capture_point_advantage": None,
-        "player_victory": False,
-        "player_defeat": False,
+        "black_defeat": False,
+        "white_defeat": False,
         "gold_count": {"white": 0, "black": 0},
         "last_updated": datetime.datetime.now(),
         "bishop_special_captures": [],
@@ -84,12 +85,8 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     new_game_state = dict(state)
     old_game_state = retrieve_game_state(id, response)
 
-    # TODO: handle draw conditions (draws are when both players lose)
-    #   - only kings are left on board
-    #   - only moves available will place current player in check
-
     # prevent updates to game once game has ended
-    if old_game_state["player_victory"] or old_game_state["player_defeat"]:
+    if old_game_state["black_defeat"] or old_game_state["white_defeat"]:
         return old_game_state
 
     # validate whether the new game state is valid
@@ -242,9 +239,9 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     side_that_should_be_moving_next_turn = "white" if old_game_state["turn_count"] % 2 else "black"
     if new_game_state["check"][side_that_should_be_moving_next_turn] and not utils.can_king_move(old_game_state, new_game_state):
         if side_that_should_be_moving_next_turn == "white":
-            new_game_state["player_defeat"] = True
+            new_game_state["white_defeat"] = True
         else:
-            new_game_state["player_victory"] = True
+            new_game_state["black_defeat"] = True
 
     # if pieces have moved and player was in check last turn and is in check this turn invalidate game
     for moved_piece in moved_pieces:
@@ -308,6 +305,48 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
                     if piece["type"] == f"{side_moving_next_turn}_king":
                         new_game_state["position_in_play"] = [i, j]
 
+    # handle draw conditions (draws are when both players lose)
+    # condition: only kings are left on board
+    piece_log = collections.Counter()
+        
+    for row in new_game_state["board_state"]:
+        for col_index in range(len(row)):
+            square = row[col_index] or []
+            for piece in square:
+                piece_type = piece.get("type", "")
+                if "white" in piece_type or "black" in piece_type:
+                    piece_log[piece_type] += 1
+
+    if "white_king" in piece_log and "black_king" in piece_log and len(piece_log) == 2:
+        new_game_state["white_defeat"] = True
+        new_game_state["black_defeat"] = True
+
+    # condition: where only moves available will place current player in check
+    side_that_should_be_moving_next_turn = "white" if not new_game_state["turn_count"] % 2 else "black"
+    only_king_can_move = True
+    is_king_immobile = False
+    for row_index in range(len(new_game_state["board_state"])):
+        row = new_game_state["board_state"][row_index]
+        if not only_king_can_move:
+            break
+        for col_index in range(len(row)):
+            if not only_king_can_move:
+                break
+            square = row[col_index] or []
+            for piece in square:
+                piece_type = piece.get("type", "")
+                if side_that_should_be_moving_next_turn in piece_type:
+                    moves_info = moves.get_moves(old_game_state, new_game_state, [row_index, col_index], piece)
+                    if moves_info["possible_moves"] and "king" not in piece_type:
+                        only_king_can_move = False
+                        break
+                    elif not moves_info["possible_moves"] and "king" in piece_type:
+                        is_king_immobile = True
+    
+    if only_king_can_move and is_king_immobile:
+        new_game_state["white_defeat"] = True
+        new_game_state["black_defeat"] = True
+    
     # spawn sword in the stone when appropriate
     utils.spawn_sword_in_the_stone(new_game_state)
 

@@ -155,9 +155,9 @@ def spawn_neutral_monsters(game_state):
                 piece = game_state["board_state"][monster_position_row][monster_position_col][i]
                 if "king" in piece.get("type"):
                     if "white" in piece["type"]:
-                        game_state["player_defeat"] = True
+                        game_state["white_defeat"] = True
                     else:
-                        game_state["player_victory"] = True
+                        game_state["black_defeat"] = True
                     i += 1
                 else:
                     game_state["graveyard"].append(piece.get("type"))
@@ -192,8 +192,8 @@ def carry_out_neutral_monster_attacks(game_state):
                                 if neutral_kill_mark == game_state["turn_count"]:
                                     # if a king gets captured that's game over
                                     if "king" in piece["type"]:
-                                        game_state["player_victory"] = side == "black"
-                                        game_state["player_defeat"] = side == "white"
+                                        game_state["black_defeat"] = side == "black"
+                                        game_state["white_defeat"] = side == "white"
                                     else:
                                         game_state["board_state"][i][j].remove(piece)
                                         game_state["graveyard"].append(piece.get("type"))
@@ -250,8 +250,8 @@ def clear_game(game):
     game_on_next_turn["captured_pieces"] = {"white": [], "black": []}
     game_on_next_turn["previous_state"] = copy.deepcopy(game_on_next_turn)
     
-    game_on_next_turn["player_victory"] = False
-    game_on_next_turn["player_defeat"] = False
+    game_on_next_turn["black_defeat"] = False
+    game_on_next_turn["white_defeat"] = False
 
     game_on_next_turn["sword_in_the_stone_position"] = None
 

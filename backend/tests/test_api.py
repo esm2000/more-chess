@@ -28,8 +28,8 @@ def test_game_created(game):
         "graveyard",
         "sword_in_the_stone_position",
         "capture_point_advantage",
-        "player_victory",
-        "player_defeat",
+        "black_defeat",
+        "white_defeat",
         "gold_count",
     ]:
         assert key in game
@@ -64,8 +64,8 @@ def test_game_created(game):
     assert (
         not game["sword_in_the_stone_position"]
         and not game["capture_point_advantage"]
-        and not game["player_victory"]
-        and not game["player_defeat"]
+        and not game["black_defeat"]
+        and not game["white_defeat"]
         and not game["gold_count"]["white"]
         and not game["gold_count"]["black"]
     )
@@ -373,6 +373,8 @@ def test_alter_game(game):
 
     for i in [0, 1]:
         for piece_type in piece_values:
+            game_on_next_turn = copy.deepcopy(game)
+            game = clear_game(game)
             game_on_next_turn = copy.deepcopy(game)
             game_on_next_turn["turn_count"] = 0
             game_on_next_turn["board_state"] = copy.deepcopy(empty_game["board_state"])
@@ -1236,9 +1238,9 @@ def test_neutral_monster_ends_game_after_spawning_on_king(game):
         assert game["turn_count"] == 10
         assert (game["board_state"][4][7] or [{}])[0].get("type") == "neutral_dragon"
         if side == "black":
-            assert game["player_victory"]
+            assert game["black_defeat"]
         else:
-            assert game["player_defeat"]
+            assert game["white_defeat"]
 
 
 def test_sword_in_the_stone_spawn(game):
@@ -1334,6 +1336,7 @@ def test_neutral_monster_health_regen(game):
     game_on_next_turn["board_state"][4][7] = [{"type": "neutral_dragon", "health": 5}]
 
     game_on_next_turn["board_state"][0][0] = [{"type": "black_king"}]
+    game_on_next_turn["board_state"][1][1] = [{"type": "black_pawn"}]
     game_on_next_turn["board_state"][7][7] = [{"type": "white_king"}]
     game_on_next_turn["board_state"][2][7] = [{"type": "black_pawn"}]
 

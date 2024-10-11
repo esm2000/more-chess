@@ -218,7 +218,7 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     not_in_check = {"white": True, "black": True}
     for side in unsafe_positions:
         for unsafe_position in unsafe_positions[side]:
-            square = new_game_state["board_state"][unsafe_position[0]][unsafe_position[1]]
+            square = new_game_state["board_state"][unsafe_position[0]][unsafe_position[1]] or []
 
             for piece in square:
                 if piece.get("type") == f"{side}_king":

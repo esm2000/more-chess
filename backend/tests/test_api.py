@@ -1431,6 +1431,9 @@ def test_check(game):
         assert not game[f"{'white' if not i else 'black'}_defeat"] and not game[f"{'black' if not i else 'white'}_defeat"]
 
 
+# TODO: complete threatening_move validation in test_moves_*
+
+
 def test_white_check_protection_against_check(game):
     # test that check protection works against check for white
     pass

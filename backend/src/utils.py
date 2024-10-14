@@ -41,8 +41,8 @@ def determine_pieces_that_have_moved(curr_board_state, prev_board_state):
             prev_square = prev_board_state[row][col] if prev_board_state[row][col] else []
             
             # use list comprehension to get list of piece types on current and previous board on square of interest 
-            pieces_on_curr_square = [piece.get("type") for piece in curr_square]
-            pieces_on_prev_square = [piece.get("type") for piece in prev_square]
+            pieces_on_curr_square = [piece.get("type", "") for piece in curr_square]
+            pieces_on_prev_square = [piece.get("type", "") for piece in prev_square]
 
             # check for any missing pieces from current board by getting diff
             pieces_missing_from_curr_board = list(set(pieces_on_prev_square) - set(pieces_on_curr_square))
@@ -55,9 +55,9 @@ def determine_pieces_that_have_moved(curr_board_state, prev_board_state):
             prev_square_dict = {}
             
             for piece in curr_square:
-                curr_square_dict[piece.get("type")] = piece
+                curr_square_dict[piece.get("type", "")] = piece
             for piece in prev_square:
-                prev_square_dict[piece.get("type")] = piece
+                prev_square_dict[piece.get("type", "")] = piece
 
             for piece_type in pieces_missing_from_curr_board:
                 if piece_type not in moved_pieces_dict["missing"]:
@@ -154,14 +154,14 @@ def spawn_neutral_monsters(game_state):
             i = 0
             while i < len(game_state["board_state"][monster_position_row][monster_position_col]):
                 piece = game_state["board_state"][monster_position_row][monster_position_col][i]
-                if "king" in piece.get("type"):
+                if "king" in piece.get("type", ""):
                     if "white" in piece["type"]:
                         game_state["white_defeat"] = True
                     else:
                         game_state["black_defeat"] = True
                     i += 1
                 else:
-                    game_state["graveyard"].append(piece.get("type"))
+                    game_state["graveyard"].append(piece.get("type", ""))
                     game_state["board_state"][monster_position_row][monster_position_col].pop(i)
 
             game_state["board_state"][monster_position_row][monster_position_col] = monster_piece
@@ -197,7 +197,7 @@ def carry_out_neutral_monster_attacks(game_state):
                                         game_state["white_defeat"] = side == "white"
                                     else:
                                         game_state["board_state"][i][j].remove(piece)
-                                        game_state["graveyard"].append(piece.get("type"))
+                                        game_state["graveyard"].append(piece.get("type", ""))
                                 elif game_state["turn_count"] - neutral_kill_mark > 2:
                                     game_state["board_state"][i][j][k]["neutral_kill_mark"] = game_state["turn_count"] + 2
 
@@ -207,7 +207,7 @@ def is_neutral_monster_spawned(neutral_monster_type, board_state):
     square = board_state[neutral_monster_position[0]][neutral_monster_position[1]]
     if not square:
         return False
-    return any([piece.get("type") == neutral_monster_type for piece in square])
+    return any([piece.get("type", "") == neutral_monster_type for piece in square])
 
 
 def evaluate_current_position(curr_position, curr_game_state):
@@ -233,7 +233,7 @@ def enable_adjacent_bishop_captures(curr_game_state, side, possible_moves_dict):
             # if there's a bishop from the opposing side present in an adjacent square,
             # add it to the capture_moves
             if curr_game_state["board_state"][potential_bishop_square[0]][potential_bishop_square[1]] and \
-            any(piece.get("type") == f"{opposing_side}_bishop" for piece in curr_game_state["board_state"][potential_bishop_square[0]][potential_bishop_square[1]]):
+            any(piece.get("type", "") == f"{opposing_side}_bishop" for piece in curr_game_state["board_state"][potential_bishop_square[0]][potential_bishop_square[1]]):
                 possible_moves_dict["possible_captures"].append([possible_move, potential_bishop_square])
     return possible_moves_dict
 
@@ -598,7 +598,7 @@ def damage_neutral_monsters(new_game_state, moved_pieces):
                     col_diff = abs(moved_piece["current_position"][1] - MONSTER_INFO[neutral_monster]["position"][1])
                     if row_diff in [-1, 0, 1] and col_diff in [-1, 0, 1]:
                         for i, piece in enumerate(new_game_state["board_state"][MONSTER_INFO[neutral_monster]["position"][0]][MONSTER_INFO[neutral_monster]["position"][1]]):
-                            if piece.get("type") == neutral_monster:
+                            if piece.get("type", "") == neutral_monster:
                                 new_game_state["board_state"][MONSTER_INFO[neutral_monster]["position"][0]][MONSTER_INFO[neutral_monster]["position"][1]][i]["health"] = piece["health"] - 1
                     
                                 if new_game_state["board_state"][MONSTER_INFO[neutral_monster]["position"][0]][MONSTER_INFO[neutral_monster]["position"][1]][i]["health"] < 1:
@@ -656,7 +656,7 @@ def determine_possible_moves(old_game_state, new_game_state, moved_pieces, playe
         
         try:
             moves_info = moves.get_moves(old_game_state, new_game_state, new_game_state["position_in_play"], piece)
-            if "king" in piece.get("type"):
+            if "king" in piece.get("type", ""):
                 moves_info = trim_king_moves(moves_info, old_game_state, new_game_state, moved_piece["side"])
         except Exception as e:
             logger.error(f"Unable to determine move for {piece} due to: {traceback.format_exc(e)}")
@@ -715,7 +715,7 @@ def reassign_pawn_buffs(new_game_state):
             square = new_game_state["board_state"][row][col]
             if square:
                 for i, piece in enumerate(square):
-                    if "pawn" in piece.get("type"):
+                    if "pawn" in piece.get("type", ""):
                         if piece.get("side") == winning_side:
                             new_game_state["board_state"][row][col][i]["pawn_buff"] = pawn_buff
                         elif piece.get("side") == losing_side:
@@ -925,7 +925,7 @@ def handle_pieces_with_full_bishop_debuff_stacks(
                         continue
 
                     for piece in new_square:
-                        if piece.get("type") == f"{opposite_side}_bishop":
+                        if piece.get("type", "") == f"{opposite_side}_bishop":
                             moves_info = moves.get_moves_for_bishop(old_game_state, old_game_state.get("previous_state"), [row, col])
                             if new_game_state["bishop_special_captures"][0]["position"] in moves_info["possible_moves"] or \
                             new_game_state["bishop_special_captures"][0]["position"] in [possible_capture[1] for possible_capture in moves_info["possible_captures"]]:
@@ -1023,7 +1023,7 @@ def can_king_move(old_game_state, new_game_state):
 
             if square:
                 for piece in square:
-                    if piece.get("type") == f"{side_that_should_be_moving_next_turn}_king":
+                    if piece.get("type", "") == f"{side_that_should_be_moving_next_turn}_king":
                         output = len(
                             [
                                 move for move in moves.get_moves_for_king(
@@ -1048,15 +1048,12 @@ def get_unsafe_positions_for_kings(old_game_state, new_game_state):
             square = new_game_state["board_state"][row][col] or []
             for piece in square:
                 # if piece is white or black
-                if "king" not in piece.get("type") and ("white" in piece.get("type", "") or "black" in piece.get("type", "")):
+                if "king" not in piece.get("type", "") and ("white" in piece.get("type", "") or "black" in piece.get("type", "")):
                     side = piece["type"].split("_")[0]
                     opposite_side = "white" if side == "black" else "black"
                     moves_info = moves.get_moves(old_game_state, new_game_state, [row, col], piece)
-                    # get second positions from all possible captures
-                    # get all positions from possible moves (kings are not included in possible captures)
-                    # add both to opposite side's unsafe position array
-                    output[opposite_side] = output[opposite_side].union({tuple(possible_capture[1]) for possible_capture in moves_info["possible_captures"]})
-                    output[opposite_side] = output[opposite_side].union({tuple(possible_move) for possible_move in moves_info["possible_moves"]})
+                    # add threatening moves to output
+                    output[opposite_side] = output[opposite_side].union({tuple(threatening_move) for threatening_move in moves_info["threatening_move"]})
                 # if piece is neutral
                 elif "neutral" in piece.get("type", ""):
                     # add current square and all adjacent squares to both sides of unsafe position array
@@ -1141,7 +1138,7 @@ def verify_queen_reset_turn_is_valid(
     if new_game_state["position_in_play"][0] is not None:
         position_in_play = new_game_state["position_in_play"]
         square_in_play = new_game_state["board_state"][position_in_play[0]][position_in_play[1]] or []
-        is_proper_queen_in_play = any(f"{moving_side}_queen" == piece.get("type") for piece in square_in_play)
+        is_proper_queen_in_play = any(f"{moving_side}_queen" == piece.get("type", "") for piece in square_in_play)
 
     if not proper_queen_found and not is_proper_queen_in_play:
         is_valid_game_state = False
@@ -1209,7 +1206,7 @@ def exhaust_sword_in_the_stone(new_game_state, moved_pieces):
         "king" in moved_piece["piece"].get("type"):
                 new_game_state["sword_in_the_stone_position"] = None
                 for piece in new_game_state["board_state"][moved_piece["current_position"][0]][moved_piece["current_position"][1]]:
-                    if piece.get("type") == moved_piece["piece"].get("type"):
+                    if piece.get("type", "") == moved_piece["piece"].get("type"):
                         if "check_protection" in piece and isinstance(piece["check_protection"], int):
                             piece["check_protection"] += 1
                         else:
@@ -1275,7 +1272,7 @@ def manage_check_status(old_game_state, new_game_state):
             square = new_game_state["board_state"][unsafe_position[0]][unsafe_position[1]] or []
 
             for piece in square:
-                if piece.get("type") == f"{side}_king":
+                if piece.get("type", "") == f"{side}_king":
                     if not piece.get("check_protection", 0):
                         new_game_state["check"][side] = True
                         not_in_check[side] = False

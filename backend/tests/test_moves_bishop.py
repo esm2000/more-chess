@@ -488,3 +488,7 @@ def test_bishop_full_energize_stack_capture():
                     assert [[5, 6], [6, 5]] not in possible_moves_and_captures["possible_captures"]
                     assert [[0, 5], [1, 6]] not in possible_moves_and_captures["possible_captures"]
                     assert [[5, 6], [4, 7]] not in possible_moves_and_captures["possible_captures"]
+
+
+def test_bishop_threatening_move():
+    pass

@@ -5,6 +5,7 @@ from src.utils import enable_adjacent_bishop_captures, evaluate_current_position
 # {
 #   "possible_moves": [[row, col], ...] - positions where piece can move
 #   "possible_captures": [[[row, col], [row, col]], ...] - first position is where piece has to move to capture piece in second position
+#   "threatening_move": [[row, col]] - position where king of opposite side is threatened by the piece in its current position
 # }
 def get_moves(old_game_state, new_game_state, curr_position, piece):
     if "pawn" in piece["type"]:
@@ -93,11 +94,6 @@ def process_possible_moves_dict(curr_game_state, curr_position, side, possible_m
     return possible_moves_dict
 
 
-# get_moves_for_x() returns possible_moves_dict
-# {
-#   "possible_moves": [[row, col], ...] - positions where piece can move
-#   "possible_captures": [[[row, col], [row, col]], ...] - first position is where piece has to move to capture piece in second position
-# }
 def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
     evaluate_current_position(curr_position, curr_game_state)
     piece_in_play = None
@@ -118,6 +114,7 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
     
     possible_moves = []
     possible_captures = []
+    threatening_move = []
     # if square ahead is blank or only has neutral monsters add to list of possible moves
     row_ahead = curr_position[0] + (-1 if side == "white" else 1)
     if row_ahead > -1 and row_ahead < 8:
@@ -159,13 +156,15 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
             if not square:
                 continue
 
-            if all("king" not in piece.get("type", None) and \
-                   (opposing_side in piece.get("type", None) or "neutral" in piece.get("type", None)) and \
-                   not ("pawn" in piece.get("type", None) and piece.get("pawn_buff", 0) > 1) \
+            if all((opposing_side in piece.get("type", "") or "neutral" in piece.get("type", "")) and \
+                   not ("pawn" in piece.get("type", "") and piece.get("pawn_buff", 0) > 1) \
                    for piece in square):
-                possible_moves.append(diagonal_forward_adjacent_position)
-                if not all("neutral" in piece.get("type", None) and piece.get("health", 0) != 1 for piece in square):
-                    possible_captures.append([diagonal_forward_adjacent_position, diagonal_forward_adjacent_position])
+                if any("king" in piece.get('type', '') for piece in square):
+                    threatening_move.append(diagonal_forward_adjacent_position)
+                else:
+                    possible_moves.append(diagonal_forward_adjacent_position)
+                    if not all("neutral" in piece.get("type", "") and piece.get("health", 0) != 1 for piece in square):
+                        possible_captures.append([diagonal_forward_adjacent_position, diagonal_forward_adjacent_position])
 
     # En passant
     # if side is black and on row 4 or side is white and on row 3
@@ -194,7 +193,7 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
             possible_moves.append([curr_position[0] + (-1 if side == "white" else 1), lateral_position[1]])
             possible_captures.append([[curr_position[0] + (-1 if side == "white" else 1), lateral_position[1]], [curr_position[0] , lateral_position[1]]])
     
-    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
+    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
 
 
 def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
@@ -213,6 +212,7 @@ def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
     
     possible_moves = []
     possible_captures = []
+    threatening_move = []
     # relative_positions represent all possible moves knight can take
     relative_positions = [[1, -2], [1, 2], [2, -1], [2, 1], [-1, -2],  [-1, 2], [-2, -1], [-2, 1]]
     
@@ -259,18 +259,21 @@ def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
             if not potential_square:
                 possible_moves.append(potential_position)
             
-            if potential_square and all('king' not in piece.get('type', 'None') for piece in potential_square):
+            if potential_square:
                 for piece in potential_square:
-                    if (opposing_side in piece.get("type")):
-                        possible_moves.append(potential_position)
-                        possible_captures.append([potential_position, potential_position])
-                        break
-                    if len(potential_square) == 1 and "neutral" in piece.get("type"):
+                    if (opposing_side in piece.get("type", "")):
+                        if 'king' in piece.get('type', 'None'):
+                            threatening_move.append(potential_position)
+                        else:
+                            possible_moves.append(potential_position)
+                            possible_captures.append([potential_position, potential_position])
+                            break
+                    if len(potential_square) == 1 and "neutral" in piece.get("type", ""):
                         possible_moves.append(potential_position)
                         if piece.get("health", 0) == 1:
                             possible_captures.append([potential_position, potential_position])
 
-    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
+    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
                     
 def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
     evaluate_current_position(curr_position, curr_game_state)
@@ -288,6 +291,7 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
     
     possible_moves = []
     possible_captures = []
+    threatening_move = []
 
     directions = [[1, 1], [1, -1], [-1, -1], [-1, 1]]
     for direction in directions:
@@ -305,6 +309,8 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
                     if all(f"{opposing_side}_king" != piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                         possible_moves.append(possible_position.copy())
                         possible_captures.append([possible_position.copy(), possible_position.copy()])
+                    else:
+                        threatening_move.append(possible_position)
                     break
                 # check for a neutral monster, add monster's position to possible_moves and only add monster's position 
                 # to possible_captures if it has a health of 1. Then break
@@ -327,17 +333,18 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
                 # continue if square is out of bounds 
                 if potential_capture_square[0] < 0 or potential_capture_square[0] > 7 or potential_capture_square[1] < 0 or potential_capture_square[1] > 7:
                     continue
-                # if there's a bishop from the opposing side present in an adjacent square,
-                # add it to the capture_moves
                 square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
                 if square and \
                 (
-                    any(opposing_side in piece.get("type") for piece in square) or \
-                    any("neutral" in piece.get("type") and piece.get("health", 0) == 1 for piece in square) 
+                    any(opposing_side in piece.get("type", "") for piece in square) or \
+                    any("neutral" in piece.get("type", "") and piece.get("health", 0) == 1 for piece in square) 
                 ):
-                    possible_captures.append([possible_move, potential_capture_square])
+                    if any("king" in piece.get("type", "") for piece in square):
+                        threatening_move.append(possible_move)
+                    else:
+                        possible_captures.append([possible_move, potential_capture_square])
 
-    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
+    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
 
 
 def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
@@ -356,6 +363,7 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
     
     possible_moves = []
     possible_captures = []
+    threatening_move = []
     
     range_limit = 3
     current_turn_count = curr_game_state["turn_count"]
@@ -380,6 +388,8 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
                     if all(f"{opposing_side}_king" != piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                         possible_moves.append(possible_position.copy())
                         possible_captures.append([possible_position.copy(), possible_position.copy()])
+                    else:
+                        threatening_move.append(possible_position.copy())
                     break
                 # check for a neutral monster, add monster's position to possible_moves and only add monster's position 
                 # to possible_captures if it has a health of 1. Then break
@@ -393,7 +403,7 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
             possible_position[0] += direction[0]
             possible_position[1] += direction[1]
             
-    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
+    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
 
 
 def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
@@ -412,6 +422,7 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
     
     possible_moves = []
     possible_captures = []
+    threatening_move = []
     
     directions = [[0, 1], [1, 0], [0, -1], [-1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]]
     for direction in directions:
@@ -429,6 +440,8 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
                     if all(f"{opposing_side}_king" != piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                         possible_moves.append(possible_position.copy())
                         possible_captures.append([possible_position.copy(), possible_position.copy()])
+                    else:
+                        threatening_move.append(possible_position.copy())
                     break
                 # check for a neutral monster, add monster's position to possible_moves and only add monster's position 
                 # to possible_captures if it has a health of 1. Then break
@@ -441,7 +454,7 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
             possible_position[0] += direction[0]
             possible_position[1] += direction[1]
             
-    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures})
+    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
 
 
 # must be called with get_unsafe_posiitons() where unsafe positions are filtered out
@@ -482,4 +495,4 @@ def get_moves_for_king(curr_game_state, prev_game_state, curr_position):
         elif any(("neutral" in piece["type"] and piece.get("health", 0) == 1) for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
             possible_moves.append(possible_position.copy())
             possible_captures.append([possible_position.copy(), possible_position.copy()])
-    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures}, is_king=True)
+    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": []}, is_king=True)

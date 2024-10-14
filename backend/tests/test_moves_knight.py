@@ -453,3 +453,7 @@ def test_knight_partially_blocked_by_sword_in_stone():
         expected_positions = [[1, 2], [1, 4], [2, 1], [2, 5]]
         for expected_position in expected_positions:
             assert expected_position in possible_moves_and_captures["possible_moves"]
+
+
+def test_knight_threatening_move():
+    pass

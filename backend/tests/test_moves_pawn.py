@@ -548,4 +548,8 @@ def test_pawn_not_being_allowed_to_move_to_sword_in_stone_square():
             assert sword_in_the_stone_position not in possible_moves_and_captures["possible_moves"]
 
 
+def test_pawn_threatening_move():
+    pass
+
+
 # TODO: test pawn file control with 1st stack of dragon buff

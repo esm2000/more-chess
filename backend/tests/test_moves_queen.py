@@ -376,3 +376,7 @@ def test_queen_file_control():
             [6, 4], [5, 5], [4, 6], [3, 7]
         ]) == sorted(possible_moves_and_captures["possible_moves"])
         assert len(possible_moves_and_captures["possible_captures"]) == 0
+
+
+def test_queen_threatening_move():
+    pass

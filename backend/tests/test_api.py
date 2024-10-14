@@ -1384,16 +1384,51 @@ def test_neutral_monster_health_regen(game):
     assert game["turn_count"] == 15
 
 
-def test_white_check(game):
-    # test that white can be checked
-    # and that the only valid move is to get out of check
-    pass
+def test_check(game):
+    # test that king can be checked and that the only valid move is to get out of check
+    for i in range(2):
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
 
+        game_on_next_turn["board_state"][7][0] = [{"type": f"{'white' if not i else 'black'}_king"}]
+        game_on_next_turn["board_state"][0][1] = [{"type": f"{'white' if not i else 'black'}_rook"}]
 
-def test_black_check(game):
-    # test that black can be checked
-    # and that the only valid move is to get out of check
-    pass
+        game_on_next_turn["board_state"][5][2] = [{"type": f"{'black' if not i else 'white'}_rook"}]
+        game_on_next_turn["board_state"][3][6] = [{"type": f"{'black' if not i else 'white'}_king"}]
+
+        game_on_next_turn["turn_count"] = 1 if not i else 0
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+        
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][7][2] = game_on_next_turn["board_state"][5][2]
+        game_on_next_turn["board_state"][5][2] = None
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response())
+        
+        assert game["check"][f"{'white' if not i else 'black'}"] and not game["check"][f"{'black' if not i else 'white'}"]
+        assert game["position_in_play"] == [7, 0]
+        assert not game[f"{'white' if not i else 'black'}_defeat"] and not game[f"{'black' if not i else 'white'}_defeat"]
+
+        # must get out of check
+        with pytest.raises(HTTPException):
+            game_on_next_turn = copy.deepcopy(game)
+            game_on_next_turn["board_state"][7][1] = game_on_next_turn["board_state"][7][0]
+            game_on_next_turn["board_state"][7][0] = None
+            game_state = api.GameState(**game_on_next_turn)
+            game = api.update_game_state(game["id"], game_state, Response())
+        
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][6][0] = game_on_next_turn["board_state"][7][0]
+        game_on_next_turn["board_state"][7][0] = None
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response())
+
+        assert not game["check"][f"{'white' if not i else 'black'}"] and not game["check"][f"{'black' if not i else 'white'}"]
+        assert game["position_in_play"] == [None, None]
+        assert not game[f"{'white' if not i else 'black'}_defeat"] and not game[f"{'black' if not i else 'white'}_defeat"]
 
 
 def test_white_check_protection_against_check(game):

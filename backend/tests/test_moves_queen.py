@@ -379,4 +379,43 @@ def test_queen_file_control():
 
 
 def test_queen_threatening_move():
-    pass
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|bK|##|__|##|__| 
+    ## 2 |__|##|__|##|__|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|wq|##|__|##|__|      ## 3 |##|__|##|wq|__|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|wK|##|__|##|__| 
+    ## 2 |__|##|__|##|__|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|bq|##|__|##|__|      ## 3 |##|__|##|bq|__|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+    king_positions = [[None, None], [1, 3], [1, 5], [3, 5], [5, 5], [5, 3], [5, 1], [3, 1], [1, 1]]
+    for i in range(2):
+        for king_position in king_positions:
+            curr_game_state = copy.deepcopy(empty_game)
+            curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_queen"}]
+            if king_position[0] is not None:
+                curr_game_state["board_state"][king_position[0]][king_position[1]] = [{"type": f"{'black' if not i else 'white'}_king"}]
+
+            prev_game_state = copy.deepcopy(curr_game_state)
+
+            curr_position = [3, 3]
+
+            possible_moves_and_captures = moves.get_moves_for_queen(curr_game_state, prev_game_state, curr_position)
+
+            assert [king_position, king_position] not in possible_moves_and_captures["possible_captures"]
+            assert len(possible_moves_and_captures["possible_captures"]) == 0
+            if king_position[0] is not None:
+                assert [king_position] == possible_moves_and_captures["threatening_move"]
+            else:
+                assert [king_position] not in possible_moves_and_captures["threatening_move"]
+                assert len(possible_moves_and_captures["threatening_move"]) == 0

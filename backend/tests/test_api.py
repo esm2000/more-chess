@@ -1431,48 +1431,53 @@ def test_check(game):
         assert not game[f"{'white' if not i else 'black'}_defeat"] and not game[f"{'black' if not i else 'white'}_defeat"]
 
 
-# TODO: complete threatening_move validation in test_moves_*
+def test_check_protection_against_check(game):
+    # test that check protection works against check
+    for i in range(2):
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
+
+        game_on_next_turn["board_state"][7][0] = [{"type": f"{'white' if not i else 'black'}_king", "check_protection": 1}]
+        game_on_next_turn["board_state"][0][1] = [{"type": f"{'white' if not i else 'black'}_rook"}]
+
+        game_on_next_turn["board_state"][5][2] = [{"type": f"{'black' if not i else 'white'}_rook"}]
+        game_on_next_turn["board_state"][3][6] = [{"type": f"{'black' if not i else 'white'}_king"}]
+
+        game_on_next_turn["turn_count"] = 1 if not i else 0
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+        
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][7][2] = game_on_next_turn["board_state"][5][2]
+        game_on_next_turn["board_state"][5][2] = None
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response())
+        
+        assert not game["check"][f"white"] and not game["check"][f"black"]
+        assert game["position_in_play"] == [None, None]
+        assert not game["white_defeat"] and not game["black_defeat"]
+        assert not game["board_state"][7][0][0].get("check_protection", 0) 
 
 
-def test_white_check_protection_against_check(game):
-    # test that check protection works against check for white
-    pass
-
-
-def test_white_check_protection_against_check(game):
-    # test that check protection works against check for black
-    pass
-
-
-def test_white_in_check_and_needs_a_non_king_piece_to_get_it_out_of_check(game):
-    # test that when white king is in check and can't move anywhere to get out of check
-    # but another white piece can save it, the game doesn't improperly end
+def test_check_and_needs_a_non_king_piece_to_get_it_out_of_check(game):
+    # test that when king is in check and can't move anywhere to get out of check
+    # but another piece of the same side can save it, the game doesn't improperly end
 
     # also ensure that saving that piece is the only valid move white can make
     pass
 
-def test_black_in_check_and_needs_a_non_king_piece_to_get_it_out_of_check(game):
-    # test that when black king is in check and can't move anywhere to get out of check
-    # but another black piece can save it, the game doesn't improperly end
 
-    # also ensure that saving that piece is the only valid move black can make
+def test_checkmate(game):
+    # test that checkmate
     pass
 
-def test_white_checkmate(game):
-    # test that white can be checkmated
-    pass
 
-def test_black_checkmate(game):
-    # test that black can be checkmated
-    pass
-
-def test_white_check_protection_against_checkmate(game):
+def test_check_protection_against_checkmate(game):
     # test that check protection works against checkmate for white
     pass
 
-def test_white_check_protection_against_checkmate(game):
-    # test that check protection works against checkmate for black
-    pass
 
 def test_king_cant_put_itself_in_check(game):
     # test that king can't move and put itself into check

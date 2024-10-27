@@ -221,10 +221,6 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     if not is_valid_game_state:
         raise HTTPException(status_code=400, detail=utils.INVALID_GAME_STATE_ERROR_MESSAGE)
 
-    # determine possibleMoves if a position_in_play is not [null, null]
-    # and add to new_game_state 
-    utils.determine_possible_moves(old_game_state, new_game_state, moved_pieces, player)
-
     # new game's turn count is representative of what side should be moving next turn (even is white, odd is black)
     if should_increment_turn_count and utils.are_all_non_king_pieces_stunned(new_game_state) and not utils.can_king_move(old_game_state, new_game_state):
         utils.increment_turn_count(old_game_state, new_game_state, moved_pieces, 2)
@@ -259,11 +255,17 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     utils.record_moved_pieces_this_turn(new_game_state, moved_pieces)
     
     # if queen extra turn flag is set, find correct queen and set its position as the position_in_play
+    reset_position_in_play_queen = True
     if new_game_state["queen_reset"]:
-        utils.set_queen_as_position_in_play(old_game_state, new_game_state)
+        reset_position_in_play_queen = utils.set_queen_as_position_in_play(old_game_state, new_game_state)
 
     # if the side whose turn it is next has a king in check, set its king as the position in play
-    utils.set_next_king_as_position_in_play_if_in_check(new_game_state)
+    reset_position_in_play_king = utils.set_next_king_as_position_in_play_if_in_check(new_game_state)
+
+    # determine possibleMoves if a position_in_play is not [null, null]
+    # and add to new_game_state 
+    reset_position_in_play = reset_position_in_play_queen and reset_position_in_play_king
+    utils.determine_possible_moves(old_game_state, new_game_state, moved_pieces, player, reset_position_in_play)
 
     # handle draw conditions (draws are when both players lose)
     utils.handle_draw_conditions(old_game_state, new_game_state)

@@ -284,7 +284,7 @@ def facilitate_adjacent_capture(old_game_state, new_game_state, moved_pieces):
             if "king" in moved_piece["piece"].get("type"):
                 moves_info = trim_king_moves(moves_info, old_game_state.get("previous_state"), old_game_state, moved_piece["side"])
         except Exception as e:
-            logger.error(f"Unable to determine move for {moved_piece['piece']} due to: {traceback.format_exc(e)}")
+            logger.error(f"Unable to determine move for {moved_piece['piece']} due to: {traceback.format_exc()}")
             moved_pieces_pointer += 1
             continue
     # 3. iterate through possible captures, looking for the ones that match the current position
@@ -455,7 +455,7 @@ def check_to_see_if_more_than_one_piece_has_moved(
                     for possible_capture_info in moves_info["possible_captures"]:
                         capture_positions.append(possible_capture_info) 
                 except Exception as e:
-                    logger.error(f"Unable to determine move for {moved_piece['piece']['type']} due to: {traceback.format_exc(e)}")
+                    logger.error(f"Unable to determine move for {moved_piece['piece']['type']} due to: {traceback.format_exc()}")
                     is_valid_game_state = False
         # if move(s) are invalid, invalidate
                 if moved_piece["current_position"] not in moves_info["possible_moves"]:
@@ -628,14 +628,13 @@ def invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_gam
     return is_valid_game_state
 
 # determine possibleMoves if a position_in_play is not [null, null]
-def determine_possible_moves(old_game_state, new_game_state, moved_pieces, player):
+def determine_possible_moves(old_game_state, new_game_state, moved_pieces, player, reset_position_in_play):
     has_non_neutral_piece_moved = False
     for moved_piece in moved_pieces:
         if moved_piece["side"] == "neutral":
             continue
         has_non_neutral_piece_moved = True
-
-    if len(moved_pieces) > 0: 
+    if has_non_neutral_piece_moved and reset_position_in_play: 
         new_game_state["position_in_play"] = [None, None]
     if new_game_state["position_in_play"][0] is not None: 
         square = new_game_state["board_state"][new_game_state["position_in_play"][0]][new_game_state["position_in_play"][1]]
@@ -649,18 +648,14 @@ def determine_possible_moves(old_game_state, new_game_state, moved_pieces, playe
             logger.error(error_msg)
             raise HTTPException(status_code=500, detail=error_msg)
         
-        if has_non_neutral_piece_moved:
-            error_msg = f"Piece in play but pieces have been moved"
-            logger.error(error_msg)
-            raise HTTPException(status_code=500, detail=error_msg)
-        
         try:
             moves_info = moves.get_moves(old_game_state, new_game_state, new_game_state["position_in_play"], piece)
             if "king" in piece.get("type", ""):
-                moves_info = trim_king_moves(moves_info, old_game_state, new_game_state, moved_piece["side"])
+                side = piece["type"].split("_")[0]
+                moves_info = trim_king_moves(moves_info, old_game_state, new_game_state, side)
         except Exception as e:
-            logger.error(f"Unable to determine move for {piece} due to: {traceback.format_exc(e)}")
-        
+            logger.error(f"Unable to determine move for {piece} due to: {traceback.format_exc()}")
+
         new_game_state["possible_moves"] = moves_info["possible_moves"]
         new_game_state["possible_captures"] = moves_info["possible_captures"]
 
@@ -1041,30 +1036,88 @@ def get_unsafe_positions_for_kings(old_game_state, new_game_state):
         "white": set(),
         "black": set()
     }
-    # iterate through board
+
+    # find king positions
+    king_positions = {}
     for row in range(len(new_game_state["board_state"])):
         for col in range(len(new_game_state["board_state"][0])):
-            # for every square iterate through the pieces
             square = new_game_state["board_state"][row][col] or []
             for piece in square:
-                # if piece is white or black
-                if "king" not in piece.get("type", "") and ("white" in piece.get("type", "") or "black" in piece.get("type", "")):
+                if "king" in piece.get("type"):
                     side = piece["type"].split("_")[0]
-                    opposite_side = "white" if side == "black" else "black"
-                    moves_info = moves.get_moves(old_game_state, new_game_state, [row, col], piece)
-                    # add threatening moves to output
-                    output[opposite_side] = output[opposite_side].union({tuple(threatening_move) for threatening_move in moves_info["threatening_move"]})
-                # if piece is neutral
-                elif "neutral" in piece.get("type", ""):
-                    # add current square and all adjacent squares to both sides of unsafe position array
-                    deltas = [[0, 0], [1, 0], [0, 1], [-1, 0], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]
+                    king_positions[side] = [row, col]
 
-                    for delta in deltas:
-                        position = (row+delta[0], col+delta[1])
-                        if position[0] < 0 or position[0] >= 8 or position[1] < 0 or position[1] >= 8:
-                            continue
-                        output["white"] = output["white"].union({position})
-                        output["black"] = output["black"].union({position})
+    possible_king_locations = {"white": [], "black": []}
+    # find all possible moves for each king
+    for side in king_positions:
+        row, col = king_positions[side]
+        
+        piece = None
+        for p in (new_game_state["board_state"][row][col] or []):
+            if "king" in p.get("type"):
+                piece = p
+
+        if piece is None:
+            logger.error(f"Unable to location of {side} king when calculating unsafe positions")
+            continue
+
+        moves_info = moves.get_moves(old_game_state, new_game_state, [row, col], piece)
+        
+        positions = [tuple(possible_move) for possible_move in moves_info["possible_moves"]]
+        positions += [tuple(possible_capture[0]) for possible_capture in moves_info["possible_captures"]]
+        # TODO: is it possible for this to be used ever?
+        positions += [tuple(move) for move in moves_info["threatening_move"]]
+
+        possible_king_locations[side] = list(set(positions + possible_king_locations[side]))
+
+
+    # for each of the possible moves + the original position, simulate a game where the king is in that position
+    old_game_states = [old_game_state]
+    new_game_states = [new_game_state]
+    
+    for side in possible_king_locations:
+        for possible_king_location in possible_king_locations[side]:
+            if side not in king_positions:
+                continue
+            current_king_location = king_positions[side]
+
+            new_game_state_copy = copy.deepcopy(new_game_state)
+            simulated_game_state = copy.deepcopy(new_game_state)
+
+            simulated_game_state["board_state"][possible_king_location[0]][possible_king_location[1]] = simulated_game_state["board_state"][current_king_location[0]][current_king_location[1]]
+            simulated_game_state["board_state"][current_king_location[0]][current_king_location[1]] = None
+
+            simulated_game_state["turn_count"] += 1
+            old_game_states.append(new_game_state_copy)
+            new_game_states.append(simulated_game_state)
+    
+    for i in range(len(old_game_states)):
+        ogs = old_game_states[i]
+        ngs = new_game_states[i]
+        # iterate through board
+        for row in range(len(ngs["board_state"])):
+            for col in range(len(ngs["board_state"][0])):
+                # for every square iterate through the pieces
+                square = ngs["board_state"][row][col] or []
+                for piece in square:
+                    # if piece is white or black
+                    if "king" not in piece.get("type", "") and ("white" in piece.get("type", "") or "black" in piece.get("type", "")):
+                        side = piece["type"].split("_")[0]
+                        opposite_side = "white" if side == "black" else "black"
+                        moves_info = moves.get_moves(ogs, ngs, [row, col], piece)
+                        # add threatening moves to output
+                        output[opposite_side] = output[opposite_side].union({tuple(threatening_move) for threatening_move in moves_info["threatening_move"]})
+                    # if piece is neutral
+                    elif "neutral" in piece.get("type", ""):
+                        # add current square and all adjacent squares to both sides of unsafe position array
+                        deltas = [[0, 0], [1, 0], [0, 1], [-1, 0], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]
+
+                        for delta in deltas:
+                            position = (row+delta[0], col+delta[1])
+                            if position[0] < 0 or position[0] >= 8 or position[1] < 0 or position[1] >= 8:
+                                continue
+                            output["white"] = output["white"].union({position})
+                            output["black"] = output["black"].union({position})
     
     output = {side: [list(position_tuple) for position_tuple in output[side]] for side in output}
     # return {
@@ -1185,6 +1238,8 @@ def set_queen_as_position_in_play(old_game_state, new_game_state):
             for piece in square:
                 if piece["type"] == f"{moving_side}_queen":
                     new_game_state["position_in_play"] = [i, j]
+                    return False
+    return True
 
 
 # conditionally mutates new_game_state
@@ -1287,20 +1342,52 @@ def manage_check_status(old_game_state, new_game_state):
 # conditionally mutates new_game_state
 def end_game_on_checkmate(old_game_state, new_game_state):
     side_that_should_be_moving_next_turn = "white" if old_game_state["turn_count"] % 2 else "black"
-    if new_game_state["check"][side_that_should_be_moving_next_turn] and not can_king_move(old_game_state, new_game_state):
-        if side_that_should_be_moving_next_turn == "white":
-            new_game_state["white_defeat"] = True
-        else:
-            new_game_state["black_defeat"] = True
+    
+    if new_game_state["check"][side_that_should_be_moving_next_turn] and \
+    not can_king_move(old_game_state, new_game_state) and \
+    not can_other_pieces_prevent_check(side_that_should_be_moving_next_turn, old_game_state, new_game_state):
+        new_game_state[f"{side_that_should_be_moving_next_turn}_defeat"] = True
+
+
+def can_other_pieces_prevent_check(side, old_game_state, new_game_state):
+    for row in range(len(new_game_state["board_state"])):
+        for col in range(len(new_game_state["board_state"][0])):
+            square = new_game_state["board_state"][row][col] or []
+            for piece in square:
+                if "king" not in piece.get("type") and side in piece.get("type"):
+                    moves_info = moves.get_moves(old_game_state, new_game_state, [row, col], piece)
+
+                    for possible_move in moves_info["possible_moves"]:
+                        new_game_state_copy = copy.deepcopy(new_game_state)
+                        simulated_game_state = copy.deepcopy(new_game_state)
+
+                        simulated_game_state["board_state"][possible_move[0]][possible_move[1]] = simulated_game_state["board_state"][row][col]
+                        simulated_game_state["board_state"][row][col] = None
+                        manage_check_status(new_game_state_copy, simulated_game_state)
+                        if not simulated_game_state["check"][side]:
+                            return True
+
+                    for possible_capture in moves_info["possible_captures"]:
+                        new_game_state_copy = copy.deepcopy(new_game_state)
+                        simulated_game_state = copy.deepcopy(new_game_state)
+
+                        simulated_game_state["board_state"][possible_capture[0][0]][possible_capture[0][1]] = simulated_game_state["board_state"][row][col]
+                        simulated_game_state["board_state"][possible_capture[1][0]][possible_capture[1][1]] = None
+                        manage_check_status(new_game_state_copy, simulated_game_state)
+                        if not simulated_game_state["check"][side]:
+                            return True
+    return False
 
 
 def invalidate_game_if_player_moves_and_is_in_check(is_valid_game_state, new_game_state, moved_pieces):
     for moved_piece in moved_pieces:
         if moved_piece["previous_position"][0] is not None and moved_piece["previous_position"][1] is not None:
-            for side in ["white", "black"]:
-                if side in moved_piece["piece"].get("type") and new_game_state["check"][side]:
-                    logger.error(f"{side} moved but is in check")
-                    is_valid_game_state = False
+            side = moved_piece["side"]
+            if side == "neutral":
+                continue
+            if new_game_state["check"][side]:
+                logger.error(f"{side} moved but is in check")
+                is_valid_game_state = False
     return is_valid_game_state
 
 # conditionally mutates new_game_state
@@ -1314,6 +1401,8 @@ def set_next_king_as_position_in_play_if_in_check(new_game_state):
                 for piece in square:
                     if piece["type"] == f"{side_moving_next_turn}_king":
                         new_game_state["position_in_play"] = [i, j]
+                        return False
+    return True
 
 # conditionally mutates new_game_state
 def handle_draw_conditions(old_game_state, new_game_state):

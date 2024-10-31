@@ -1567,3 +1567,6 @@ def test_draw_with_check_and_no_possible_moves(game):
 def test_capture_behavior_when_neutral_and_normal_piece_are_on_same_square(game):
     # test both when the neutral monster has over 1hp and when it has 1 hp
     pass
+
+# TODO: switch from i in range(2) to side in ["white", "black"] for clarity
+# TODO: do the same for the other test files

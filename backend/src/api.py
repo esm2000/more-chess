@@ -260,7 +260,7 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         reset_position_in_play_queen = utils.set_queen_as_position_in_play(old_game_state, new_game_state)
 
     # if the side whose turn it is next has a king in check, set its king as the position in play
-    reset_position_in_play_king = utils.set_next_king_as_position_in_play_if_in_check(new_game_state)
+    reset_position_in_play_king = utils.set_next_king_as_position_in_play_if_in_check(old_game_state, new_game_state)
 
     # determine possibleMoves if a position_in_play is not [null, null]
     # and add to new_game_state 

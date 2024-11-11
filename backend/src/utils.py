@@ -345,9 +345,12 @@ def apply_bishop_energize_stacks_and_bishop_debuffs(old_game_state, new_game_sta
                     energize_stacks_to_add += 10
             for piece in new_game_state["board_state"][moved_piece["current_position"][0]][moved_piece["current_position"][1]]:
                 if "bishop" in piece["type"]:
-                    piece["energize_stacks"] += energize_stacks_to_add
+                    if "energize_stacks" not in piece:
+                        piece["energize_stacks"] = energize_stacks_to_add
+                    else:
+                        piece["energize_stacks"] += energize_stacks_to_add
 
-                    if piece["energize_stacks"] > 100:
+                    if piece.get("energize_stacks", 0) > 100:
                         piece["energize_stacks"] = 100
     # iterate through moved pieces to check to see if bishop is threatening to capture a piece and apply debuff
 
@@ -952,9 +955,12 @@ def handle_pieces_with_full_bishop_debuff_stacks(
                             is_valid_game_state = False
                         else:
                             for piece in new_game_state["board_state"][entry["current_position"][0]][entry["current_position"][1]]:
-                                piece["energize_stacks"] += 10
+                                if "energize_stacks" not in piece:
+                                    piece["energize_stacks"] = 10
+                                else:
+                                    piece["energize_stacks"] += 10
 
-                                if piece["energize_stacks"] > 100:
+                                if piece.get("energize_stacks", 0) > 100:
                                     piece["energize_stacks"] = 100
 
     return is_valid_game_state, should_increment_turn_count
@@ -1390,10 +1396,42 @@ def invalidate_game_if_player_moves_and_is_in_check(is_valid_game_state, new_gam
                 is_valid_game_state = False
     return is_valid_game_state
 
+
+# checks if the piece at position_in_play could potentially attempt to save the king;
+# this function only considers if the piece has a move to capture an enemy piece
+# that could be threatening the king, it does not guarantee that the king is safe
+# as other enemy pieces might also pose a threat that this piece can't address
+def is_position_in_play_valid_to_save_king(old_game_state, new_game_state):
+    position_in_play = new_game_state["position_in_play"]
+    if position_in_play == [None, None]:
+        return False
+    
+    square = new_game_state["board_state"][position_in_play[0]][position_in_play[1]]
+    piece = next((p for p in square if "neutral" not in p.get("type", "")), None)
+
+    if not piece:
+        return False
+    
+    # obtain possible moves for current piece
+    moves_info = moves.get_moves(old_game_state, new_game_state, position_in_play, piece)
+    # iterate through possible captures
+    for possible_capture in moves_info["possible_captures"]:
+        # check if the piece at each capture position has at least one threatening move on the current piece's king
+        enemy_position = possible_capture[1]
+        enemy_square = new_game_state["board_state"][enemy_position[0]][enemy_position[1]]
+        enemy_piece = next((p for p in enemy_square if "neutral" not in p.get("type", "")), None)
+        if moves.get_moves(old_game_state, new_game_state, enemy_position, enemy_piece)["threatening_move"]:
+            return True
+    return False
+
+
 # conditionally mutates new_game_state
-def set_next_king_as_position_in_play_if_in_check(new_game_state):
+def set_next_king_as_position_in_play_if_in_check(old_game_state, new_game_state):
     side_moving_next_turn = "white" if not bool(new_game_state["turn_count"] % 2) else "black"
-    if new_game_state["check"][side_moving_next_turn]:
+
+    # when a side has been in check for a turn or more, only reset if the current piece is unable to capture the piece threatening the king
+    if new_game_state["check"][side_moving_next_turn] and \
+    (not old_game_state["check"][side_moving_next_turn] or not is_position_in_play_valid_to_save_king(old_game_state, new_game_state)):
         for i in range(len(new_game_state["board_state"])):
             row = new_game_state["board_state"][i]
             for j in range(len(row)):

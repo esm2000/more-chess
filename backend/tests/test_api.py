@@ -1588,6 +1588,50 @@ def test_check_and_needs_a_non_king_piece_to_get_it_out_of_check_through_capture
         assert not game[f"{side}_defeat"] and not game[f"{opposite_side}_defeat"]
         assert game["captured_pieces"][side] == [f"{opposite_side}_queen"]
 
+def test_check_and_needs_a_king_piece_to_get_out_of_check_through_capture(game):
+    # test that when a king is in check and it's only move to get out is through capture, that it can get out of check
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
+
+        game_on_next_turn["board_state"][0][0] = [{"type": f"{side}_king"}]
+        game_on_next_turn["board_state"][1][0] = [{"type": f"{side}_pawn"}]
+        game_on_next_turn["board_state"][0][1] = [{"type": f"{side}_pawn"}]
+
+        game_on_next_turn["board_state"][7][7] = [{"type": f"{opposite_side}_king"}]
+        game_on_next_turn["board_state"][2][0] = [{"type": f"{opposite_side}_bishop"}]
+
+        game_on_next_turn["turn_count"] = 1 if side == "white" else 2
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+        
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][1][1] = game_on_next_turn["board_state"][2][0]
+        game_on_next_turn["board_state"][2][0] = None
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
+
+        assert game["check"][f"{side}"] and not game["check"][f"{opposite_side}"]
+        assert game["position_in_play"] == [0, 0]
+        assert game["possible_moves"] == [[1, 1]]
+        assert not game[f"{side}_defeat"] and not game[f"{opposite_side}_defeat"]
+
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][1][1] = game_on_next_turn["board_state"][0][0]
+        game_on_next_turn["board_state"][0][0] = None
+        game_on_next_turn["captured_pieces"][side].append(f"{opposite_side}_bishop")
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
+
+        assert not game["check"][f"{side}"] and not game["check"][f"{opposite_side}"]
+        assert game["position_in_play"] == [None, None]
+        assert game["possible_moves"] == []
+        assert not game[f"{side}_defeat"] and not game[f"{opposite_side}_defeat"]
+
 
 def test_checkmate(game):
     # test checkmate results in loss and that the game cannot be altered afterwards

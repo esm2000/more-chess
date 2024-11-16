@@ -1588,6 +1588,7 @@ def test_check_and_needs_a_non_king_piece_to_get_it_out_of_check_through_capture
         assert not game[f"{side}_defeat"] and not game[f"{opposite_side}_defeat"]
         assert game["captured_pieces"][side] == [f"{opposite_side}_queen"]
 
+
 def test_check_and_needs_a_king_piece_to_get_out_of_check_through_capture(game):
     # test that when a king is in check and it's only move to get out is through capture, that it can get out of check
     for side in ["white", "black"]:
@@ -1735,7 +1736,30 @@ def test_king_cant_put_itself_in_check(game):
 
 def test_king_cant_get_close_to_king(game):
     # test that king can't move next to another king
-    pass
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
+        # one other piece is needed to not trigger a stalemate/draw
+        game_on_next_turn["board_state"][0][0] = [{"type": f"{side}_bishop"}]
+        game_on_next_turn["board_state"][3][2] = [{"type": f"{side}_king"}]
+
+        game_on_next_turn["board_state"][3][4] = [{"type": f"{opposite_side}_king"}]
+
+        game_on_next_turn["turn_count"] = 2 if side == "white" else 1
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+        
+        with pytest.raises(HTTPException):
+            game_on_next_turn = copy.deepcopy(game)
+            game_on_next_turn["board_state"][3][3] = game_on_next_turn["board_state"][3][2]
+            game_on_next_turn["board_state"][3][2] = None
+
+            game_state = api.GameState(**game_on_next_turn)
+            game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
+
 
 def test_game_ends_when_monster_spawns_on_top_of_king(game):
     # test that the game ends when a monster spawns on top of a king

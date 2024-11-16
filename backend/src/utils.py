@@ -1097,6 +1097,7 @@ def get_unsafe_positions_for_kings(old_game_state, new_game_state):
             old_game_states.append(new_game_state_copy)
             new_game_states.append(simulated_game_state)
     
+    adjacent_deltas = [[0, 0], [1, 0], [0, 1], [-1, 0], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]
     for i in range(len(old_game_states)):
         ogs = old_game_states[i]
         ngs = new_game_states[i]
@@ -1113,12 +1114,22 @@ def get_unsafe_positions_for_kings(old_game_state, new_game_state):
                         moves_info = moves.get_moves(ogs, ngs, [row, col], piece)
                         # add threatening moves to output
                         output[opposite_side] = output[opposite_side].union({tuple(threatening_move) for threatening_move in moves_info["threatening_move"]})
+                    elif "king" in piece.get("type", ""):
+                        side = piece["type"].split("_")[0]
+                        opposite_side = "white" if side == "black" else "black"
+                        for delta in adjacent_deltas:
+                            if delta == [0, 0]:
+                                continue
+                            position = (row+delta[0], col+delta[1])
+                            if position[0] < 0 or position[0] >= 8 or position[1] < 0 or position[1] >= 8:
+                                continue
+                            adjacent_square = ngs["board_state"][position[0]][position[1]] or []
+                            if any(["king" in p.get("type") for p in adjacent_square]):
+                                output[side] = output[side].union({position})
                     # if piece is neutral
                     elif "neutral" in piece.get("type", ""):
                         # add current square and all adjacent squares to both sides of unsafe position array
-                        deltas = [[0, 0], [1, 0], [0, 1], [-1, 0], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]
-
-                        for delta in deltas:
+                        for delta in adjacent_deltas:
                             position = (row+delta[0], col+delta[1])
                             if position[0] < 0 or position[0] >= 8 or position[1] < 0 or position[1] >= 8:
                                 continue

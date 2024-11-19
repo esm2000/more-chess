@@ -1763,7 +1763,32 @@ def test_king_cant_get_close_to_king(game):
 
 def test_game_ends_when_monster_spawns_on_top_of_king(game):
     # test that the game ends when a monster spawns on top of a king
-    pass
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
+
+        game_on_next_turn["board_state"][4][7] = [{"type": f"{side}_king"}]
+        game_on_next_turn["board_state"][7][7] = [{"type": f"{opposite_side}_king"}]
+        game_on_next_turn["board_state"][0][0] = [{"type": f"black_rook"}]
+        game_on_next_turn["turn_count"] = 9
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+        game_on_next_turn = copy.deepcopy(game)
+        
+        game_on_next_turn["board_state"][0][1] = game_on_next_turn["board_state"][0][0]
+        game_on_next_turn["board_state"][0][0] = None
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
+    
+        assert game[f"{side}_defeat"] and not game[f"{opposite_side}_defeat"]
+        assert all(["king" not in piece.get("type") for piece in game["board_state"][4][7]])
+        assert any([piece.get("type") == "neutral_dragon" for piece in game["board_state"][4][7]])
+
 
 def test_game_ends_when_king_stays_near_neutral_monster(game):
     # test that the game ends when a king stays near a neutral monster 

@@ -253,7 +253,7 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
             # }
     # mutates new_game_state
     utils.record_moved_pieces_this_turn(new_game_state, moved_pieces)
-    
+    print(f'{new_game_state["position_in_play"]=}')
     # if queen extra turn flag is set, find correct queen and set its position as the position_in_play
     reset_position_in_play_queen = True
     if new_game_state["queen_reset"]:
@@ -261,6 +261,7 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
 
     # if the side whose turn it is next has a king in check, set its king as the position in play
     reset_position_in_play_king = utils.set_next_king_as_position_in_play_if_in_check(old_game_state, new_game_state)
+    print(f'{new_game_state["position_in_play"]=}')
 
     # determine possibleMoves if a position_in_play is not [null, null]
     # and add to new_game_state 

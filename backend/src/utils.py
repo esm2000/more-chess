@@ -133,6 +133,7 @@ def get_piece_value(piece_type):
 
 
 def spawn_neutral_monsters(game_state):
+    cached_game_state = copy.deepcopy(game_state)
     turn_count = game_state["turn_count"]
     monster_info = copy.deepcopy(MONSTER_INFO)
 
@@ -171,6 +172,8 @@ def spawn_neutral_monsters(game_state):
                     if game_state["board_state"][monster_position_row][monster_position_col][i].get("type") == "neutral_board_herald":
                         game_state["board_state"][monster_position_row][monster_position_col].pop(i)
 
+    # since neutral monsters can check kings
+    manage_check_status(cached_game_state, game_state)
 
 def carry_out_neutral_monster_attacks(game_state):
     monster_info = copy.deepcopy(MONSTER_INFO)
@@ -632,6 +635,7 @@ def invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_gam
 
 # determine possibleMoves if a position_in_play is not [null, null]
 def determine_possible_moves(old_game_state, new_game_state, moved_pieces, player, reset_position_in_play):
+    print(f'{new_game_state["position_in_play"]=}')
     has_non_neutral_piece_moved = False
     for moved_piece in moved_pieces:
         if moved_piece["side"] == "neutral":
@@ -643,7 +647,9 @@ def determine_possible_moves(old_game_state, new_game_state, moved_pieces, playe
         square = new_game_state["board_state"][new_game_state["position_in_play"][0]][new_game_state["position_in_play"][1]]
         piece_in_play = None
         for piece in square:
-            if (player and "white" in piece.get('type')) or (not player and "black" in piece.get('type')):
+            if (player and "white" in piece.get('type')) \
+                or (not player and "black" in piece.get('type')) \
+                or ("king" in piece.get('type')):
                 piece_in_play = piece
 
         if not piece_in_play:

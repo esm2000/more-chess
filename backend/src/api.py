@@ -208,22 +208,9 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         logger.error("A king has been captured or has disappeared from board")
         is_valid_game_state = False
 
-    # utilize get_unsafe_positions_for_kings() to handle granting and removing check
-    # if a king has check protection, exhaust one stack and prevent check for that turn
-    utils.manage_check_status(old_game_state, new_game_state)
+    
 
-    # check for checkmate by seeing if the king has anywhere to go
-    utils.end_game_on_checkmate(old_game_state, new_game_state)
-
-    # if pieces have moved and player was in check last turn and is in check this turn invalidate game
-    is_valid_game_state = utils.invalidate_game_if_player_moves_and_is_in_check(is_valid_game_state, new_game_state, moved_pieces)
-
-    if not is_valid_game_state:
-        raise HTTPException(status_code=400, detail=utils.INVALID_GAME_STATE_ERROR_MESSAGE)
-
-    # new game's turn count is representative of what side should be moving next turn (even is white, odd is black)
-    if should_increment_turn_count and utils.are_all_non_king_pieces_stunned(new_game_state) and not utils.can_king_move(old_game_state, new_game_state):
-        utils.increment_turn_count(old_game_state, new_game_state, moved_pieces, 2)
+    
     
     # figure out capture point advantage, update gold count, and reassign pawn buffs
     # all three functions mutate new_game_state
@@ -237,6 +224,25 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
 
     # spawn neutral monsters when appropriate
     utils.spawn_neutral_monsters(new_game_state)
+
+    # utilize get_unsafe_positions_for_kings() to handle granting and removing check
+    # if a king has check protection, exhaust one stack and prevent check for that turn
+    utils.manage_check_status(old_game_state, new_game_state)
+    
+    
+    # check for checkmate by seeing if the king has anywhere to go
+    utils.end_game_on_checkmate(old_game_state, new_game_state)
+
+    # if pieces have moved and player was in check last turn and is in check this turn invalidate game
+    is_valid_game_state = utils.invalidate_game_if_player_moves_and_is_in_check(is_valid_game_state, old_game_state, new_game_state, moved_pieces)
+
+    if not is_valid_game_state:
+        raise HTTPException(status_code=400, detail=utils.INVALID_GAME_STATE_ERROR_MESSAGE)
+    
+    # new game's turn count is representative of what side should be moving next turn (even is white, odd is black)
+    if should_increment_turn_count and utils.are_all_non_king_pieces_stunned(new_game_state) and not utils.can_king_move(old_game_state, new_game_state):
+        
+        utils.increment_turn_count(old_game_state, new_game_state, moved_pieces, 2)
     
     # heal neutral monsters after they've haven't been attacked for 3 turns
     utils.heal_neutral_monsters(old_game_state, new_game_state)
@@ -253,7 +259,6 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
             # }
     # mutates new_game_state
     utils.record_moved_pieces_this_turn(new_game_state, moved_pieces)
-    print(f'{new_game_state["position_in_play"]=}')
     # if queen extra turn flag is set, find correct queen and set its position as the position_in_play
     reset_position_in_play_queen = True
     if new_game_state["queen_reset"]:
@@ -261,7 +266,6 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
 
     # if the side whose turn it is next has a king in check, set its king as the position in play
     reset_position_in_play_king = utils.set_next_king_as_position_in_play_if_in_check(old_game_state, new_game_state)
-    print(f'{new_game_state["position_in_play"]=}')
 
     # determine possibleMoves if a position_in_play is not [null, null]
     # and add to new_game_state 

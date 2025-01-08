@@ -171,9 +171,7 @@ def spawn_neutral_monsters(game_state):
                 for i in range(len(game_state["board_state"][monster_position_row][monster_position_col])):
                     if game_state["board_state"][monster_position_row][monster_position_col][i].get("type") == "neutral_board_herald":
                         game_state["board_state"][monster_position_row][monster_position_col].pop(i)
-
-    # since neutral monsters can check kings
-    manage_check_status(cached_game_state, game_state)
+                        
 
 def carry_out_neutral_monster_attacks(game_state):
     monster_info = copy.deepcopy(MONSTER_INFO)
@@ -635,7 +633,6 @@ def invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_gam
 
 # determine possibleMoves if a position_in_play is not [null, null]
 def determine_possible_moves(old_game_state, new_game_state, moved_pieces, player, reset_position_in_play):
-    print(f'{new_game_state["position_in_play"]=}')
     has_non_neutral_piece_moved = False
     for moved_piece in moved_pieces:
         if moved_piece["side"] == "neutral":
@@ -1402,17 +1399,33 @@ def can_other_pieces_prevent_check(side, old_game_state, new_game_state):
     return False
 
 
-def invalidate_game_if_player_moves_and_is_in_check(is_valid_game_state, new_game_state, moved_pieces):
+def invalidate_game_if_player_moves_and_is_in_check(is_valid_game_state, old_game_state, new_game_state, moved_pieces):
     for moved_piece in moved_pieces:
         if moved_piece["previous_position"][0] is not None and moved_piece["previous_position"][1] is not None:
             side = moved_piece["side"]
             if side == "neutral":
                 continue
-            if new_game_state["check"][side]:
+            if new_game_state["check"][side] and not is_check_due_to_neutral_monster_spawn_this_turn(old_game_state, new_game_state, side):
                 logger.error(f"{side} moved but is in check")
                 is_valid_game_state = False
     return is_valid_game_state
 
+
+def is_check_due_to_neutral_monster_spawn_this_turn(old_game_state, new_game_state, side):
+    if old_game_state["check"][side]:
+        return False
+    
+    simulated_game_state = copy.deepcopy(new_game_state)
+    
+    for monster in MONSTER_INFO:
+        position = MONSTER_INFO[monster]["position"]
+        square = simulated_game_state["board_state"][position[0]][position[1]] or []
+        filtered_square = [piece for piece in square if "neutral" in piece.get("type")]
+        simulated_game_state["board_state"][position[0]][position[1]] = filtered_square
+    
+    manage_check_status(new_game_state, simulated_game_state)
+    return simulated_game_state["check"][side]
+    
 
 # checks if the piece at position_in_play could potentially attempt to save the king;
 # this function only considers if the piece has a move to capture an enemy piece

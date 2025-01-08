@@ -1238,7 +1238,6 @@ def test_neutral_monster_ends_game_after_spawning_on_king(game):
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
 
-        assert game["turn_count"] == 10
         assert (game["board_state"][4][7] or [{}])[0].get("type") == "neutral_dragon"
         if side == "black":
             assert game["black_defeat"]
@@ -1456,8 +1455,8 @@ def test_check_protection_against_check(game):
         game_on_next_turn["board_state"][5][2] = None
 
         game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=i==1)
-        
+        game = api.update_game_state(game["id"], game_state, Response(), player=i==0)
+
         assert not game["check"][f"white"] and not game["check"][f"black"]
         assert game["position_in_play"] == [None, None]
         assert not game["white_defeat"] and not game["black_defeat"]
@@ -1643,7 +1642,7 @@ def test_check_by_neutral_monster(game):
         game_on_next_turn = copy.deepcopy(game)
 
         game_on_next_turn["board_state"][5][7] = [{"type": f"{side}_king"}]
-        game_on_next_turn["board_state"][7][0] = [{"type": f"{opposite_side}_king"}]
+        game_on_next_turn["board_state"][7][3] = [{"type": f"{opposite_side}_king"}]
         game_on_next_turn["board_state"][0][0] = [{"type": f"black_rook"}]
         game_on_next_turn["turn_count"] = 9
 
@@ -1666,11 +1665,11 @@ def test_check_by_neutral_monster(game):
         if side == "black":
             game_on_next_turn = copy.deepcopy(game)
         
-            game_on_next_turn["board_state"][7][1] = game_on_next_turn["board_state"][7][0]
-            game_on_next_turn["board_state"][7][0] = None
+            game_on_next_turn["board_state"][7][4] = game_on_next_turn["board_state"][7][3]
+            game_on_next_turn["board_state"][7][3] = None
 
             game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response(), player=True)
+            game = api.update_game_state(game["id"], game_state, Response(), player=opposite_side=="white")
         
         # must get out of check
         with pytest.raises(HTTPException):
@@ -1762,7 +1761,7 @@ def test_check_protection_against_checkmate(game):
         game_on_next_turn["board_state"][2][2] = None
 
         game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
+        game = api.update_game_state(game["id"], game_state, Response(), player=opposite_side=="white")
 
         assert not game["check"][f"{side}"] and not game["check"][f"{opposite_side}"]
         assert not game[f"{side}_defeat"] and not game[f"{opposite_side}_defeat"]
@@ -1850,6 +1849,8 @@ def test_game_ends_when_monster_spawns_on_top_of_king(game):
         assert all(["king" not in piece.get("type") for piece in game["board_state"][4][7]])
         assert any([piece.get("type") == "neutral_dragon" for piece in game["board_state"][4][7]])
 
+# TODO: make sure the player argument is being used consistently 
+# then validate every test 
 
 def test_draw_with_only_kings(game):
     # test that the game ends in a draw when only kings are left

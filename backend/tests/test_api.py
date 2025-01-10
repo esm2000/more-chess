@@ -114,7 +114,7 @@ def test_alter_game(game):
     game_on_next_turn["board_state"][2][0] = game_on_next_turn["board_state"][1][0]
     game_on_next_turn["board_state"][1][0] = None
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
+    game = api.update_game_state(game["id"], game_state, Response(), player=False, disable_turn_check=True)
 
     assert game["board_state"][2][0][0]["type"] == "black_pawn"
     assert game["board_state"][1][0] is None
@@ -135,7 +135,7 @@ def test_alter_game(game):
     game_on_next_turn["board_state"][5][1] = game_on_next_turn["board_state"][6][1]
     game_on_next_turn["board_state"][6][1] = None
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
+    game = api.update_game_state(game["id"], game_state, Response(), player=False, disable_turn_check=True)
 
     assert game["board_state"][4][7][0]["type"] == "neutral_dragon"
     assert game["board_state"][3][0][0]["type"] == "neutral_board_herald"
@@ -293,19 +293,20 @@ def test_alter_game(game):
     assert game["turn_count"] == 43
 
     # assert that neutral monsters can't move
-    with pytest.raises(HTTPException):
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["board_state"][4][6] = game_on_next_turn["board_state"][4][7]
-        game_on_next_turn["board_state"][4][7] = None
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
+    for is_player in [True, False]:
+        with pytest.raises(HTTPException):
+            game_on_next_turn = copy.deepcopy(game)
+            game_on_next_turn["board_state"][4][6] = game_on_next_turn["board_state"][4][7]
+            game_on_next_turn["board_state"][4][7] = None
+            game_state = api.GameState(**game_on_next_turn)
+            game = api.update_game_state(game["id"], game_state, Response(), player=is_player, disable_turn_check=True)
 
-    with pytest.raises(HTTPException):
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["board_state"][3][1] = game_on_next_turn["board_state"][3][0]
-        game_on_next_turn["board_state"][3][0] = None
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
+        with pytest.raises(HTTPException):
+            game_on_next_turn = copy.deepcopy(game)
+            game_on_next_turn["board_state"][3][1] = game_on_next_turn["board_state"][3][0]
+            game_on_next_turn["board_state"][3][0] = None
+            game_state = api.GameState(**game_on_next_turn)
+            game = api.update_game_state(game["id"], game_state, Response(), player=is_player, disable_turn_check=True)
 
     # assert that additional captured pieces can't be added from nowhere
     for side in ["white", "black"]:
@@ -404,7 +405,7 @@ def test_alter_game(game):
                 game_on_next_turn["captured_pieces"]["black"].append(f"white_{piece_type}")
             game_state = api.GameState(**game_on_next_turn)
             if piece_type != "king":
-                game = api.update_game_state(game["id"], game_state, Response(), player=i==1, disable_turn_check=True)
+                game = api.update_game_state(game["id"], game_state, Response(), player=i==0, disable_turn_check=True)
                 if not i:
                     assert game["board_state"][3][4][0]["type"] == "white_pawn"
                     assert game["board_state"][4][3] is None
@@ -419,7 +420,7 @@ def test_alter_game(game):
         # assert that kings can't be captured
             else:
                 with pytest.raises(HTTPException):
-                    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
+                    game = api.update_game_state(game["id"], game_state, Response(), player=i==0, disable_turn_check=True)
 
     # validate pawn exchange
             if piece_type == "pawn":
@@ -451,7 +452,7 @@ def test_alter_game(game):
                 game_on_next_turn["board_state"][7][3] = game_on_next_turn["board_state"][6][3]
                 game_on_next_turn["board_state"][6][3] = None
             game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response(), player=i==1, disable_turn_check=True)
+            game = api.update_game_state(game["id"], game_state, Response(), player=i==0, disable_turn_check=True)
             
             turn_count_for_pawn_exchange_initiation = game["turn_count"]
             game_on_next_turn = copy.deepcopy(game)
@@ -460,7 +461,7 @@ def test_alter_game(game):
             else:
                 game_on_next_turn["board_state"][7][3] = [{"type": f"black_{piece_type}"}]
             game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response(), player=i==1, disable_turn_check=True)
+            game = api.update_game_state(game["id"], game_state, Response(), player=i==0, disable_turn_check=True)
             turn_count_for_end_of_pawn_exhange = game["turn_count"]
 
             assert turn_count_for_pawn_exchange_initiation == turn_count_for_end_of_pawn_exhange
@@ -1848,9 +1849,7 @@ def test_game_ends_when_monster_spawns_on_top_of_king(game):
         assert game[f"{side}_defeat"] and not game[f"{opposite_side}_defeat"]
         assert all(["king" not in piece.get("type") for piece in game["board_state"][4][7]])
         assert any([piece.get("type") == "neutral_dragon" for piece in game["board_state"][4][7]])
-
-# TODO: make sure the player argument is being used consistently 
-# then validate every test 
+        
 
 def test_draw_with_only_kings(game):
     # test that the game ends in a draw when only kings are left

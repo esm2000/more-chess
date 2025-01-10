@@ -1849,11 +1849,37 @@ def test_game_ends_when_monster_spawns_on_top_of_king(game):
         assert game[f"{side}_defeat"] and not game[f"{opposite_side}_defeat"]
         assert all(["king" not in piece.get("type") for piece in game["board_state"][4][7]])
         assert any([piece.get("type") == "neutral_dragon" for piece in game["board_state"][4][7]])
-        
+
 
 def test_draw_with_only_kings(game):
     # test that the game ends in a draw when only kings are left
-    pass
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
+
+        game_on_next_turn["board_state"][0][0] = [{"type": f"{side}_king"}]
+
+        game_on_next_turn["board_state"][7][7] = [{"type": f"{opposite_side}_king"}]
+        game_on_next_turn["board_state"][0][1] = [{"type": f"{opposite_side}_pawn"}]
+
+        game_on_next_turn["turn_count"] = 2 if side == "white" else 1
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+        
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][0][1] = game_on_next_turn["board_state"][0][0]
+        game_on_next_turn["board_state"][0][0] = None
+        game_on_next_turn["captured_pieces"]["white"].append(f"{opposite_side}_pawn")
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
+
+        assert not game["check"][f"{side}"] and not game["check"][f"{opposite_side}"]
+        assert game[f"{side}_defeat"] and game[f"{opposite_side}_defeat"]
+
 
 def test_draw_with_check_and_no_possible_moves(game):
     # test that the game ends in a draw when a player has no possible safe moves to make

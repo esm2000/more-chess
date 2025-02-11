@@ -208,10 +208,6 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         logger.error("A king has been captured or has disappeared from board")
         is_valid_game_state = False
 
-    
-
-    
-    
     # figure out capture point advantage, update gold count, and reassign pawn buffs
     # all three functions mutate new_game_state
     utils.update_gold_count(old_game_state, new_game_state, gold_spent)

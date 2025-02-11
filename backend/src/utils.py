@@ -1016,9 +1016,13 @@ def are_all_non_king_pieces_stunned(new_game_state):
     return output
 
 
-def can_king_move(old_game_state, new_game_state):
+def can_king_move(old_game_state, new_game_state, turn_incremented=False):
     new_game_turn_count = new_game_state["turn_count"]
-    side_that_should_be_moving_next_turn = "white" if not new_game_turn_count % 2 else "black"
+    if not turn_incremented:
+        side_that_should_be_moving_next_turn = "white" if not new_game_turn_count % 2 else "black"
+    else:
+        side_that_should_be_moving_next_turn = "white" if new_game_turn_count % 2 else "black"
+
     output = False
     unsafe_positions = get_unsafe_positions_for_kings(old_game_state, new_game_state)
     for i in range(len(new_game_state["board_state"])):
@@ -1514,3 +1518,45 @@ def handle_draw_conditions(old_game_state, new_game_state):
     if only_king_can_move and is_king_immobile:
         new_game_state["white_defeat"] = True
         new_game_state["black_defeat"] = True
+
+    # condition: no moves are available
+    tie_game_if_no_moves_are_possible_next_turn(old_game_state, new_game_state)
+
+
+# conditionally mutates new_game_state
+# it's assumed that this function is used after the turn is incremented
+def tie_game_if_no_moves_are_possible_next_turn(old_game_state, new_game_state):
+    # if one or both sides have alread lost no reason to continue
+    if new_game_state["white_defeat"] or new_game_state["black_defeat"]:
+        return 
+    
+    new_game_turn_count = new_game_state["turn_count"]
+    side_that_should_be_moving_next_turn = "white" if new_game_turn_count % 2 else "black"
+
+    if can_king_move(old_game_state, new_game_state, turn_incremented=True):
+        return
+    
+    tie_game = True
+    for i in range(len(new_game_state["board_state"])):
+        for j in range(len(new_game_state["board_state"][0])):
+            square = new_game_state["board_state"][i][j]
+
+            if square:
+                for piece in square:
+                    if side_that_should_be_moving_next_turn in piece.get("type", "") and \
+                        "king" not in piece.get("type", ""):
+                        tie_game = len(
+                                moves.get_moves(
+                                    old_game_state,
+                                    new_game_state,
+                                    [i, j],
+                                    piece
+                                )["possible_moves"]
+                        ) == 0
+            if not tie_game:
+                break
+    
+    if tie_game:
+        new_game_state["white_defeat"] = True
+        new_game_state["black_defeat"] = True
+    

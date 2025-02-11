@@ -385,6 +385,9 @@ def test_alter_game(game):
             game_on_next_turn["board_state"][4][3] = [{"type": "white_pawn", "pawn_buff": 0}] if not i else [{"type": f"white_{piece_type}"}]
             if piece_type == "bishop":
                 game_on_next_turn["board_state"][3 if not i else 4][4 if not i else 3][0]["energize_stacks"] = 0
+            if piece_type != "king":
+                game_on_next_turn["board_state"][7][2] = [{"type": f"white_king"}]
+                game_on_next_turn["board_state"][0][5] = [{"type": f"black_king"}]
             game_on_next_turn["graveyard"] = []
             game_on_next_turn["gold_count"] = {
                 "white": 0,
@@ -410,7 +413,7 @@ def test_alter_game(game):
                     assert game["board_state"][3][4][0]["type"] == "white_pawn"
                     assert game["board_state"][4][3] is None
                     # none of black's pieces are left so its turn is skipped
-                    assert game["turn_count"] == 2
+                    assert game["turn_count"] == 1
                     assert game["capture_point_advantage"] == ["white", piece_values[piece_type]]
                 else:
                     assert game["board_state"][4][3][0]["type"] == "black_pawn"
@@ -421,26 +424,20 @@ def test_alter_game(game):
             else:
                 with pytest.raises(HTTPException):
                     game = api.update_game_state(game["id"], game_state, Response(), player=i==0, disable_turn_check=True)
-
     # validate pawn exchange
             if piece_type == "pawn":
                 continue
+            game = clear_game(game)
             game_on_next_turn = copy.deepcopy(game)
-            game_on_next_turn["turn_count"] = 0
-            game_on_next_turn["board_state"] = copy.deepcopy(empty_game["board_state"])
             if not i:
                 game_on_next_turn["board_state"][1][3] = [{"type": "white_pawn", "pawn_buff": 0}] 
                 game_on_next_turn["board_state"][3][4] = [{"type": f"black_king"}]
+                game_on_next_turn["board_state"][7][2] = [{"type": f"white_king"}]
             else:
                 game_on_next_turn["board_state"][6][3] = [{"type": "black_pawn", "pawn_buff": 0}] 
                 game_on_next_turn["board_state"][3][4] = [{"type": f"white_king"}]
-            game_on_next_turn["graveyard"] = []
-            game_on_next_turn["gold_count"] = {
-                "white": 0,
-                "black": 0
-            }
-            game_on_next_turn["captured_pieces"] = {"white": [], "black": []}
-            del game_on_next_turn["previous_state"]
+                game_on_next_turn["board_state"][0][5] = [{"type": f"black_king"}]
+        
             game_state = api.GameState(**game_on_next_turn)
             game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
@@ -453,7 +450,7 @@ def test_alter_game(game):
                 game_on_next_turn["board_state"][6][3] = None
             game_state = api.GameState(**game_on_next_turn)
             game = api.update_game_state(game["id"], game_state, Response(), player=i==0, disable_turn_check=True)
-            
+
             turn_count_for_pawn_exchange_initiation = game["turn_count"]
             game_on_next_turn = copy.deepcopy(game)
             if not i:
@@ -465,7 +462,7 @@ def test_alter_game(game):
             turn_count_for_end_of_pawn_exhange = game["turn_count"]
 
             assert turn_count_for_pawn_exchange_initiation == turn_count_for_end_of_pawn_exhange
-            assert len(game["board_state"][0 if not i else 7][3]) == 1
+            assert len(game["board_state"][0 if not i else 7][3] or []) == 1
             assert game["board_state"][0 if not i else 7][3][0]["type"] == f"{'white' if not i else 'black'}_{piece_type}"
             assert game["previous_state"]["board_state"][0 if not i else 7][3][0]["type"] == f"{'white' if not i else 'black'}_pawn"
 
@@ -1881,10 +1878,37 @@ def test_draw_with_only_kings(game):
         assert game[f"{side}_defeat"] and game[f"{opposite_side}_defeat"]
 
 
-def test_draw_with_check_and_no_possible_moves(game):
+def test_draw_with_no_possible_moves(game):
     # test that the game ends in a draw when a player has no possible safe moves to make
-    pass
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
 
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
+
+        game_on_next_turn["board_state"][0][0] = [{"type": f"{side}_king"}]
+
+        game_on_next_turn["board_state"][1][7] = [{"type": f"{opposite_side}_rook"}]
+        game_on_next_turn["board_state"][7][7] = [{"type": f"{opposite_side}_rook"}]
+        game_on_next_turn["board_state"][6][6] = [{"type": f"{opposite_side}_king"}]
+
+        game_on_next_turn["turn_count"] = 71 if side == "white" else 70
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][7][1] = game_on_next_turn["board_state"][7][7]
+        game_on_next_turn["board_state"][7][7] = None
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), player=opposite_side=="white")
+
+        assert not game["check"][f"{side}"] and not game["check"][f"{opposite_side}"]
+        assert game[f"{side}_defeat"] and game[f"{opposite_side}_defeat"]
+
+
+# TODO: FIX REGRESSIONS CAUSED BY LOGIC FOR test_draw_with_no_possible_moves()
 def test_capture_behavior_when_neutral_and_normal_piece_are_on_same_square(game):
     # test both when the neutral monster has over 1hp and when it has 1 hp
     pass

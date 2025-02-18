@@ -1746,7 +1746,6 @@ def test_check_protection_against_checkmate(game):
         game_on_next_turn["board_state"][0][0] = [{"type": f"{side}_king", "check_protection": 1}]
 
         game_on_next_turn["board_state"][2][7] = [{"type": f"{opposite_side}_king"}]
-        game_on_next_turn["board_state"][6][1] = [{"type": f"{opposite_side}_queen"}]
         game_on_next_turn["board_state"][2][2] = [{"type": f"{opposite_side}_rook"}]
 
         game_on_next_turn["turn_count"] = 1 if side == "white" else 2

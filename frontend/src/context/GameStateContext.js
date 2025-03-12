@@ -129,7 +129,7 @@ export function GameStateProvider({children}) {
         .then(response => response.json())
         .then(result => {
             if (method === "POST") {
-                console.log(`Game ID - ${result["id"]}`)
+                console.log(`POST Game ID - ${result["id"]}`)
             } else {
                 console.log(`GET Game ${result["id"]}`)
             }

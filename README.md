@@ -176,6 +176,8 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
     - finalize shop and pawn exchange logic (and UI)
     - expand getPossibleMoves() to be able to dynamically take into consideration neutral monster buffs (while finalizing UI)
     - clean up PUT game endpoint for easier readibility and maintainability
+* Finishing touches on frontend
+    - Ensure the player can deselect a selected piece
 * Enhance instructions with local database setup
 * AI - https://www.chessprogramming.org/Evaluation#Publications
     - rudimentary EASY enemy AI (chooses random moves from possible moves)

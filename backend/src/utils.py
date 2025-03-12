@@ -5,7 +5,7 @@ import datetime
 from fastapi import HTTPException, Response
 from mocks.empty_game import empty_game
 import random
-from src.logging import logger
+from src.log import logger
 import src.api as api
 import src.moves as moves
 import traceback
@@ -537,9 +537,11 @@ def invalidate_game_if_monster_has_moved(is_valid_game_state, moved_pieces):
 def is_neutral_monster_killed(moved_pieces):
     neutral_monster_slain_position = get_neutral_monster_slain_position(moved_pieces)
     was_neutral_monster_killed = False
+
     for moved_piece in moved_pieces:
         if neutral_monster_slain_position:
             if moved_piece["side"] != "neutral" and \
+            moved_piece["current_position"][0] is not None and \
             abs(moved_piece["current_position"][0] - neutral_monster_slain_position[0]) in [0, 1] and \
             abs(moved_piece["current_position"][1] - neutral_monster_slain_position[1]) in [0, 1]:
                 was_neutral_monster_killed = True
@@ -606,8 +608,14 @@ def damage_neutral_monsters(new_game_state, moved_pieces):
                                 new_game_state["board_state"][MONSTER_INFO[neutral_monster]["position"][0]][MONSTER_INFO[neutral_monster]["position"][1]][i]["health"] = piece["health"] - 1
                     
                                 if new_game_state["board_state"][MONSTER_INFO[neutral_monster]["position"][0]][MONSTER_INFO[neutral_monster]["position"][1]][i]["health"] < 1:
-                                    new_game_state["board_state"][MONSTER_INFO[neutral_monster]["position"][0]][MONSTER_INFO[neutral_monster]["position"][1]].pop(i)
+                                    neutral_monster_piece = new_game_state["board_state"][MONSTER_INFO[neutral_monster]["position"][0]][MONSTER_INFO[neutral_monster]["position"][1]].pop(i)
                                     new_game_state["captured_pieces"][moved_piece["side"]].append(neutral_monster)
+                                    moved_pieces.append({
+                                        "piece": neutral_monster_piece,
+                                        "side": "neutral",
+                                        "previous_position": MONSTER_INFO[neutral_monster]["position"],
+                                        "current_position": [None, None]
+                                    })
 
 # if any new pieces in the captured pieces array have not been captured this turn, invalidate
 # (it's imperative that this code section is placed after we've updated captured_pieces)

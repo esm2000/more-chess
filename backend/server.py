@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from src.api import router as api_router
-from src.logging import logger
+from src.log import logger
 
 app = FastAPI()
 

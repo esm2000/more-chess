@@ -9,7 +9,7 @@ from mocks.starting_game import starting_game
 # prevents circular import
 import src.moves as moves 
 from src.database import mongo_client
-from src.logging import logger
+from src.log import logger
 import src.utils as utils
 
 router = APIRouter(prefix="/api")
@@ -134,7 +134,7 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     )
 
     # if no pieces have moved and the position in play has changed, retain the current turn
-    if utils.was_a_new_position_in_play_selected(moved_pieces, old_game_state, new_game_state):
+    if utils.was_a_new_position_in_play_selected(moved_pieces, old_game_state, new_game_state) and new_game_state["position_in_play"][0] is not None and new_game_state["position_in_play"][1] is not None:
         should_increment_turn_count = False
         is_valid_game_state = utils.does_position_in_play_match_turn(old_game_state, new_game_state) and is_valid_game_state
     
@@ -194,7 +194,7 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     )
     # mutates new_game_state object
     utils.clean_bishop_special_captures(new_game_state)
-    # mutates new_game_state object
+    # mutates new_game_state and moved_pieces objects
     utils.damage_neutral_monsters(new_game_state, moved_pieces)
     is_valid_game_state = utils.invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_game_state, new_game_state, moved_pieces, is_valid_game_state, is_pawn_exchange_possible)
 

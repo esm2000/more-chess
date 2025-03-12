@@ -1907,10 +1907,65 @@ def test_draw_with_no_possible_moves(game):
         assert game[f"{side}_defeat"] and game[f"{opposite_side}_defeat"]
 
 
-# TODO: FIX REGRESSIONS CAUSED BY LOGIC FOR test_draw_with_no_possible_moves()
 def test_capture_behavior_when_neutral_and_normal_piece_are_on_same_square(game):
     # test both when the neutral monster has over 1hp and when it has 1 hp
-    pass
+    for test_case in ["damage", "slay"]:
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
+
+        game_on_next_turn["board_state"][0][0] = [{"type": f"white_king"}]
+        game_on_next_turn["board_state"][7][0] = [{"type": f"black_king"}]
+        game_on_next_turn["board_state"][1][7] = [{"type": f"white_rook"}]
+        game_on_next_turn["board_state"][7][7] = [{"type": f"black_rook"}]
+
+        game_on_next_turn["turn_count"] = 9
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][6][0] = game_on_next_turn["board_state"][7][0]
+        game_on_next_turn["board_state"][7][0] = None
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), player=False)
+
+        if test_case == "slay":
+            game_on_next_turn = copy.deepcopy(game)
+            game_on_next_turn["board_state"][4][7][0]["health"] = 2
+            game_state = api.GameState(**game_on_next_turn)
+            game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+        game_on_next_turn = copy.deepcopy(game)
+        white_rook = game_on_next_turn["board_state"][1][7][0]
+        game_on_next_turn["board_state"][4][7].append(white_rook)
+        game_on_next_turn["board_state"][1][7] = None
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response())
+        
+        assert len(game["board_state"][4][7]) == 2
+        assert game["board_state"][4][7][0].get("health", -1) == (4 if test_case == "damage" else 1)
+
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["captured_pieces"]["black"].append("white_rook")
+        game_on_next_turn["gold_count"]["black"] = 10
+        game_on_next_turn["board_state"][4][7].append(game_on_next_turn["board_state"][7][7][0])
+        game_on_next_turn["board_state"][4][7].remove(white_rook)
+        game_on_next_turn["board_state"][7][7] = None
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), player=False)
+
+        if test_case == "damage":
+            assert len(game["board_state"][4][7]) == 2
+            assert game["board_state"][4][7][0].get("health", -1) == 3
+            assert game["board_state"][4][7][1]["type"] == "black_rook"
+        else:
+            assert len(game["board_state"][4][7]) == 1
+            assert game["board_state"][4][7][0]["type"] == "black_rook"
+            assert "neutral_dragon" in game["captured_pieces"]["black"]
 
 # TODO: switch from i in range(2) to side in ["white", "black"] for clarity
 # TODO: do the same for the other test files
+# TODO: change test behavior so that we are selecting pieces before moving them

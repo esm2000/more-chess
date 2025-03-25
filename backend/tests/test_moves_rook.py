@@ -24,10 +24,10 @@ def test_rook_movement():
     ## 6 |__|##|__|##|__|##|__|##|
     ## 7 |##|__|##|__|##|__|##|__|
 
-    for i in range(2):
+    for side in ["white", "black"]:
         curr_game_state = copy.deepcopy(empty_game)
         curr_game_state["turn_count"] = 0
-        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_rook"}]
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_rook"}]
 
         prev_game_state = copy.deepcopy(curr_game_state)
         curr_position = [3, 3]
@@ -91,9 +91,9 @@ def test_rook_range():
         25: 6
     }
 
-    for i in range(2):
+    for side in ["white", "black"]:
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][0][0] = [{"type": f"{'white' if not i else 'black'}_rook"}]
+        curr_game_state["board_state"][0][0] = [{"type": f"{side}_rook"}]
 
         prev_game_state = copy.deepcopy(curr_game_state)
         curr_position = [0, 0]
@@ -165,14 +165,15 @@ def test_rook_capture():
         15: 4
     }
 
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][3][1] = [{"type": f"{'white' if not i else 'black'}_rook"}]
+        curr_game_state["board_state"][3][1] = [{"type": f"{side}_rook"}]
 
-        curr_game_state["board_state"][3][0] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][1][1] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][3][4] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][7][1] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][3][0] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][1][1] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][3][4] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][7][1] = [{"type": f"{opposite_side}_pawn"}]
 
         prev_game_state = copy.deepcopy(curr_game_state)
         curr_position = [3, 1]
@@ -207,17 +208,18 @@ def test_rook_blocked():
     ## 6 |__|wp|__|##|__|##|__|##|
     ## 7 |##|__|##|__|##|__|##|__|
 
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][3][1] = [{"type": f"{'white' if not i else 'black'}_rook"}]
+        curr_game_state["board_state"][3][1] = [{"type": f"{side}_rook"}]
 
-        curr_game_state["board_state"][1][1] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][2][1] = [{"type": f"{'white' if not i else 'black'}_pawn"}]
+        curr_game_state["board_state"][1][1] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][2][1] = [{"type": f"{side}_pawn"}]
 
-        curr_game_state["board_state"][3][3] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][3][4] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][3][3] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][3][4] = [{"type": f"{opposite_side}_pawn"}]
 
-        curr_game_state["board_state"][6][1] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][6][1] = [{"type": f"{opposite_side}_pawn"}]
     
         prev_game_state = copy.deepcopy(curr_game_state)
         curr_position = [3, 1]
@@ -257,11 +259,12 @@ def test_rook_cant_capture_king():
     ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
     
     king_positions = [[2, 3], [3, 4], [4, 3], [3, 2]]
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         for king_position in king_positions:
             curr_game_state = copy.deepcopy(empty_game)
-            curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_rook"}]
-            curr_game_state["board_state"][king_position[0]][king_position[1]] = [{"type": f"{'black' if not i else 'white'}_king"}]
+            curr_game_state["board_state"][3][3] = [{"type": f"{side}_rook"}]
+            curr_game_state["board_state"][king_position[0]][king_position[1]] = [{"type": f"{opposite_side}_king"}]
 
             prev_game_state = copy.deepcopy(curr_game_state)
 
@@ -296,12 +299,12 @@ def test_rook_interactions_with_neutral_monster():
     ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
 
     neutral_monster_positions = [[2, 3], [3, 4], [4, 3], [3, 2]]
-    for i in range(2):
+    for side in ["white", "black"]:
         for neutral_monster_position in neutral_monster_positions:
             for health in [5, 1]:
                 for monster in ["dragon", "baron_nashor", "board_herald"]:
                     curr_game_state = copy.deepcopy(empty_game)
-                    curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_rook"}]
+                    curr_game_state["board_state"][3][3] = [{"type": f"{side}_rook"}]
                     curr_game_state["board_state"][neutral_monster_position[0]][neutral_monster_position[1]] = [{
                         "type": f"neutral_{monster}",
                         "health": health
@@ -342,11 +345,12 @@ def test_rook_capturing_adjacent_bishop():
     ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
     ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
     
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_rook"}]
-        curr_game_state["board_state"][1][3] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][1][4] = [{"type": f"{'black' if not i else 'white'}_bishop"}]
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_rook"}]
+        curr_game_state["board_state"][1][3] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][1][4] = [{"type": f"{opposite_side}_bishop"}]
 
         possible_moves_and_captures = moves.get_moves_for_rook(curr_game_state, None, [3, 3])
 
@@ -396,12 +400,12 @@ def test_rook_not_being_allowed_to_move_to_sword_in_stone_square():
         [[3, 2], [3, 1], [3, 0]]
     ]
 
-    for i in range(2):
+    for side in ["white", "black"]:
         for positions in position_map:
             for j in range(len(positions)):
                 curr_game_state = copy.deepcopy(empty_game)
                 curr_game_state["turn_count"] = 0
-                curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_rook"}]
+                curr_game_state["board_state"][3][3] = [{"type": f"{side}_rook"}]
                 curr_game_state["sword_in_the_stone_position"] = positions[j]
 
                 prev_game_state = copy.deepcopy(curr_game_state)
@@ -435,10 +439,10 @@ def test_rook_file_control_non_center():
     ## 6 |__|##|__|##|__|##|__|##|
     ## 7 |##|__|##|br|##|__|##|__|
 
-    for i in range(2):
+    for side in ["white", "black"]:
         curr_game_state = copy.deepcopy(empty_game)
         curr_game_state["turn_count"] = 50
-        curr_game_state["board_state"][7][3] = [{"type": f"{'white' if not i else 'black'}_rook"}]
+        curr_game_state["board_state"][7][3] = [{"type": f"{side}_rook"}]
 
         prev_game_state = copy.deepcopy(curr_game_state)
         curr_position = [7, 3]
@@ -473,10 +477,10 @@ def test_rook_file_control_center():
     ## 5 |##|__|##|__|##|__|##|__|
     ## 6 |__|##|__|##|__|##|__|##|
     ## 7 |##|__|##|__|##|__|##|__|
-    for i in range(2):
+    for side in ["white", "black"]:
         curr_game_state = copy.deepcopy(empty_game)
         curr_game_state["turn_count"] = 50
-        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_rook"}]
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_rook"}]
 
         prev_game_state = copy.deepcopy(curr_game_state)
         curr_position = [3, 3]
@@ -512,12 +516,13 @@ def test_rook_threatening_move():
     ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
     ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
     king_positions = [[None, None], [1, 3], [3, 5], [5, 3], [3, 1]]
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         for king_position in king_positions:
             curr_game_state = copy.deepcopy(empty_game)
-            curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_rook"}]
+            curr_game_state["board_state"][3][3] = [{"type": f"{side}_rook"}]
             if king_position[0] is not None:
-                curr_game_state["board_state"][king_position[0]][king_position[1]] = [{"type": f"{'black' if not i else 'white'}_king"}]
+                curr_game_state["board_state"][king_position[0]][king_position[1]] = [{"type": f"{opposite_side}_king"}]
 
             prev_game_state = copy.deepcopy(curr_game_state)
 

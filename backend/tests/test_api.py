@@ -374,17 +374,17 @@ def test_alter_game(game):
         "king": None
     }
 
-    for i in [0, 1]:
+    for side in ["white", "black"]:
         for piece_type in piece_values:
             game_on_next_turn = copy.deepcopy(game)
             game = clear_game(game)
             game_on_next_turn = copy.deepcopy(game)
             game_on_next_turn["turn_count"] = 0
             game_on_next_turn["board_state"] = copy.deepcopy(empty_game["board_state"])
-            game_on_next_turn["board_state"][3][4] = [{"type": f"black_{piece_type}"}] if not i else [{"type": "black_pawn", "pawn_buff": 0}]
-            game_on_next_turn["board_state"][4][3] = [{"type": "white_pawn", "pawn_buff": 0}] if not i else [{"type": f"white_{piece_type}"}]
+            game_on_next_turn["board_state"][3][4] = [{"type": f"black_{piece_type}"}] if side == "white" else [{"type": "black_pawn", "pawn_buff": 0}]
+            game_on_next_turn["board_state"][4][3] = [{"type": "white_pawn", "pawn_buff": 0}] if side == "white" else [{"type": f"white_{piece_type}"}]
             if piece_type == "bishop":
-                game_on_next_turn["board_state"][3 if not i else 4][4 if not i else 3][0]["energize_stacks"] = 0
+                game_on_next_turn["board_state"][3 if side == "white" else 4][4 if side == "white" else 3][0]["energize_stacks"] = 0
             if piece_type != "king":
                 game_on_next_turn["board_state"][7][2] = [{"type": f"white_king"}]
                 game_on_next_turn["board_state"][0][5] = [{"type": f"black_king"}]
@@ -398,7 +398,7 @@ def test_alter_game(game):
             game_state = api.GameState(**game_on_next_turn)
             game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
             game_on_next_turn = copy.deepcopy(game)
-            if not i:
+            if side == "white":
                 game_on_next_turn["board_state"][3][4] = game_on_next_turn["board_state"][4][3]
                 game_on_next_turn["board_state"][4][3] = None
                 game_on_next_turn["captured_pieces"]["white"].append(f"black_{piece_type}")
@@ -408,8 +408,8 @@ def test_alter_game(game):
                 game_on_next_turn["captured_pieces"]["black"].append(f"white_{piece_type}")
             game_state = api.GameState(**game_on_next_turn)
             if piece_type != "king":
-                game = api.update_game_state(game["id"], game_state, Response(), player=i==0, disable_turn_check=True)
-                if not i:
+                game = api.update_game_state(game["id"], game_state, Response(), player=side=="white", disable_turn_check=True)
+                if side == "white":
                     assert game["board_state"][3][4][0]["type"] == "white_pawn"
                     assert game["board_state"][4][3] is None
                     # none of black's pieces are left so its turn is skipped
@@ -423,13 +423,13 @@ def test_alter_game(game):
         # assert that kings can't be captured
             else:
                 with pytest.raises(HTTPException):
-                    game = api.update_game_state(game["id"], game_state, Response(), player=i==0, disable_turn_check=True)
+                    game = api.update_game_state(game["id"], game_state, Response(), player=side=="white", disable_turn_check=True)
     # validate pawn exchange
             if piece_type == "pawn":
                 continue
             game = clear_game(game)
             game_on_next_turn = copy.deepcopy(game)
-            if not i:
+            if side == "white":
                 game_on_next_turn["board_state"][1][3] = [{"type": "white_pawn", "pawn_buff": 0}] 
                 game_on_next_turn["board_state"][3][4] = [{"type": f"black_king"}]
                 game_on_next_turn["board_state"][7][2] = [{"type": f"white_king"}]
@@ -442,29 +442,29 @@ def test_alter_game(game):
             game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
             game_on_next_turn = copy.deepcopy(game)
-            if not i:
+            if side == "white":
                 game_on_next_turn["board_state"][0][3] = game_on_next_turn["board_state"][1][3]
                 game_on_next_turn["board_state"][1][3] = None
             else:
                 game_on_next_turn["board_state"][7][3] = game_on_next_turn["board_state"][6][3]
                 game_on_next_turn["board_state"][6][3] = None
             game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response(), player=i==0, disable_turn_check=True)
+            game = api.update_game_state(game["id"], game_state, Response(), player=side=="white", disable_turn_check=True)
 
             turn_count_for_pawn_exchange_initiation = game["turn_count"]
             game_on_next_turn = copy.deepcopy(game)
-            if not i:
+            if side == "white":
                 game_on_next_turn["board_state"][0][3] = [{"type": f"white_{piece_type}"}]
             else:
                 game_on_next_turn["board_state"][7][3] = [{"type": f"black_{piece_type}"}]
             game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response(), player=i==0, disable_turn_check=True)
+            game = api.update_game_state(game["id"], game_state, Response(), player=side=="white", disable_turn_check=True)
             turn_count_for_end_of_pawn_exhange = game["turn_count"]
 
             assert turn_count_for_pawn_exchange_initiation == turn_count_for_end_of_pawn_exhange
-            assert len(game["board_state"][0 if not i else 7][3] or []) == 1
-            assert game["board_state"][0 if not i else 7][3][0]["type"] == f"{'white' if not i else 'black'}_{piece_type}"
-            assert game["previous_state"]["board_state"][0 if not i else 7][3][0]["type"] == f"{'white' if not i else 'black'}_pawn"
+            assert len(game["board_state"][0 if side=="white"else 7][3] or []) == 1
+            assert game["board_state"][0 if side=="white" else 7][3][0]["type"] == f"{side}_{piece_type}"
+            assert game["previous_state"]["board_state"][0 if side=="white" else 7][3][0]["type"] == f"{side}_pawn"
 
 
 def test_bishop_energize_stacks(game):
@@ -1386,17 +1386,18 @@ def test_neutral_monster_health_regen(game):
 
 def test_check(game):
     # test that king can be checked and that the only valid move is to get out of check
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         game = clear_game(game)
         game_on_next_turn = copy.deepcopy(game)
 
-        game_on_next_turn["board_state"][7][0] = [{"type": f"{'white' if not i else 'black'}_king"}]
-        game_on_next_turn["board_state"][0][1] = [{"type": f"{'white' if not i else 'black'}_rook"}]
+        game_on_next_turn["board_state"][7][0] = [{"type": f"{side}_king"}]
+        game_on_next_turn["board_state"][0][1] = [{"type": f"{side}_rook"}]
 
-        game_on_next_turn["board_state"][5][2] = [{"type": f"{'black' if not i else 'white'}_rook"}]
-        game_on_next_turn["board_state"][3][6] = [{"type": f"{'black' if not i else 'white'}_king"}]
+        game_on_next_turn["board_state"][5][2] = [{"type": f"{opposite_side}_rook"}]
+        game_on_next_turn["board_state"][3][6] = [{"type": f"{opposite_side}_king"}]
 
-        game_on_next_turn["turn_count"] = 1 if not i else 0
+        game_on_next_turn["turn_count"] = 1 if side == "white" else 0
 
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
@@ -1406,11 +1407,11 @@ def test_check(game):
         game_on_next_turn["board_state"][5][2] = None
 
         game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=i==0)
+        game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
         
-        assert game["check"][f"{'white' if not i else 'black'}"] and not game["check"][f"{'black' if not i else 'white'}"]
+        assert game["check"][f"{side}"] and not game["check"][f"{opposite_side}"]
         assert game["position_in_play"] == [7, 0]
-        assert not game[f"{'white' if not i else 'black'}_defeat"] and not game[f"{'black' if not i else 'white'}_defeat"]
+        assert not game[f"{side}_defeat"] and not game[f"{opposite_side}_defeat"]
 
         # must get out of check
         with pytest.raises(HTTPException):
@@ -1418,32 +1419,33 @@ def test_check(game):
             game_on_next_turn["board_state"][7][1] = game_on_next_turn["board_state"][7][0]
             game_on_next_turn["board_state"][7][0] = None
             game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response(), player=i==1)
+            game = api.update_game_state(game["id"], game_state, Response(), player=opposite_side=="white")
         
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][6][0] = game_on_next_turn["board_state"][7][0]
         game_on_next_turn["board_state"][7][0] = None
         game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=i==1)
+        game = api.update_game_state(game["id"], game_state, Response(), player=opposite_side=="white")
 
-        assert not game["check"][f"{'white' if not i else 'black'}"] and not game["check"][f"{'black' if not i else 'white'}"]
+        assert not game["check"][f"{side}"] and not game["check"][f"{opposite_side}"]
         assert game["position_in_play"] == [None, None]
-        assert not game[f"{'white' if not i else 'black'}_defeat"] and not game[f"{'black' if not i else 'white'}_defeat"]
+        assert not game[f"{side}_defeat"] and not game[f"{opposite_side}_defeat"]
 
 
 def test_check_protection_against_check(game):
     # test that check protection works against check
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         game = clear_game(game)
         game_on_next_turn = copy.deepcopy(game)
 
-        game_on_next_turn["board_state"][7][0] = [{"type": f"{'white' if not i else 'black'}_king", "check_protection": 1}]
-        game_on_next_turn["board_state"][0][1] = [{"type": f"{'white' if not i else 'black'}_rook"}]
+        game_on_next_turn["board_state"][7][0] = [{"type": f"{side}_king", "check_protection": 1}]
+        game_on_next_turn["board_state"][0][1] = [{"type": f"{side}_rook"}]
 
-        game_on_next_turn["board_state"][5][2] = [{"type": f"{'black' if not i else 'white'}_rook"}]
-        game_on_next_turn["board_state"][3][6] = [{"type": f"{'black' if not i else 'white'}_king"}]
+        game_on_next_turn["board_state"][5][2] = [{"type": f"{opposite_side}_rook"}]
+        game_on_next_turn["board_state"][3][6] = [{"type": f"{opposite_side}_king"}]
 
-        game_on_next_turn["turn_count"] = 1 if not i else 0
+        game_on_next_turn["turn_count"] = 1 if side=="white" else 0
 
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
@@ -1453,7 +1455,7 @@ def test_check_protection_against_check(game):
         game_on_next_turn["board_state"][5][2] = None
 
         game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=i==0)
+        game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
 
         assert not game["check"][f"white"] and not game["check"][f"black"]
         assert game["position_in_play"] == [None, None]
@@ -1966,6 +1968,4 @@ def test_capture_behavior_when_neutral_and_normal_piece_are_on_same_square(game)
             assert game["board_state"][4][7][0]["type"] == "black_rook"
             assert "neutral_dragon" in game["captured_pieces"]["black"]
 
-# TODO: switch from i in range(2) to side in ["white", "black"] for clarity
-# TODO: do the same for the other test files
 # TODO: change test behavior so that we are selecting pieces before moving them

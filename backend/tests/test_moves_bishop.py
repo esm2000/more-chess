@@ -26,9 +26,9 @@ def test_bishop_movement():
     ## 7 |##|__|##|__|##|__|##|__|
 
     # white square
-    for i in range(2):
+    for side in ["white", "black"]:
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_bishop"}]
 
         prev_game_state = copy.deepcopy(curr_game_state)
 
@@ -41,9 +41,9 @@ def test_bishop_movement():
         ]) == sorted(possible_moves_and_captures["possible_moves"])
         assert len(possible_moves_and_captures["possible_captures"]) == 0
     # black square 
-    for i in range(2):
+    for side in ["white", "black"]:
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][3][4] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
+        curr_game_state["board_state"][3][4] = [{"type": f"{side}_bishop"}]
 
         prev_game_state = copy.deepcopy(curr_game_state)
 
@@ -80,13 +80,14 @@ def test_bishop_capture():
     ## 7 |##|__|##|__|##|__|##|wp|      ## 7 |wp|__|##|__|##|__|##|__|
     
     # white square
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
-        curr_game_state["board_state"][2][4] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][1][1] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][6][0] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][7][7] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_bishop"}]
+        curr_game_state["board_state"][2][4] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][1][1] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][6][0] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][7][7] = [{"type": f"{opposite_side}_pawn"}]
 
 
         prev_game_state = copy.deepcopy(curr_game_state)
@@ -106,13 +107,14 @@ def test_bishop_capture():
         ]) == sorted(possible_moves_and_captures["possible_captures"])
 
     # black square
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][3][4] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
-        curr_game_state["board_state"][2][3] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][1][6] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][6][7] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][7][0] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][3][4] = [{"type": f"{side}_bishop"}]
+        curr_game_state["board_state"][2][3] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][1][6] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][6][7] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][7][0] = [{"type": f"{opposite_side}_pawn"}]
 
 
         prev_game_state = copy.deepcopy(curr_game_state)
@@ -155,16 +157,17 @@ def test_bishop_blocked():
     ## 7 |##|__|##|__|##|__|##|wp|      ## 7 |wp|__|##|__|##|__|##|__|
 
     # white square
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
-        curr_game_state["board_state"][1][1] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][6][0] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][7][7] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_bishop"}]
+        curr_game_state["board_state"][1][1] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][6][0] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][7][7] = [{"type": f"{opposite_side}_pawn"}]
 
-        curr_game_state["board_state"][2][2] = [{"type": f"{'white' if not i else 'black'}_pawn"}]
-        curr_game_state["board_state"][5][1] = [{"type": f"{'white' if not i else 'black'}_pawn"}]
-        curr_game_state["board_state"][6][6] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][2][2] = [{"type": f"{side}_pawn"}]
+        curr_game_state["board_state"][5][1] = [{"type": f"{side}_pawn"}]
+        curr_game_state["board_state"][6][6] = [{"type": f"{opposite_side}_pawn"}]
 
 
         prev_game_state = copy.deepcopy(curr_game_state)
@@ -180,16 +183,17 @@ def test_bishop_blocked():
         assert sorted([[[6, 6], [6, 6]]]) == sorted(possible_moves_and_captures["possible_captures"])
     
     # black square
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][3][4] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
-        curr_game_state["board_state"][1][6] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][6][7] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][7][0] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][3][4] = [{"type": f"{side}_bishop"}]
+        curr_game_state["board_state"][1][6] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][6][7] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][7][0] = [{"type": f"{opposite_side}_pawn"}]
 
-        curr_game_state["board_state"][2][5] = [{"type": f"{'white' if not i else 'black'}_pawn"}]
-        curr_game_state["board_state"][5][6] = [{"type": f"{'white' if not i else 'black'}_pawn"}]
-        curr_game_state["board_state"][6][1] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][2][5] = [{"type": f"{side}_pawn"}]
+        curr_game_state["board_state"][5][6] = [{"type": f"{side}_pawn"}]
+        curr_game_state["board_state"][6][1] = [{"type": f"{opposite_side}_pawn"}]
 
 
         prev_game_state = copy.deepcopy(curr_game_state)
@@ -229,11 +233,12 @@ def test_bishop_cant_capture_king():
 
     # white square
     king_positions = [[2, 4], [1, 1], [6, 0], [7, 7]]
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         for king_position in king_positions:
             curr_game_state = copy.deepcopy(empty_game)
-            curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
-            curr_game_state["board_state"][king_position[0]][king_position[1]] = [{"type": f"{'black' if not i else 'white'}_king"}]
+            curr_game_state["board_state"][3][3] = [{"type": f"{side}_bishop"}]
+            curr_game_state["board_state"][king_position[0]][king_position[1]] = [{"type": f"{opposite_side}_king"}]
 
             prev_game_state = copy.deepcopy(curr_game_state)
 
@@ -246,11 +251,12 @@ def test_bishop_cant_capture_king():
 
     # black square
     king_positions = [[2, 3], [1, 6], [6, 7], [7, 0]]
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         for king_position in king_positions:
             curr_game_state = copy.deepcopy(empty_game)
-            curr_game_state["board_state"][3][4] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
-            curr_game_state["board_state"][king_position[0]][king_position[1]] = [{"type": f"{'black' if not i else 'white'}_king"}]
+            curr_game_state["board_state"][3][4] = [{"type": f"{side}_bishop"}]
+            curr_game_state["board_state"][king_position[0]][king_position[1]] = [{"type": f"{opposite_side}_king"}]
 
             prev_game_state = copy.deepcopy(curr_game_state)
 
@@ -286,12 +292,12 @@ def test_bishop_interactions_with_neutral_monster():
 
     # white square
     neutral_monster_positions = [[2, 4], [1, 1], [6, 0], [7, 7]]
-    for i in range(2):
+    for side in ["white", "black"]:
         for neutral_monster_position in neutral_monster_positions:
             for health in [5, 1]:
                 for monster in ["dragon", "baron_nashor", "board_herald"]:
                     curr_game_state = copy.deepcopy(empty_game)
-                    curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
+                    curr_game_state["board_state"][3][3] = [{"type": f"{side}_bishop"}]
                     curr_game_state["board_state"][neutral_monster_position[0]][neutral_monster_position[1]] = [{
                         "type": f"neutral_{monster}",
                         "health": health
@@ -312,12 +318,12 @@ def test_bishop_interactions_with_neutral_monster():
 
     # black square
     neutral_monster_positions = [[2, 3], [1, 6], [6, 7], [7, 0]]
-    for i in range(2):
+    for side in ["white", "black"]:
         for neutral_monster_position in neutral_monster_positions:
             for health in [5, 1]:
                 for monster in ["dragon", "baron_nashor", "board_herald"]:
                     curr_game_state = copy.deepcopy(empty_game)
-                    curr_game_state["board_state"][3][4] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
+                    curr_game_state["board_state"][3][4] = [{"type": f"{side}_bishop"}]
                     curr_game_state["board_state"][neutral_monster_position[0]][neutral_monster_position[1]] = [{
                         "type": f"neutral_{monster}",
                         "health": health
@@ -361,11 +367,12 @@ def test_bishop_capturing_adjacent_bishop():
     ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
     ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
     
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
-        curr_game_state["board_state"][1][5] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][2][5] = [{"type": f"{'black' if not i else 'white'}_bishop"}]
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_bishop"}]
+        curr_game_state["board_state"][1][5] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][2][5] = [{"type": f"{opposite_side}_bishop"}]
 
         possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, None, [3, 3])
 
@@ -415,12 +422,12 @@ def test_bishop_not_being_allowed_to_move_to_sword_in_stone_square():
         [[4, 4], [5, 5]]
     ]
 
-    for i in range(2):
+    for side in ["white", "black"]:
         for positions in position_map:
             for j in range(len(positions)):
                 curr_game_state = copy.deepcopy(empty_game)
                 curr_game_state["turn_count"] = 0
-                curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
+                curr_game_state["board_state"][3][3] = [{"type": f"{side}_bishop"}]
                 curr_game_state["sword_in_the_stone_position"] = positions[j]
 
                 prev_game_state = copy.deepcopy(curr_game_state)
@@ -455,17 +462,18 @@ def test_bishop_full_energize_stack_capture():
     ## 7 |##|__|##|__|##|__|##|__|
     for dragon_health in [1, 5]:
         for energize_stacks in [0, 100]:
-            for i in range(2):
+            for side in ["white", "black"]:
+                opposite_side = "white" if side == "black" else "black"
                 curr_game_state = copy.deepcopy(empty_game)
                 curr_game_state["board_state"][2][3] = [{
-                    "type": f"{'white' if not i else 'black'}_bishop",
+                    "type": f"{side}_bishop",
                     "energize_stacks": energize_stacks
                 }]
-                curr_game_state["board_state"][3][0] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-                curr_game_state["board_state"][5][0] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-                curr_game_state["board_state"][5][2] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-                curr_game_state["board_state"][6][5] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-                curr_game_state["board_state"][1][6] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+                curr_game_state["board_state"][3][0] = [{"type": f"{opposite_side}_pawn"}]
+                curr_game_state["board_state"][5][0] = [{"type": f"{opposite_side}_pawn"}]
+                curr_game_state["board_state"][5][2] = [{"type": f"{opposite_side}_pawn"}]
+                curr_game_state["board_state"][6][5] = [{"type": f"{opposite_side}_pawn"}]
+                curr_game_state["board_state"][1][6] = [{"type": f"{opposite_side}_pawn"}]
                 curr_game_state["board_state"][4][7] = [{"type": f"neutral_dragon", "health": dragon_health}]
 
                 possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, None, [2, 3])
@@ -511,12 +519,13 @@ def test_bishop_threatening_move():
     ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
     ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
     king_positions = [[None, None], [1, 5], [1, 1], [6, 0], [6, 6]]
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         for king_position in king_positions:
             curr_game_state = copy.deepcopy(empty_game)
-            curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_bishop"}]
+            curr_game_state["board_state"][3][3] = [{"type": f"{side}_bishop"}]
             if king_position[0] is not None:
-                curr_game_state["board_state"][king_position[0]][king_position[1]] = [{"type": f"{'black' if not i else 'white'}_king"}]
+                curr_game_state["board_state"][king_position[0]][king_position[1]] = [{"type": f"{opposite_side}_king"}]
 
             prev_game_state = copy.deepcopy(curr_game_state)
 

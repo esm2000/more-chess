@@ -82,7 +82,6 @@ def delete_game(id):
 @router.put("/game/{id}", status_code=200)
 def update_game_state(id, state: GameState, response: Response, player=True, disable_turn_check=False):
     new_game_state = dict(state)
-    print(f'{new_game_state["position_in_play"]=}')
     old_game_state = retrieve_game_state(id, response)
 
     # prevent updates to game once game has ended
@@ -134,10 +133,6 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         capture_positions
     )
 
-    print(f'{old_game_state["position_in_play"]=}')
-    print(f'{new_game_state["position_in_play"]=}')
-
-    print(f'{utils.was_a_new_position_in_play_selected(moved_pieces, old_game_state, new_game_state)=}')
     # if no pieces have moved and the position in play has changed, retain the current turn
     if utils.was_a_new_position_in_play_selected(moved_pieces, old_game_state, new_game_state) and new_game_state["position_in_play"][0] is not None and new_game_state["position_in_play"][1] is not None:
         should_increment_turn_count = False

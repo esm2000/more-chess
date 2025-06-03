@@ -1448,7 +1448,7 @@ def is_position_in_play_valid_to_save_king(old_game_state, new_game_state):
         return False
     
     square = new_game_state["board_state"][position_in_play[0]][position_in_play[1]]
-    piece = next((p for p in square if "neutral" not in p.get("type", "")), None)
+    piece = next((p for p in square or [] if "neutral" not in p.get("type", "")), None)
 
     if not piece:
         return False

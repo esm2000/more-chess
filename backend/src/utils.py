@@ -1533,12 +1533,12 @@ def handle_draw_conditions(old_game_state, new_game_state):
 # conditionally mutates new_game_state
 # it's assumed that this function is used after the turn is incremented
 def tie_game_if_no_moves_are_possible_next_turn(old_game_state, new_game_state):
-    # if one or both sides have alread lost no reason to continue
+    # if one or both sides have already lost no reason to continue
     if new_game_state["white_defeat"] or new_game_state["black_defeat"]:
         return 
     
-    new_game_turn_count = new_game_state["turn_count"]
-    side_that_should_be_moving_next_turn = "white" if new_game_turn_count % 2 else "black"
+    old_game_turn_count = old_game_state["turn_count"]
+    side_that_should_be_moving_next_turn = "black" if old_game_turn_count % 2 else "white"
 
     if can_king_move(old_game_state, new_game_state, turn_incremented=True):
         return
@@ -1565,5 +1565,4 @@ def tie_game_if_no_moves_are_possible_next_turn(old_game_state, new_game_state):
     
     if tie_game:
         new_game_state["white_defeat"] = True
-        new_game_state["black_defeat"] = True
-    
+        new_game_state["black_defeat"] = True    

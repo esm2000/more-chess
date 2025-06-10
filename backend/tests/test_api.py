@@ -2149,7 +2149,7 @@ def test_draw_with_only_kings(game):
         assert not game["check"][f"{side}"] and not game["check"][f"{opposite_side}"]
         assert game[f"{side}_defeat"] and game[f"{opposite_side}_defeat"]
 
-
+# TODO: recent changes in tie_game_if_no_moves_are_possible_next_turn() might have caused this (77f05d2c)
 def test_draw_with_no_possible_moves(game):
     # test that the game ends in a draw when a player has no possible safe moves to make
     for side in ["white", "black"]:

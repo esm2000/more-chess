@@ -2081,6 +2081,11 @@ def test_king_cant_get_close_to_king(game):
 
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["position_in_play"] = [3, 2]
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
         
         with pytest.raises(HTTPException):
             game_on_next_turn = copy.deepcopy(game)
@@ -2106,6 +2111,11 @@ def test_game_ends_when_monster_spawns_on_top_of_king(game):
 
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["position_in_play"] = [0, 0]
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
         game_on_next_turn = copy.deepcopy(game)
         
@@ -2137,6 +2147,11 @@ def test_draw_with_only_kings(game):
 
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["position_in_play"] = [0, 0]
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
         
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][0][1] = game_on_next_turn["board_state"][0][0]
@@ -2149,7 +2164,7 @@ def test_draw_with_only_kings(game):
         assert not game["check"][f"{side}"] and not game["check"][f"{opposite_side}"]
         assert game[f"{side}_defeat"] and game[f"{opposite_side}_defeat"]
 
-# TODO: recent changes in tie_game_if_no_moves_are_possible_next_turn() might have caused this (77f05d2c)
+# TODO: recent changes in tie_game_if_no_moves_are_possible_next_turn() might have caused errors (77f05d2c)
 def test_draw_with_no_possible_moves(game):
     # test that the game ends in a draw when a player has no possible safe moves to make
     for side in ["white", "black"]:
@@ -2168,6 +2183,12 @@ def test_draw_with_no_possible_moves(game):
 
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+        # TODO: fix test case before uncommenting this
+        # game_on_next_turn = copy.deepcopy(game)
+        # game_on_next_turn["position_in_play"] = [7, 7]
+        # game_state = api.GameState(**game_on_next_turn)
+        # game = api.update_game_state(game["id"], game_state, Response(), player=opposite_side=="white")
 
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][7][1] = game_on_next_turn["board_state"][7][7]
@@ -2197,6 +2218,11 @@ def test_capture_behavior_when_neutral_and_normal_piece_are_on_same_square(game)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["position_in_play"] = [7, 0]
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), player=False)
+
+        game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][6][0] = game_on_next_turn["board_state"][7][0]
         game_on_next_turn["board_state"][7][0] = None
 
@@ -2210,6 +2236,11 @@ def test_capture_behavior_when_neutral_and_normal_piece_are_on_same_square(game)
             game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["position_in_play"] = [1, 7]
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), player=True)
+
+        game_on_next_turn = copy.deepcopy(game)
         white_rook = game_on_next_turn["board_state"][1][7][0]
         game_on_next_turn["board_state"][4][7].append(white_rook)
         game_on_next_turn["board_state"][1][7] = None
@@ -2219,6 +2250,11 @@ def test_capture_behavior_when_neutral_and_normal_piece_are_on_same_square(game)
         
         assert len(game["board_state"][4][7]) == 2
         assert game["board_state"][4][7][0].get("health", -1) == (4 if test_case == "damage" else 1)
+
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["position_in_play"] = [7, 7]
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["captured_pieces"]["black"].append("white_rook")
@@ -2239,21 +2275,12 @@ def test_capture_behavior_when_neutral_and_normal_piece_are_on_same_square(game)
             assert game["board_state"][4][7][0]["type"] == "black_rook"
             assert "neutral_dragon" in game["captured_pieces"]["black"]
 
+# TODO: change test behavior so that we are selecting pieces before moving them (tests below are already completed)
+    # all done except for test_draw_with_no_possible_moves()
+
 # TODO: split test_alter_game() into several test cases (piece selection and movement is enough for original function)
     # change API behavior to force a fail when a piece attempts to buy pieces not on its turn or move not on its turn...
     # create tests for the scenarios described above
     # ensure that proper piece selection is checked
-# TODO: change test behavior so that we are selecting pieces before moving them (tests below are already completed)
-    # test_bishop_energize_stacks
-    # ...
-    # test_bishop_debuff_double_stack_prevention
-    # ...
-    # test_full_bishop_debuff_stacks_prevent_other_moves
-    # ...
-    # test_neutral_monster_health_regen
-    # ...
-    # test_check_and_needs_a_non_king_piece_to_get_it_out_of_check_through_capture
-    # ...
-    # test_king_cant_put_itself_in_check
 
 # TODO: prevent buying of pieces when it's not a side's turn (will break the testcase for it)

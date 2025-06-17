@@ -1538,9 +1538,10 @@ def tie_game_if_no_moves_are_possible_next_turn(old_game_state, new_game_state):
         return 
     
     old_game_turn_count = old_game_state["turn_count"]
-    side_that_should_be_moving_next_turn = "black" if old_game_turn_count % 2 else "white"
+    new_game_turn_count = new_game_state["turn_count"]
+    side_that_should_be_moving_next_turn = "white" if old_game_turn_count % 2 else "black"
 
-    if can_king_move(old_game_state, new_game_state, turn_incremented=True):
+    if can_king_move(old_game_state, new_game_state, turn_incremented=old_game_turn_count != new_game_turn_count):
         return
     
     tie_game = True

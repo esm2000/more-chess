@@ -1188,6 +1188,8 @@ def was_a_new_position_in_play_selected(moved_pieces, old_game_state, new_game_s
 # assumption is that there is a valid position_in_play in the new_game_state before using this function
 def does_position_in_play_match_turn(old_game_state, new_game_state):
     side_that_should_be_moving = "white" if not old_game_state["turn_count"] % 2 else "black"
+    print(f"{side_that_should_be_moving=}")
+    print(f"{new_game_state['position_in_play']=}")
     square = old_game_state["board_state"][new_game_state["position_in_play"][0]][new_game_state["position_in_play"][1]] or []
 
     for piece in square:

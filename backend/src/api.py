@@ -132,11 +132,14 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         is_valid_game_state,
         capture_positions
     )
-
+    print("0")
+    print(f"{is_valid_game_state=}")
     # if no pieces have moved and the position in play has changed, retain the current turn
     if utils.was_a_new_position_in_play_selected(moved_pieces, old_game_state, new_game_state) and new_game_state["position_in_play"][0] is not None and new_game_state["position_in_play"][1] is not None:
         should_increment_turn_count = False
         is_valid_game_state = utils.does_position_in_play_match_turn(old_game_state, new_game_state) and is_valid_game_state
+        print("1")
+        print(f"{is_valid_game_state=}")
     
     # (unstackable) if a queen captures or "assists" a piece and is not in danger of being captured, retain last player's turn until they move queen again
     # if queen extra turn flag is set and should increment_turn_count is True 
@@ -168,16 +171,24 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         capture_positions,
         is_valid_game_state
     )
+    print("2")
+    print(f"{is_valid_game_state=}")
     gold_spent = utils.get_gold_spent(old_game_state, moved_pieces)
 
     is_pawn_exchange_possible = utils.check_is_pawn_exhange_is_possible(old_game_state, new_game_state, moved_pieces)
     move_count_for_white, move_count_for_black = utils.get_move_counts(moved_pieces)
 
     is_valid_game_state = utils.invalidate_game_if_more_than_one_side_moved(move_count_for_white, move_count_for_black, is_valid_game_state)
+    print("3")
+    print(f"{is_valid_game_state=}")
     is_valid_game_state = utils.invalidate_game_if_stunned_piece_moves(moved_pieces, is_valid_game_state)
+    print("4")
+    print(f"{is_valid_game_state=}")
     # old game's turn count is representative of what side should be moving (even is white, odd is black)
     if not disable_turn_check:
         is_valid_game_state = utils.invalidate_game_if_wrong_side_moves(moved_pieces, is_valid_game_state, old_game_state["turn_count"])
+        print("5")
+        print(f"{is_valid_game_state=}")
     is_valid_game_state = utils.invalidate_game_if_too_much_gold_is_spent(old_game_state, gold_spent, is_valid_game_state)
     # mutates new_game_state object
     utils.cleanse_stunned_pieces(new_game_state)
@@ -192,6 +203,8 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         capture_positions, 
         is_pawn_exchange_possible
     )
+    print("6")
+    print(f"{is_valid_game_state=}")
     # mutates new_game_state object
     utils.clean_bishop_special_captures(new_game_state)
     # mutates new_game_state and moved_pieces objects

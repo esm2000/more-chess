@@ -24,7 +24,8 @@ const GameStateContext = createContext({
     goldCount: null,
     bishopSpecialCaptures: [],
     latestMovement: null,
-    queenReset: false
+    queenReset: false,
+    check: {white: false, black: false}
 })
 
 export function GameStateContextData() {

@@ -1,7 +1,7 @@
 from bson.objectid import ObjectId
+import copy
 import datetime
 from fastapi import APIRouter, HTTPException, Response
-import logging
 from pydantic import BaseModel, Extra
 from typing import Union
 
@@ -30,30 +30,14 @@ class GameState(BaseModel, extra=Extra.allow):
     bishop_special_captures: list
     latest_movement: dict
     queen_reset: bool
+    neutral_attack_log: dict
+    check: dict
+    castle_log: dict
 
 
 @router.post("/game", status_code=201)
 def create_game():
-    game_state = {
-        "turn_count": 0,
-        "position_in_play": [None, None],
-        "board_state": starting_game["board_state"],
-        "possible_moves": [],
-        "possible_captures": [],
-        "captured_pieces": {"white": [], "black": []},
-        "graveyard": [],
-        "neutral_attack_log": {},
-        "sword_in_the_stone_position": None,
-        "capture_point_advantage": None,
-        "black_defeat": False,
-        "white_defeat": False,
-        "gold_count": {"white": 0, "black": 0},
-        "last_updated": datetime.datetime.now(),
-        "bishop_special_captures": [],
-        "latest_movement": {},
-        "queen_reset": False,
-        "check": {"white": False, "black": False}
-    }
+    game_state = copy.deepcopy(starting_game)
     game_database = mongo_client["game_db"]
     game_database["games"].insert_one(game_state)
     game_state["id"] = str(game_state.pop("_id"))

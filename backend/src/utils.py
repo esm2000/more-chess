@@ -476,7 +476,7 @@ def check_to_see_if_more_than_one_piece_has_moved(
         # if more one piece moves and it's not a castle, invalidate 
         if count_of_pieces_on_new_state > 1:
             # TODO: REVAMP
-            # create a castle log that tracks if the king and right/left rooks of each side have moved (assume if the pieces are not in the starting positions that they've moved to cover unit tests + buying pieces)
+            # (done) create a castle log that tracks if the king and right/left rooks of each side have moved (assume if the pieces are not in the starting positions that they've moved to cover unit tests + buying pieces)
             # create a helper function that updates it based on moved_pieces (stick it right after moved_pieces is created)
             # if count of pieces on new state is greater than 2 automatically invalidate game state
             # if the two pieces are not a king and rook invalidate game state

@@ -19,6 +19,18 @@ empty_game = {
     "queen_reset": False,
     "neutral_attack_log": {},
     "check": {"white": False, "black": False},
+    "castle_log": {
+        "white": {
+            "has_king_moved": False,
+            "has_left_rook_moved": False, 
+            "has_right_rook_moved": False
+        }, 
+        "black": {
+            "has_king_moved": False,
+            "has_left_rook_moved": False, 
+            "has_right_rook_moved": False
+        }
+    },
     "board_state": [
         [None] * 8,
         [None] * 8,

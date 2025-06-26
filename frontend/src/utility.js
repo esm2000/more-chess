@@ -171,6 +171,7 @@ const camelToSnake = (str) =>
         return `_${letter.toLowerCase()}`;
     });
 
+// TODO: incorporate recursion but keep side effects in mind from the non-recursive implementation with snakeToCamel()
 const convertKeysToCamelCase = (obj) => {
     let newObj = {};
     for (let key in obj) {
@@ -182,6 +183,7 @@ const convertKeysToCamelCase = (obj) => {
     return newObj;
 }
 
+// TODO: incorporate recursion but keep side effects in mind from the non-recursive implementation with camelToSnake()
 function convertKeysToSnakeCase(obj) {
     const result = {};
     for (const key in obj) {

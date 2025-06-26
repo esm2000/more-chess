@@ -25,7 +25,12 @@ const GameStateContext = createContext({
     bishopSpecialCaptures: [],
     latestMovement: null,
     queenReset: false,
-    check: {white: false, black: false}
+    check: {white: false, black: false},
+    // for consistency add recursion to convertKeysToSnakeCase()
+    castleLog: {
+        white: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false},
+        black: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false}
+    }
 })
 
 export function GameStateContextData() {
@@ -101,6 +106,11 @@ export function GameStateProvider({children}) {
         check: {
             [PLAYERS[0]]: false,
             [PLAYERS[1]]: false
+        },
+        // for consistency add recursion to convertKeysToSnakeCase()
+        castleLog: {
+            white: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false},
+            black: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false}
         }
     }
     const [gameState, setGameState] = useState(initGameState);

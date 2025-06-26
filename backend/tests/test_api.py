@@ -265,6 +265,10 @@ def test_moving_more_than_one_piece_should_not_be_allowed(game):
 
 
 # TODO: strengthen castle check before testing
+def test_castle_log(game):
+    pass
+
+
 def test_castle(game):
     pass
 

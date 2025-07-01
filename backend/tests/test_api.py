@@ -266,14 +266,23 @@ def test_moving_more_than_one_piece_should_not_be_allowed(game):
 
 # TODO: strengthen castle check before testing
 def test_castle_log(game):
+    # test one scenario
     pass
 
 
 def test_castle(game):
+    # test all four possible scenarios starting from the first move of the game in each one
+    # consider modifying starting game to have less pieces but more than just rooks and kings
     pass
 
 
 def test_invalid_castle_should_not_be_allowed(game):
+    # split into multiple tests - starting from the first move of the game in each one 
+    # consider modifying starting game to have less pieces but more than just rooks and kings
+        # test king in check
+        # test captured rook (both left and right)
+        # test moved king
+        # test moved rook (both left and right)
     pass
 
 

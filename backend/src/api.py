@@ -152,6 +152,8 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         is_valid_game_state
     )
 
+    utils.update_castle_log(new_game_state, moved_pieces)
+
     gold_spent = utils.get_gold_spent(old_game_state, moved_pieces)
 
     is_pawn_exchange_possible = utils.check_is_pawn_exhange_is_possible(old_game_state, new_game_state, moved_pieces)

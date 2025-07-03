@@ -474,11 +474,14 @@ def check_to_see_if_more_than_one_piece_has_moved(
                     logger.error(f"A {'queen' if 'queen' in moved_piece['piece']['type'] else 'king'} has been bought")
                     is_valid_game_state = False
         # if more one piece moves and it's not a castle, invalidate 
-        if count_of_pieces_on_new_state > 1:
+        if count_of_pieces_on_new_state > 2:
+            logger.error("3 or more pieces of the same side have moved in one turn")
+            is_valid_game_state = False
+        elif count_of_pieces_on_new_state == 2:
             # TODO: REVAMP
             # (done) create a castle log that tracks if the king and right/left rooks of each side have moved (assume if the pieces are not in the starting positions that they've moved to cover unit tests + buying pieces)
             # (done) create a helper function that updates it based on moved_pieces (stick it right after moved_pieces is created)
-            # if count of pieces on new state is greater than 2 automatically invalidate game state
+            # (done) if count of pieces on new state is greater than 2 automatically invalidate game state
             # if the two pieces are not a king and rook invalidate game state
 
             # participating pieces must be unmoved according to the log
@@ -494,7 +497,7 @@ def check_to_see_if_more_than_one_piece_has_moved(
                     has_rook_moved = True
 
             if not (has_king_moved and has_rook_moved):
-                logger.error("A castle was not detected and more than one piece has moved")
+                logger.error("A castle was not detected and more than one piece of the same side has moved")
                 is_valid_game_state = False
 
     return is_valid_game_state

@@ -221,9 +221,11 @@ def test_moving_more_than_one_piece_should_not_be_allowed(game):
 
             game_on_next_turn['board_state'][1][1] = [{"type": "black_rook"}]
             game_on_next_turn['board_state'][0][0] = [{"type": "black_king"}]
+            game_on_next_turn['board_state'][1][7] = [{"type": "black_pawn"}]
 
             game_on_next_turn['board_state'][6][6] = [{"type": "white_rook"}]
             game_on_next_turn['board_state'][7][7] = [{"type": "white_king"}]
+            game_on_next_turn['board_state'][6][0] = [{"type": "white_pawn"}]
 
             if side == "black":
                 game_on_next_turn["turn_count"] = 1
@@ -237,12 +239,26 @@ def test_moving_more_than_one_piece_should_not_be_allowed(game):
                     game_state = api.GameState(**game_on_next_turn)
                     game = api.update_game_state(game["id"], game_state, Response(), player=True)
 
+                # two pieces at once (and they're not a king and rook)
+                with pytest.raises(HTTPException):
+                    game_on_next_turn = copy.deepcopy(game)
+                    game_on_next_turn["board_state"][6][7] = game_on_next_turn["board_state"][6][6]
+                    game_on_next_turn["board_state"][6][6] = None
+                    game_on_next_turn["board_state"][5][0] = game_on_next_turn["board_state"][6][0]
+                    game_on_next_turn["board_state"][6][0] = None
+                    game_state = api.GameState(**game_on_next_turn)
+                    game = api.update_game_state(game["id"], game_state, Response())
+
+                # more than two pieces at once 
                 with pytest.raises(HTTPException):
                     game_on_next_turn = copy.deepcopy(game)
                     game_on_next_turn["board_state"][6][7] = game_on_next_turn["board_state"][6][6]
                     game_on_next_turn["board_state"][6][6] = None
                     game_on_next_turn["board_state"][7][6] = game_on_next_turn["board_state"][7][7]
                     game_on_next_turn["board_state"][7][7] = None
+                    game_on_next_turn["board_state"][5][0] = game_on_next_turn["board_state"][6][0]
+                    game_on_next_turn["board_state"][6][0] = None
+
                     game_state = api.GameState(**game_on_next_turn)
                     game = api.update_game_state(game["id"], game_state, Response())
 
@@ -253,12 +269,26 @@ def test_moving_more_than_one_piece_should_not_be_allowed(game):
                     game_state = api.GameState(**game_on_next_turn)
                     game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
+                # two pieces at once (and they're not a king and rook)
+                with pytest.raises(HTTPException):
+                    game_on_next_turn = copy.deepcopy(game)
+                    game_on_next_turn["board_state"][1][2] = game_on_next_turn["board_state"][1][1]
+                    game_on_next_turn["board_state"][1][1] = None
+                    game_on_next_turn["board_state"][2][7] = game_on_next_turn["board_state"][1][7]
+                    game_on_next_turn["board_state"][1][7] = None
+                    
+                    game_state = api.GameState(**game_on_next_turn)
+                    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+
+                # more than two pieces at once
                 with pytest.raises(HTTPException):
                     game_on_next_turn = copy.deepcopy(game)
                     game_on_next_turn["board_state"][1][2] = game_on_next_turn["board_state"][1][1]
                     game_on_next_turn["board_state"][1][1] = None
                     game_on_next_turn["board_state"][0][1] = game_on_next_turn["board_state"][0][0]
                     game_on_next_turn["board_state"][0][0] = None
+                    game_on_next_turn["board_state"][2][7] = game_on_next_turn["board_state"][1][7]
+                    game_on_next_turn["board_state"][1][7] = None
                     
                     game_state = api.GameState(**game_on_next_turn)
                     game = api.update_game_state(game["id"], game_state, Response(), player=False)

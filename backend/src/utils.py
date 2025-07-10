@@ -478,16 +478,14 @@ def check_to_see_if_more_than_one_piece_has_moved(
             logger.error("3 or more pieces of the same side have moved in one turn")
             is_valid_game_state = False
         elif count_of_pieces_on_new_state == 2:
-            # TODO: REVAMP
-            # (done) create a castle log that tracks if the king and right/left rooks of each side have moved (assume if the pieces are not in the starting positions that they've moved to cover unit tests + buying pieces)
-            # (done) create a helper function that updates it based on moved_pieces (stick it right after moved_pieces is created)
-            # (done) if count of pieces on new state is greater than 2 automatically invalidate game state
-            # (done) if the two pieces are not a king and rook invalidate game state
             # participating pieces must be unmoved according to the log to be a castle
-                # (left) black rook [0, 0] + king [0, 4] -> black rook [0, 3] + king [0, 2]
-                # (right) black rook [0, 7] + king [0, 4] -> black rook [0, 5] + king [0, 6]
-                # (left) white rook [7, 0] + king [7, 4] -> white rook [7, 3] + king [7, 2]
-                # (right) white rook [7, 7] + king [7, 4] -> white rook [7, 5] + king [7, 6]
+            # (left) black rook [0, 0] + king [0, 4] -> black rook [0, 3] + king [0, 2]
+            # (right) black rook [0, 7] + king [0, 4] -> black rook [0, 5] + king [0, 6]
+            # (left) white rook [7, 0] + king [7, 4] -> white rook [7, 3] + king [7, 2]
+            # (right) white rook [7, 7] + king [7, 4] -> white rook [7, 5] + king [7, 6]
+
+            king_position = {"previous": [None, None], "current": [None, None]}
+            rook_position = {"previous": [None, None], "current": [None, None]}
 
             for moved_piece in moved_pieces:
                 if side != moved_piece["side"]:
@@ -496,12 +494,61 @@ def check_to_see_if_more_than_one_piece_has_moved(
                 if moved_piece["current_position"][0] is not None:
                     if "king" in moved_piece.get("piece"):
                         has_king_moved = True
+                        king_position["previous"], king_position["current"] = moved_piece["previous_position"], moved_piece["current_position"]
                     if "rook" in moved_piece.get("piece"):
                         has_rook_moved = True
+                        rook_position["previous"], rook_position["current"] = moved_piece["previous_position"], moved_piece["current_position"]
 
+            valid_castling_moves = {
+                "white": [
+                    {
+                        "king_from": [7, 4], "king_to": [7, 2],
+                        "rook_from": [7, 0], "rook_to": [7, 3],
+                        "king_moved": "has_king_moved",
+                        "rook_moved": "has_left_rook_moved"
+                    },
+                    {
+                        "king_from": [7, 4], "king_to": [7, 6],
+                        "rook_from": [7, 7], "rook_to": [7, 5],
+                        "king_moved": "has_king_moved",
+                        "rook_moved": "has_right_rook_moved"
+                    }
+                ],
+                "black": [
+                    {
+                        "king_from": [0, 4], "king_to": [0, 2],
+                        "rook_from": [0, 0], "rook_to": [0, 3],
+                        "king_moved": "has_king_moved",
+                        "rook_moved": "has_left_rook_moved"
+                    },
+                    {
+                        "king_from": [0, 4], "king_to": [0, 6],
+                        "rook_from": [0, 7], "rook_to": [0, 5],
+                        "king_moved": "has_king_moved",
+                        "rook_moved": "has_right_rook_moved"
+                    }
+                ]
+            }
+
+            # Check if both pieces haven't moved
             if not (has_king_moved and has_rook_moved):
                 logger.error("A castle was not detected and more than one piece of the same side has moved")
                 is_valid_game_state = False
+            else:
+                # Check for valid castling move
+                for move in valid_castling_moves.get(side, []):
+                    if (
+                        king_position["previous"] == move["king_from"]
+                        and king_position["current"] == move["king_to"]
+                        and rook_position["previous"] == move["rook_from"]
+                        and rook_position["current"] == move["rook_to"]
+                        and not new_game_state[side][move["king_moved"]]
+                        and not new_game_state[side][move["rook_moved"]]
+                    ):
+                        break  # Valid castling move
+                else:
+                    logger.error("Invalid castle was attempted")
+                    is_valid_game_state = False
 
     return is_valid_game_state
 

@@ -482,19 +482,22 @@ def check_to_see_if_more_than_one_piece_has_moved(
             # (done) create a castle log that tracks if the king and right/left rooks of each side have moved (assume if the pieces are not in the starting positions that they've moved to cover unit tests + buying pieces)
             # (done) create a helper function that updates it based on moved_pieces (stick it right after moved_pieces is created)
             # (done) if count of pieces on new state is greater than 2 automatically invalidate game state
-            # if the two pieces are not a king and rook invalidate game state
-
-            # participating pieces must be unmoved according to the log
-            # (left) black rook [0, 0] + king [0, 4] -> black rook [0, 3] + king [0, 2]
-            # (right) black rook [0, 7] + king [0, 4] -> black rook [0, 5] + king [0, 6]
-            # (left) white rook [7, 0] + king [7, 4] -> white rook [7, 3] + king [7, 2]
-            # (right) white rook [7, 7] + king [7, 4] -> white rook [7, 5] + king [7, 6]
+            # (done) if the two pieces are not a king and rook invalidate game state
+            # participating pieces must be unmoved according to the log to be a castle
+                # (left) black rook [0, 0] + king [0, 4] -> black rook [0, 3] + king [0, 2]
+                # (right) black rook [0, 7] + king [0, 4] -> black rook [0, 5] + king [0, 6]
+                # (left) white rook [7, 0] + king [7, 4] -> white rook [7, 3] + king [7, 2]
+                # (right) white rook [7, 7] + king [7, 4] -> white rook [7, 5] + king [7, 6]
 
             for moved_piece in moved_pieces:
-                if "king" in moved_piece.get("piece"):
-                    has_king_moved = True
-                if "rook" in moved_piece.get("piece"):
-                    has_rook_moved = True
+                if side != moved_piece["side"]:
+                    continue
+                
+                if moved_piece["current_position"][0] is not None:
+                    if "king" in moved_piece.get("piece"):
+                        has_king_moved = True
+                    if "rook" in moved_piece.get("piece"):
+                        has_rook_moved = True
 
             if not (has_king_moved and has_rook_moved):
                 logger.error("A castle was not detected and more than one piece of the same side has moved")

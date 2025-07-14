@@ -241,21 +241,10 @@ def enable_adjacent_bishop_captures(curr_game_state, side, possible_moves_dict):
 # used to reset game state during integration testing
 def clear_game(game):
     game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["turn_count"] = 0
-    game_on_next_turn["board_state"] = copy.deepcopy(empty_game["board_state"])
-
-    game_on_next_turn["graveyard"] = []
-    game_on_next_turn["gold_count"] = {
-        "white": 0,
-        "black": 0
-    }
-    game_on_next_turn["captured_pieces"] = {"white": [], "black": []}
-    game_on_next_turn["previous_state"] = copy.deepcopy(game_on_next_turn)
+    for key in empty_game:
+        game_on_next_turn[key] = copy.deepcopy(empty_game[key])
     
-    game_on_next_turn["black_defeat"] = False
-    game_on_next_turn["white_defeat"] = False
-
-    game_on_next_turn["sword_in_the_stone_position"] = None
+    game_on_next_turn["previous_state"] = copy.deepcopy(game_on_next_turn)
 
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())

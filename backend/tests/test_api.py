@@ -294,10 +294,166 @@ def test_moving_more_than_one_piece_should_not_be_allowed(game):
                     game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
 
-# TODO: strengthen castle check before testing
 def test_castle_log(game):
-    # test one scenario
-    pass
+    game = clear_game(game)
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["turn_count"] = 1
+
+    game_on_next_turn["board_state"][0][0] = [{"type": "black_rook"}]
+    game_on_next_turn["board_state"][0][4] = [{"type": "black_king"}]
+    game_on_next_turn["board_state"][0][7] = [{"type": "black_rook"}]
+    game_on_next_turn["board_state"][1][1] = [{"type": "black_pawn"}]
+
+    game_on_next_turn["board_state"][7][0] = [{"type": "white_rook"}]
+    game_on_next_turn["board_state"][7][4] = [{"type": "white_king"}]
+    game_on_next_turn["board_state"][7][7] = [{"type": "white_rook"}]
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    assert not game["castle_log"]["white"]["has_king_moved"]
+    assert not game["castle_log"]["white"]["has_left_rook_moved"]
+    assert not game["castle_log"]["white"]["has_right_rook_moved"]
+
+    assert not game["castle_log"]["black"]["has_king_moved"]
+    assert not game["castle_log"]["black"]["has_left_rook_moved"]
+    assert not game["castle_log"]["black"]["has_right_rook_moved"]
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["position_in_play"] = [1, 1]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][2][1] = game_on_next_turn["board_state"][1][1]
+    game_on_next_turn["board_state"][1][1] = None
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+
+    assert not game["castle_log"]["white"]["has_king_moved"]
+    assert not game["castle_log"]["white"]["has_left_rook_moved"]
+    assert not game["castle_log"]["white"]["has_right_rook_moved"]
+
+    assert not game["castle_log"]["black"]["has_king_moved"]
+    assert not game["castle_log"]["black"]["has_left_rook_moved"]
+    assert not game["castle_log"]["black"]["has_right_rook_moved"]
+
+    # king moved
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["position_in_play"] = [7, 4]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][7][5] = game_on_next_turn["board_state"][7][4]
+    game_on_next_turn["board_state"][7][4] = None
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["castle_log"]["white"]["has_king_moved"]
+    assert not game["castle_log"]["white"]["has_left_rook_moved"]
+    assert not game["castle_log"]["white"]["has_right_rook_moved"]
+
+    assert not game["castle_log"]["black"]["has_king_moved"]
+    assert not game["castle_log"]["black"]["has_left_rook_moved"]
+    assert not game["castle_log"]["black"]["has_right_rook_moved"]
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["position_in_play"] = [0, 4]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][0][5] = game_on_next_turn["board_state"][0][4]
+    game_on_next_turn["board_state"][0][4] = None
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+
+    assert game["castle_log"]["white"]["has_king_moved"]
+    assert not game["castle_log"]["white"]["has_left_rook_moved"]
+    assert not game["castle_log"]["white"]["has_right_rook_moved"]
+
+    assert game["castle_log"]["black"]["has_king_moved"]
+    assert not game["castle_log"]["black"]["has_left_rook_moved"]
+    assert not game["castle_log"]["black"]["has_right_rook_moved"]
+
+    # left rook moved
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["position_in_play"] = [7, 0]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][7][1] = game_on_next_turn["board_state"][7][0]
+    game_on_next_turn["board_state"][7][0] = None
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["castle_log"]["white"]["has_king_moved"]
+    assert game["castle_log"]["white"]["has_left_rook_moved"]
+    assert not game["castle_log"]["white"]["has_right_rook_moved"]
+
+    assert game["castle_log"]["black"]["has_king_moved"]
+    assert not game["castle_log"]["black"]["has_left_rook_moved"]
+    assert not game["castle_log"]["black"]["has_right_rook_moved"]
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["position_in_play"] = [0, 0]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][0][1] = game_on_next_turn["board_state"][0][0]
+    game_on_next_turn["board_state"][0][0] = None
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+
+    assert game["castle_log"]["white"]["has_king_moved"]
+    assert game["castle_log"]["white"]["has_left_rook_moved"]
+    assert not game["castle_log"]["white"]["has_right_rook_moved"]
+
+    assert game["castle_log"]["black"]["has_king_moved"]
+    assert game["castle_log"]["black"]["has_left_rook_moved"]
+    assert not game["castle_log"]["black"]["has_right_rook_moved"]
+
+    # right rook moved
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["position_in_play"] = [7, 7]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][7][6] = game_on_next_turn["board_state"][7][7]
+    game_on_next_turn["board_state"][7][7] = None
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["castle_log"]["white"]["has_king_moved"]
+    assert game["castle_log"]["white"]["has_left_rook_moved"]
+    assert game["castle_log"]["white"]["has_right_rook_moved"]
+
+    assert game["castle_log"]["black"]["has_king_moved"]
+    assert game["castle_log"]["black"]["has_left_rook_moved"]
+    assert not game["castle_log"]["black"]["has_right_rook_moved"]
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["position_in_play"] = [0, 7]
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][0][6] = game_on_next_turn["board_state"][0][7]
+    game_on_next_turn["board_state"][0][7] = None
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+
+    assert game["castle_log"]["white"]["has_king_moved"]
+    assert game["castle_log"]["white"]["has_left_rook_moved"]
+    assert game["castle_log"]["white"]["has_right_rook_moved"]
+
+    assert game["castle_log"]["black"]["has_king_moved"]
+    assert game["castle_log"]["black"]["has_left_rook_moved"]
+    assert game["castle_log"]["black"]["has_right_rook_moved"]
 
 
 def test_castle(game):
@@ -2402,6 +2558,10 @@ def test_capture_behavior_when_neutral_and_normal_piece_are_on_same_square(game)
             assert len(game["board_state"][4][7]) == 1
             assert game["board_state"][4][7][0]["type"] == "black_rook"
             assert "neutral_dragon" in game["captured_pieces"]["black"]
+
+
+def test_same_gaem_state_not_allowed():
+    pass
 
 
 # TODO: split test_alter_game() into several test cases (piece selection and movement is enough for original function)

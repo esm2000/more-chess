@@ -6,6 +6,7 @@ from src.utils import enable_adjacent_bishop_captures, evaluate_current_position
 #   "possible_moves": [[row, col], ...] - positions where piece can move
 #   "possible_captures": [[[row, col], [row, col]], ...] - first position is where piece has to move to capture piece in second position
 #   "threatening_move": [[row, col]] - position where king of opposite side is threatened by the piece in its current position
+#   "castle_moves": [[row, col]] - positions where piece can move to facilitate a castle
 # }
 def get_moves(old_game_state, new_game_state, curr_position, piece):
     if "pawn" in piece["type"]:
@@ -91,6 +92,8 @@ def process_possible_moves_dict(curr_game_state, curr_position, side, possible_m
     filter_moves_for_file_control(possible_moves_dict["possible_moves"], curr_position)
     filter_moves_for_file_control(possible_moves_dict["possible_captures"], curr_position, is_capture=True)
 
+    if "castle_moves" not in possible_moves_dict:
+        possible_moves_dict["castle_moves"] = []
     return possible_moves_dict
 
 
@@ -364,6 +367,7 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
     possible_moves = []
     possible_captures = []
     threatening_move = []
+    castle_moves = []
     
     range_limit = 3
     current_turn_count = curr_game_state["turn_count"]
@@ -402,8 +406,24 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
             range_count += 1
             possible_position[0] += direction[0]
             possible_position[1] += direction[1]
-            
-    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
+    
+    # Define constants for each side
+    start_row = 7 if side == "white" else 0
+    rook_cols = {"left": 0, "right": 7}
+    rook_targets = {"left": 3, "right": 5}
+
+    # Check if king is at starting position and hasn't moved
+    king_present = any(
+        "king" in piece.get("type", "") 
+        for piece in curr_game_state["board_state"][start_row][4] or []
+    )
+    if king_present and not curr_game_state["castle_log"][side]["has_king_moved"]:
+        # Determine valid rook moves
+        if curr_position == [start_row, rook_cols["left"]] and not curr_game_state["castle_log"][side]["has_left_rook_moved"]:
+            castle_moves.append([start_row, rook_targets["left"]])
+        elif curr_position == [start_row, rook_cols["right"]] and not curr_game_state["castle_log"][side]["has_right_rook_moved"]:
+            castle_moves.append([start_row, rook_targets["right"]])
+    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move, "castle_moves": castle_moves})
 
 
 def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
@@ -475,6 +495,7 @@ def get_moves_for_king(curr_game_state, prev_game_state, curr_position):
     
     possible_moves = []
     possible_captures = []
+    castle_moves = []
     
     directions = [[0, 1], [1, 0], [0, -1], [-1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]]
     for direction in directions:
@@ -495,4 +516,27 @@ def get_moves_for_king(curr_game_state, prev_game_state, curr_position):
         elif any(("neutral" in piece["type"] and piece.get("health", 0) == 1) for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
             possible_moves.append(possible_position.copy())
             possible_captures.append([possible_position.copy(), possible_position.copy()])
-    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": []}, is_king=True)
+    
+    start_row = 7 if side == "white" else 0
+    king_start = [start_row, 4]
+    
+    # Only allow castling if king is in its starting position and hasn't moved
+    if curr_position == king_start and not curr_game_state["castle_log"][side]["has_king_moved"]:
+        # Helper function to check if a rook is present on a specific square
+        def rook_present(row, col):
+            return any(
+                "rook" in piece.get("type", "")
+                for piece in curr_game_state["board_state"][row][col] or []
+            )
+
+        # Check for left (queenside) rook
+        if (rook_present(start_row, 0) and 
+            not curr_game_state["castle_log"][side]["has_left_rook_moved"]):
+            castle_moves.append([start_row, 2])  # King moves to column 2
+
+        # Check for right (kingside) rook
+        if (rook_present(start_row, 7) and 
+            not curr_game_state["castle_log"][side]["has_right_rook_moved"]):
+            castle_moves.append([start_row, 6])  # King moves to column 6
+    
+    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": [], "castle_moves": castle_moves}, is_king=True)

@@ -451,7 +451,7 @@ def check_to_see_if_more_than_one_piece_has_moved(
                     logger.error(f"Unable to determine move for {moved_piece['piece']['type']} due to: {traceback.format_exc()}")
                     is_valid_game_state = False
         # if move(s) are invalid, invalidate
-                if moved_piece["current_position"] not in moves_info["possible_moves"]:
+                if moved_piece["current_position"] not in moves_info["possible_moves"] + moves_info["castle_moves"]:
                     logger.error(f"Square {moved_piece['previous_position']} to square {moved_piece['current_position']} invalid for {moved_piece['piece']['type']}")
                     is_valid_game_state = False
         # if a piece has spawned without being exchanged for a pawn
@@ -481,10 +481,11 @@ def check_to_see_if_more_than_one_piece_has_moved(
                     continue
                 
                 if moved_piece["current_position"][0] is not None:
-                    if "king" in moved_piece.get("piece"):
+                    moved_piece_info = moved_piece.get("piece", {})
+                    if "king" in moved_piece_info.get("type", ""):
                         has_king_moved = True
                         king_position["previous"], king_position["current"] = moved_piece["previous_position"], moved_piece["current_position"]
-                    if "rook" in moved_piece.get("piece"):
+                    if "rook" in moved_piece_info.get("type", ""):
                         has_rook_moved = True
                         rook_position["previous"], rook_position["current"] = moved_piece["previous_position"], moved_piece["current_position"]
 
@@ -531,9 +532,9 @@ def check_to_see_if_more_than_one_piece_has_moved(
                         and king_position["current"] == move["king_to"]
                         and rook_position["previous"] == move["rook_from"]
                         and rook_position["current"] == move["rook_to"]
-                        and not new_game_state[side][move["king_moved"]]
-                        and not new_game_state[side][move["rook_moved"]]
-                    ):
+                        and not new_game_state["castle_log"][side][move["king_moved"]]
+                        and not new_game_state["castle_log"][side][move["rook_moved"]]
+                    ):  
                         break  # Valid castling move
                 else:
                     logger.error("Invalid castle was attempted")

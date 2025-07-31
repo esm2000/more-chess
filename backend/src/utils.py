@@ -534,6 +534,7 @@ def check_to_see_if_more_than_one_piece_has_moved(
                         and rook_position["current"] == move["rook_to"]
                         and not new_game_state["castle_log"][side][move["king_moved"]]
                         and not new_game_state["castle_log"][side][move["rook_moved"]]
+                        and not new_game_state["check"][side]
                     ):  
                         break  # Valid castling move
                 else:

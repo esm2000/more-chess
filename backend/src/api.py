@@ -184,7 +184,7 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     utils.clean_bishop_special_captures(new_game_state)
     # mutates new_game_state and moved_pieces objects
     utils.damage_neutral_monsters(new_game_state, moved_pieces)
-    is_valid_game_state = utils.invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_game_state, new_game_state, moved_pieces, is_valid_game_state, is_pawn_exchange_possible)   
+    is_valid_game_state = utils.invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_game_state, new_game_state, moved_pieces, is_valid_game_state, is_pawn_exchange_possible)
 
     # if a neutral monster is killed and a piece has not moved to its position, invalidate 
     if utils.get_neutral_monster_slain_position(moved_pieces) and not utils.is_neutral_monster_killed(moved_pieces):

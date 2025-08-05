@@ -9,6 +9,46 @@ import src.api as api
 from src.utils import clear_game
 
 
+def select_white_piece(game, row, col):
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["position_in_play"] = [row, col]
+    game_state = api.GameState(**game_on_next_turn)
+    updated_game = api.update_game_state(game["id"], game_state, Response())
+    return updated_game
+
+def select_black_piece(game, row, col):
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["position_in_play"] = [row, col]
+    game_state = api.GameState(**game_on_next_turn)
+    updated_game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    return updated_game
+
+def move_white_piece(game, from_row, from_col, to_row, to_col):
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][to_row][to_col] = game_on_next_turn["board_state"][from_row][from_col]
+    game_on_next_turn["board_state"][from_row][from_col] = None
+    game_state = api.GameState(**game_on_next_turn)
+    updated_game = api.update_game_state(game["id"], game_state, Response())
+    return updated_game
+
+def move_black_piece(game, from_row, from_col, to_row, to_col):
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][to_row][to_col] = game_on_next_turn["board_state"][from_row][from_col]
+    game_on_next_turn["board_state"][from_row][from_col] = None
+    game_state = api.GameState(**game_on_next_turn)
+    updated_game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    return updated_game
+
+def select_and_move_white_piece(game, from_row, from_col, to_row, to_col):
+    game = select_white_piece(game, from_row, from_col)
+    return move_white_piece(game, from_row, from_col, to_row, to_col)
+
+
+def select_and_move_black_piece(game, from_row, from_col, to_row, to_col):
+    game = select_black_piece(game, from_row, from_col)
+    return move_black_piece(game, from_row, from_col, to_row, to_col)
+
+
 @pytest.fixture
 def game():
     game = api.create_game()
@@ -75,23 +115,15 @@ def test_game_created(game):
 
 def test_piece_selection_and_movement(game):
     # white piece selection and movement
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [6, 0]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
-    game_on_previous_turn = game_on_next_turn
+    game = select_white_piece(game=game, row=6, col=0)
+    game_on_previous_turn = copy.deepcopy(game)
 
-    assert game["board_state"] == game_on_previous_turn["board_state"]
     assert game["position_in_play"] == [6, 0]
     assert game["turn_count"] == game_on_previous_turn["turn_count"]
     assert sorted(game["possible_moves"]) == sorted([[5, 0], [4, 0]])
     assert len(game["possible_captures"]) == 0
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][5][0] = game_on_next_turn["board_state"][6][0]
-    game_on_next_turn["board_state"][6][0] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = move_white_piece(game=game, from_row=6, from_col=0, to_row=5, to_col=0)
 
     assert game["board_state"][5][0][0]["type"] == "white_pawn"
     assert game["board_state"][6][0] is None
@@ -100,23 +132,15 @@ def test_piece_selection_and_movement(game):
     assert len(game["possible_captures"]) == 0
 
     # black piece selection and movement
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [1, 0]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-    game_on_previous_turn = game_on_next_turn
+    game = select_black_piece(game=game, row=1, col=0)
+    game_on_previous_turn = copy.deepcopy(game)
 
-    assert game["board_state"] == game_on_previous_turn["board_state"]
     assert game["position_in_play"] == [1, 0]
     assert game["turn_count"] == game_on_previous_turn["turn_count"]
     assert sorted(game["possible_moves"]) == sorted([[2, 0], [3, 0]])
     assert len(game["possible_captures"]) == 0
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][2][0] = game_on_next_turn["board_state"][1][0]
-    game_on_next_turn["board_state"][1][0] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = move_black_piece(game=game, from_row=1, from_col=0, to_row=2, to_col=0)
 
     assert game["board_state"][2][0][0]["type"] == "black_pawn"
     assert game["board_state"][1][0] is None
@@ -137,16 +161,7 @@ def test_spawn_monsters(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [1, 2]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][2][2] = game_on_next_turn["board_state"][1][2]
-    game_on_next_turn["board_state"][1][2] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_black_piece(game=game, from_row=1, from_col=2, to_row=2, to_col=2)
 
     assert game["board_state"][4][7][0]["type"] == "neutral_dragon"
     assert game["board_state"][3][0][0]["type"] == "neutral_board_herald"
@@ -156,16 +171,7 @@ def test_spawn_monsters(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [6, 2]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][5][2] = game_on_next_turn["board_state"][6][2]
-    game_on_next_turn["board_state"][6][2] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=6, from_col=2, to_row=5, to_col=2)
 
     assert game["board_state"][3][0][0]["type"] == "neutral_baron_nashor"
     
@@ -185,10 +191,7 @@ def test_moving_more_than_one_piece_should_not_be_allowed(game):
             # same piece types
             if side == "white":
                 if position_in_play:
-                    game_on_next_turn = copy.deepcopy(game)
-                    game_on_next_turn["position_in_play"] = [6, 3]
-                    game_state = api.GameState(**game_on_next_turn)
-                    game = api.update_game_state(game["id"], game_state, Response(), player=True)
+                    game = select_white_piece(game=game, row=6, col=3)
 
                 with pytest.raises(HTTPException):
                     game_on_next_turn = copy.deepcopy(game)
@@ -201,10 +204,7 @@ def test_moving_more_than_one_piece_should_not_be_allowed(game):
 
             if side == "black":
                 if position_in_play:
-                    game_on_next_turn = copy.deepcopy(game)
-                    game_on_next_turn["position_in_play"] = [1, 4]
-                    game_state = api.GameState(**game_on_next_turn)
-                    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+                    game = select_black_piece(game=game, row=1, col=4)
 
                 with pytest.raises(HTTPException):
                     game_on_next_turn = copy.deepcopy(game)
@@ -234,10 +234,7 @@ def test_moving_more_than_one_piece_should_not_be_allowed(game):
 
             if side == "white":
                 if position_in_play:
-                    game_on_next_turn = copy.deepcopy(game)
-                    game_on_next_turn["position_in_play"] = [6, 6]
-                    game_state = api.GameState(**game_on_next_turn)
-                    game = api.update_game_state(game["id"], game_state, Response(), player=True)
+                    game = select_white_piece(game=game, row=6, col=6)
 
                 # two pieces at once (and they're not a king and rook)
                 with pytest.raises(HTTPException):
@@ -264,10 +261,7 @@ def test_moving_more_than_one_piece_should_not_be_allowed(game):
 
             if side == "black":
                 if position_in_play:
-                    game_on_next_turn = copy.deepcopy(game)
-                    game_on_next_turn["position_in_play"] = [1, 1]
-                    game_state = api.GameState(**game_on_next_turn)
-                    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+                    game = select_black_piece(game=game, row=1, col=1)
 
                 # two pieces at once (and they're not a king and rook)
                 with pytest.raises(HTTPException):
@@ -319,16 +313,7 @@ def test_castle_log(game):
     assert not game["castle_log"]["black"]["has_left_rook_moved"]
     assert not game["castle_log"]["black"]["has_right_rook_moved"]
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [1, 1]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][2][1] = game_on_next_turn["board_state"][1][1]
-    game_on_next_turn["board_state"][1][1] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_black_piece(game=game, from_row=1, from_col=1, to_row=2, to_col=1)
 
     assert not game["castle_log"]["white"]["has_king_moved"]
     assert not game["castle_log"]["white"]["has_left_rook_moved"]
@@ -339,16 +324,7 @@ def test_castle_log(game):
     assert not game["castle_log"]["black"]["has_right_rook_moved"]
 
     # king moved
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [7, 4]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][7][5] = game_on_next_turn["board_state"][7][4]
-    game_on_next_turn["board_state"][7][4] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=7, from_col=4, to_row=7, to_col=5)
 
     assert game["castle_log"]["white"]["has_king_moved"]
     assert not game["castle_log"]["white"]["has_left_rook_moved"]
@@ -358,16 +334,7 @@ def test_castle_log(game):
     assert not game["castle_log"]["black"]["has_left_rook_moved"]
     assert not game["castle_log"]["black"]["has_right_rook_moved"]
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [0, 4]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][0][5] = game_on_next_turn["board_state"][0][4]
-    game_on_next_turn["board_state"][0][4] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_black_piece(game=game, from_row=0, from_col=4, to_row=0, to_col=5)
 
     assert game["castle_log"]["white"]["has_king_moved"]
     assert not game["castle_log"]["white"]["has_left_rook_moved"]
@@ -378,16 +345,7 @@ def test_castle_log(game):
     assert not game["castle_log"]["black"]["has_right_rook_moved"]
 
     # left rook moved
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [7, 0]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][7][1] = game_on_next_turn["board_state"][7][0]
-    game_on_next_turn["board_state"][7][0] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=7, from_col=0, to_row=7, to_col=1)
 
     assert game["castle_log"]["white"]["has_king_moved"]
     assert game["castle_log"]["white"]["has_left_rook_moved"]
@@ -397,16 +355,7 @@ def test_castle_log(game):
     assert not game["castle_log"]["black"]["has_left_rook_moved"]
     assert not game["castle_log"]["black"]["has_right_rook_moved"]
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [0, 0]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][0][1] = game_on_next_turn["board_state"][0][0]
-    game_on_next_turn["board_state"][0][0] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_black_piece(game=game, from_row=0, from_col=0, to_row=0, to_col=1)
 
     assert game["castle_log"]["white"]["has_king_moved"]
     assert game["castle_log"]["white"]["has_left_rook_moved"]
@@ -417,16 +366,7 @@ def test_castle_log(game):
     assert not game["castle_log"]["black"]["has_right_rook_moved"]
 
     # right rook moved
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [7, 7]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][7][6] = game_on_next_turn["board_state"][7][7]
-    game_on_next_turn["board_state"][7][7] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=7, from_col=7, to_row=7, to_col=6)
 
     assert game["castle_log"]["white"]["has_king_moved"]
     assert game["castle_log"]["white"]["has_left_rook_moved"]
@@ -436,16 +376,7 @@ def test_castle_log(game):
     assert game["castle_log"]["black"]["has_left_rook_moved"]
     assert not game["castle_log"]["black"]["has_right_rook_moved"]
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [0, 7]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][0][6] = game_on_next_turn["board_state"][0][7]
-    game_on_next_turn["board_state"][0][7] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_black_piece(game=game, from_row=0, from_col=7, to_row=0, to_col=6)
 
     assert game["castle_log"]["white"]["has_king_moved"]
     assert game["castle_log"]["white"]["has_left_rook_moved"]
@@ -464,115 +395,25 @@ def test_left_castles(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [6, 1]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=6, from_col=1, to_row=4, to_col=1)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][4][1] = game_on_next_turn["board_state"][6][1]
-    game_on_next_turn["board_state"][6][1] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_black_piece(game=game, from_row=1, from_col=1, to_row=3, to_col=1)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [1, 1]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_white_piece(game=game, from_row=7, from_col=1, to_row=5, to_col=0)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][3][1] = game_on_next_turn["board_state"][1][1]
-    game_on_next_turn["board_state"][1][1] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_black_piece(game=game, from_row=0, from_col=1, to_row=2, to_col=0)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [7, 1]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=6, from_col=3, to_row=4, to_col=3)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][5][0] = game_on_next_turn["board_state"][7][1]
-    game_on_next_turn["board_state"][7][1] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_black_piece(game=game, from_row=2, from_col=3, to_row=3, to_col=3)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [0, 1]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_white_piece(game=game, from_row=7, from_col=2, to_row=3, to_col=6)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][2][0] = game_on_next_turn["board_state"][0][1]
-    game_on_next_turn["board_state"][0][1] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_black_piece(game=game, from_row=0, from_col=2, to_row=4, to_col=6)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [6, 3]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=7, from_col=3, to_row=6, to_col=3)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][4][3] = game_on_next_turn["board_state"][6][3]
-    game_on_next_turn["board_state"][6][3] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [2, 3]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][3][3] = game_on_next_turn["board_state"][2][3]
-    game_on_next_turn["board_state"][2][3] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [7, 2]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][3][6] = game_on_next_turn["board_state"][7][2]
-    game_on_next_turn["board_state"][7][2] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [0, 2]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][4][6] = game_on_next_turn["board_state"][0][2]
-    game_on_next_turn["board_state"][0][2] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [7, 3]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][6][3] = game_on_next_turn["board_state"][7][3]
-    game_on_next_turn["board_state"][7][3] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [0, 3]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][1][3] = game_on_next_turn["board_state"][0][3]
-    game_on_next_turn["board_state"][0][3] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_black_piece(game=game, from_row=0, from_col=3, to_row=1, to_col=3)
 
     # the UI will show a castle button when no position in play is selected and conditions are met
     # so no need to select a position in play
@@ -633,71 +474,17 @@ def test_right_castles(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [6, 6]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=6, from_col=6, to_row=4, to_col=6)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][4][6] = game_on_next_turn["board_state"][6][6]
-    game_on_next_turn["board_state"][6][6] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_black_piece(game=game, from_row=1, from_col=6, to_row=3, to_col=6)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [1, 6]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_white_piece(game=game, from_row=7, from_col=6, to_row=5, to_col=7)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][3][6] = game_on_next_turn["board_state"][1][1]
-    game_on_next_turn["board_state"][1][6] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_black_piece(game=game, from_row=0, from_col=6, to_row=2, to_col=7)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [7, 6]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=7, from_col=5, to_row=6, to_col=6)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][5][7] = game_on_next_turn["board_state"][7][6]
-    game_on_next_turn["board_state"][7][6] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [0, 6]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][2][7] = game_on_next_turn["board_state"][0][6]
-    game_on_next_turn["board_state"][0][6] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [7, 5]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][6][6] = game_on_next_turn["board_state"][7][5]
-    game_on_next_turn["board_state"][7][5] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [0, 5]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][1][6] = game_on_next_turn["board_state"][0][5]
-    game_on_next_turn["board_state"][0][5] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_black_piece(game=game, from_row=0, from_col=5, to_row=1, to_col=6)
 
     # the UI will show a castle button when no position in play is selected and conditions are met
     # so no need to select a position in play
@@ -765,16 +552,7 @@ def test_castle_should_not_be_allowed_when_in_check(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [0, 7]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][5][2] = game_on_next_turn["board_state"][0][7]
-    game_on_next_turn["board_state"][0][7] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_black_piece(game=game, from_row=0, from_col=7, to_row=5, to_col=2)
 
     with pytest.raises(HTTPException):
         game_on_next_turn = copy.deepcopy(game)
@@ -799,16 +577,7 @@ def test_castle_should_not_be_allowed_when_in_check(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [7, 7]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][2][2] = game_on_next_turn["board_state"][7][7]
-    game_on_next_turn["board_state"][7][7] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=7, from_col=7, to_row=2, to_col=2)
 
     with pytest.raises(HTTPException):
         game_on_next_turn = copy.deepcopy(game)
@@ -830,7 +599,6 @@ def test_castle_should_not_be_allowed_after_moving_king(game):
     game_on_next_turn["board_state"][0][7] = [{"type": "black_rook"}]
     game_on_next_turn["board_state"][1][7] = [{"type": "black_pawn"}]
 
-
     game_on_next_turn["board_state"][7][4] = [{"type": "white_king"}]
     game_on_next_turn["board_state"][7][0] = [{"type": "white_rook"}]
     game_on_next_turn["board_state"][7][7] = [{"type": "white_rook"}]
@@ -839,49 +607,13 @@ def test_castle_should_not_be_allowed_after_moving_king(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [7, 4]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=7, from_col=4, to_row=6, to_col=4)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][6][4] = game_on_next_turn["board_state"][7][4]
-    game_on_next_turn["board_state"][7][4] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_black_piece(game=game, from_row=0, from_col=4, to_row=1, to_col=4)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [0, 4]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_white_piece(game=game, from_row=6, from_col=4, to_row=7, to_col=4)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][1][4] = game_on_next_turn["board_state"][0][4]
-    game_on_next_turn["board_state"][0][4] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [6, 4]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][7][4] = game_on_next_turn["board_state"][6][4]
-    game_on_next_turn["board_state"][6][4] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [1, 4]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][0][4] = game_on_next_turn["board_state"][1][4]
-    game_on_next_turn["board_state"][1][4] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_black_piece(game=game, from_row=1, from_col=4, to_row=0, to_col=4)
 
     assert game["castle_log"]["white"]["has_king_moved"]
     assert not game["castle_log"]["white"]["has_left_rook_moved"]
@@ -911,16 +643,7 @@ def test_castle_should_not_be_allowed_after_moving_king(game):
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [6, 7]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][5][7] = game_on_next_turn["board_state"][6][7]
-    game_on_next_turn["board_state"][6][7] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=6, from_col=7, to_row=5, to_col=7)
 
     with pytest.raises(HTTPException):
         game_on_next_turn = copy.deepcopy(game)
@@ -944,8 +667,97 @@ def test_castle_should_not_be_allowed_after_moving_king(game):
 
 
 def test_castle_should_not_be_allowed_after_moving_rook(game):
-    # test moved rook (both left and right)
-    pass
+    game = clear_game(game)
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][0][4] = [{"type": "black_king"}]
+    game_on_next_turn["board_state"][0][0] = [{"type": "black_rook"}]
+    game_on_next_turn["board_state"][0][7] = [{"type": "black_rook"}]
+    game_on_next_turn["board_state"][1][7] = [{"type": "black_pawn"}]
+
+    game_on_next_turn["board_state"][7][4] = [{"type": "white_king"}]
+    game_on_next_turn["board_state"][7][0] = [{"type": "white_rook"}]
+    game_on_next_turn["board_state"][7][7] = [{"type": "white_rook"}]
+    game_on_next_turn["board_state"][6][7] = [{"type": "white_pawn"}]
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game = select_and_move_white_piece(game=game, from_row=7, from_col=0, to_row=7, to_col=1)
+
+    game = select_and_move_black_piece(game=game, from_row=0, from_col=0, to_row=0, to_col=1)
+
+    game = select_and_move_white_piece(game=game, from_row=7, from_col=1, to_row=7, to_col=0)
+
+    game = select_and_move_black_piece(game=game, from_row=0, from_col=1, to_row=0, to_col=0)
+
+    
+    assert not game["castle_log"]["white"]["has_king_moved"]
+    assert game["castle_log"]["white"]["has_left_rook_moved"]
+    assert not game["castle_log"]["white"]["has_right_rook_moved"]
+
+    assert not game["castle_log"]["black"]["has_king_moved"]
+    assert game["castle_log"]["black"]["has_left_rook_moved"]
+    assert not game["castle_log"]["black"]["has_right_rook_moved"]
+
+    game = select_and_move_white_piece(game=game, from_row=7, from_col=7, to_row=7, to_col=6)
+
+    game = select_and_move_black_piece(game=game, from_row=0, from_col=7, to_row=0, to_col=6)
+
+    game = select_and_move_white_piece(game=game, from_row=7, from_col=6, to_row=7, to_col=7)
+
+    game = select_and_move_black_piece(game=game, from_row=0, from_col=6, to_row=0, to_col=7)
+
+    assert not game["castle_log"]["white"]["has_king_moved"]
+    assert game["castle_log"]["white"]["has_left_rook_moved"]
+    assert game["castle_log"]["white"]["has_right_rook_moved"]
+
+    assert not game["castle_log"]["black"]["has_king_moved"]
+    assert game["castle_log"]["black"]["has_left_rook_moved"]
+    assert game["castle_log"]["black"]["has_right_rook_moved"]
+
+    with pytest.raises(HTTPException):
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][7][2] = game_on_next_turn["board_state"][7][4]
+        game_on_next_turn["board_state"][7][4] = None
+
+        game_on_next_turn["board_state"][7][3] = game_on_next_turn["board_state"][7][0]
+        game_on_next_turn["board_state"][7][0] = None
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response())
+
+    with pytest.raises(HTTPException):
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][7][6] = game_on_next_turn["board_state"][7][4]
+        game_on_next_turn["board_state"][7][4] = None
+
+        game_on_next_turn["board_state"][7][5] = game_on_next_turn["board_state"][7][7]
+        game_on_next_turn["board_state"][7][7] = None
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response())
+
+    game = select_and_move_white_piece(game=game, from_row=6, from_col=7, to_row=5, to_col=7)
+
+    with pytest.raises(HTTPException):
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][0][2] = game_on_next_turn["board_state"][0][4]
+        game_on_next_turn["board_state"][0][4] = None
+
+        game_on_next_turn["board_state"][0][3] = game_on_next_turn["board_state"][0][0]
+        game_on_next_turn["board_state"][0][0] = None
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), player=False)
+
+    with pytest.raises(HTTPException):
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][0][6] = game_on_next_turn["board_state"][0][4]
+        game_on_next_turn["board_state"][0][4] = None
+
+        game_on_next_turn["board_state"][0][5] = game_on_next_turn["board_state"][0][7]
+        game_on_next_turn["board_state"][0][7] = None
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), player=False)
+
 
 # TODO: currently broken as its being split up
 def test_alter_game(game):
@@ -1250,11 +1062,8 @@ def test_bishop_energize_stacks(game):
 
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
-    
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [3, 3]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
+
+    game = select_white_piece(game=game, row=3, col=3)
 
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][1][1] = [{"type": "white_bishop", "energize_stacks": 0}]
@@ -1279,10 +1088,7 @@ def test_bishop_debuff_application(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [5, 1]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
+    game = select_white_piece(game=game, row=5, col=1)
 
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][5][1] = None 
@@ -1306,10 +1112,7 @@ def test_adjacent_capture_of_bishop(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [3, 3]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
+    game = select_white_piece(game=game, row=3, col=3)
 
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][3][3] = None 
@@ -1335,13 +1138,9 @@ def test_queen_stun(game):
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["position_in_play"] = [4, 7]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][4][7] = None
-    game_on_next_turn["board_state"][4][3] = [{"type": "white_queen"}]
-    game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state(game["id"], game_state, Response())
+
+    game = select_and_move_white_piece(game=game, from_row=4, from_col=7, to_row=4, to_col=3)
 
     assert game["board_state"][3][3][0]["type"] == "black_pawn"
     assert game["board_state"][3][3][0]["is_stunned"]
@@ -1355,16 +1154,7 @@ def test_queen_stun(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [4, 7]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][4][7] = None
-    game_on_next_turn["board_state"][4][6] = [{"type": "white_queen"}]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=4, from_col=7, to_row=4, to_col=6)
 
     assert game["board_state"][3][3][0]["type"] == "black_pawn"
     assert not game["board_state"][3][3][0].get("is_stunned", False)
@@ -1383,7 +1173,7 @@ def test_queen_stun(game):
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["position_in_play"] = [3, 7]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
+    game = api.update_game_state(game["id"], game_state, Response())
 
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][3][7] = None
@@ -1399,16 +1189,7 @@ def test_queen_stun(game):
     game_on_next_turn["previous_state"] = copy.deepcopy(game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [3, 3]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
-    
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][3][3] = None
-    game_on_next_turn["board_state"][3][0] = [{"type": "white_queen"}]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=3, from_col=3, to_row=3, to_col=0)
 
     assert game["board_state"][2][0][0]["type"] == "black_pawn"
     assert game["board_state"][2][0][0].get("is_stunned", False) 
@@ -1423,31 +1204,15 @@ def test_queen_stun(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [4, 7]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_black_piece(game=game, from_row=4, from_col=7, to_row=4, to_col=4)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][4][7] = None
-    game_on_next_turn["board_state"][4][4] = [{"type": "black_queen"}]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [3, 3]
-    game_state = api.GameState(**game_on_next_turn)
     with pytest.raises(Exception):
         # should fail due to the stunned piece being the only piece on white's side, causing a turn skip
-        game = api.update_game_state(game["id"], game_state, Response(), player=True)
+        game = select_white_piece(game=game, row=3, col=3)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][3][3] = None
-    game_on_next_turn["board_state"][2][3] = [{"type": "white_pawn"}]
-    game_state = api.GameState(**game_on_next_turn)
     with pytest.raises(Exception):
         # should fail due to piece being stunned
-        game = api.update_game_state(game["id"], game_state, Response())
+        game = move_white_piece(game=game, from_row=3, from_col=3, to_row=2, to_col=3)
 
 
 def test_stun_cleanse(game):
@@ -1462,38 +1227,11 @@ def test_stun_cleanse(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [4, 7]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_black_piece(game=game, from_row=4, from_col=7, to_row=4, to_col=4)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][4][7] = None
-    game_on_next_turn["board_state"][4][4] = [{"type": "black_queen"}]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_white_piece(game=game, from_row=3, from_col=2, to_row=2, to_col=2)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [3, 2]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][3][2] = None
-    game_on_next_turn["board_state"][2][2] = [{"type": "white_pawn"}]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [4, 4]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][4][4] = None
-    game_on_next_turn["board_state"][4][5] = [{"type": "black_queen"}]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_black_piece(game=game, from_row=4, from_col=4, to_row=4, to_col=5)
 
     assert game["board_state"][3][3][0]["type"] == "white_pawn"
     assert not game["board_state"][3][3][0].get("is_stunned", False) 
@@ -1510,18 +1248,7 @@ def test_full_bishop_debuff_capture(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [4, 2]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
-
-    game_on_next_turn = copy.deepcopy(game)
-
-    game_on_next_turn["board_state"][5][1] = game_on_next_turn["board_state"][4][2]
-    game_on_next_turn["board_state"][4][2] = None
-    
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=4, from_col=2, to_row=5, to_col=1)
 
     assert game["board_state"][6][0][0]["bishop_debuff"] == 3
     
@@ -1571,18 +1298,7 @@ def test_bishop_debuff_double_stack_prevention(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [3, 4]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
-
-    game_on_next_turn = copy.deepcopy(game)
-
-    game_on_next_turn["board_state"][2][5] = game_on_next_turn["board_state"][3][4]
-    game_on_next_turn["board_state"][3][4] = None
-    
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=3, from_col=4, to_row=2, to_col=5)
 
     assert game["board_state"][0][5][0].get("bishop_debuff", 0) == 1
  
@@ -1601,18 +1317,7 @@ def test_full_bishop_debuff_adjacent_application(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [4, 2]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
-
-    game_on_next_turn = copy.deepcopy(game)
-
-    game_on_next_turn["board_state"][5][1] = game_on_next_turn["board_state"][4][2]
-    game_on_next_turn["board_state"][4][2] = None
-    
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=4, from_col=2, to_row=5, to_col=1)
 
     assert game["board_state"][6][0][0]["bishop_debuff"] == 1
     
@@ -1647,18 +1352,7 @@ def test_full_bishop_debuff_spare(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [4, 2]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
-
-    game_on_next_turn = copy.deepcopy(game)
-
-    game_on_next_turn["board_state"][5][1] = game_on_next_turn["board_state"][4][2]
-    game_on_next_turn["board_state"][4][2] = None
-    
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=4, from_col=2, to_row=5, to_col=1)
 
     assert game["board_state"][6][0][0]["bishop_debuff"] == 3
     original_energize_stack_value = game["board_state"][5][1][0]["energize_stacks"]
@@ -1691,18 +1385,7 @@ def test_multiple_full_bishop_debuffs(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [4, 2]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
-
-    game_on_next_turn = copy.deepcopy(game)
-
-    game_on_next_turn["board_state"][5][1] = game_on_next_turn["board_state"][4][2]
-    game_on_next_turn["board_state"][4][2] = None
-    
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=4, from_col=2, to_row=5, to_col=1)
 
     assert game["board_state"][6][0][0]["bishop_debuff"] == 3
     assert game["board_state"][6][2][0]["bishop_debuff"] == 3
@@ -1780,28 +1463,12 @@ def test_full_bishop_debuff_stacks_prevent_other_moves(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [4, 2]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
-
-    game_on_next_turn = copy.deepcopy(game)
-
-    game_on_next_turn["board_state"][5][1] = game_on_next_turn["board_state"][4][2]
-    game_on_next_turn["board_state"][4][2] = None
-    
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=4, from_col=2, to_row=5, to_col=1)
 
     assert game["board_state"][6][0][0]["bishop_debuff"] == 3
     
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][5][0] = game_on_next_turn["board_state"][6][0]
-    game_on_next_turn["board_state"][6][0] = None
-
-    game_state = api.GameState(**game_on_next_turn)
     with pytest.raises(HTTPException):
-        game = api.update_game_state(game["id"], game_state, Response())
+        game = move_white_piece(game=game, from_row=6, from_col=0, to_row=5, to_col=0)
 
 
 def test_that_two_turns_are_not_allowed_from_the_same_side(game):
@@ -1815,48 +1482,21 @@ def test_that_two_turns_are_not_allowed_from_the_same_side(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [6, 0]
+    game = select_and_move_white_piece(game=game, from_row=6, from_col=0, to_row=5, to_col=0)
 
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][5][0] = game_on_next_turn["board_state"][6][0]
-    game_on_next_turn["board_state"][6][0] = None
-
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [5, 0]
-
-    game_state = api.GameState(**game_on_next_turn)
     with pytest.raises(HTTPException):
-        game = api.update_game_state(game["id"], game_state, Response())
+        game = select_white_piece(game=game, row=5, col=0)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][4][0] = game_on_next_turn["board_state"][5][0]
-    game_on_next_turn["board_state"][5][0] = None
-
-    game_state = api.GameState(**game_on_next_turn)
     with pytest.raises(HTTPException):
-        game = api.update_game_state(game["id"], game_state, Response())
+        game = move_white_piece(game=game, from_row=5, from_col=0, to_row=4, to_col=0)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][3][0] = game_on_next_turn["board_state"][2][0]
-    game_on_next_turn["board_state"][2][0] = None
+    game = select_and_move_black_piece(game=game, from_row=2, from_col=0, to_row=3, to_col=0)
 
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][4][0] = game_on_next_turn["board_state"][3][0]
-    game_on_next_turn["board_state"][3][0] = None
-
-    game_state = api.GameState(**game_on_next_turn)
     with pytest.raises(HTTPException):
-        game = api.update_game_state(game["id"], game_state, Response(), player=False)
+        game = select_black_piece(game=game, row=3, col=0)
+
+    with pytest.raises(HTTPException):
+        game = move_black_piece(game=game, from_row=3, from_col=0, to_row=4, to_col=0)
     
 
 def test_skip_one_turn_if_all_non_king_pieces_are_stunned(game):
@@ -1874,45 +1514,19 @@ def test_skip_one_turn_if_all_non_king_pieces_are_stunned(game):
     
     assert game["turn_count"] == 0
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [6, 7]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][2][3] = game_on_next_turn["board_state"][6][7]
-    game_on_next_turn["board_state"][6][7] = None
-
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=6, from_col=7, to_row=2, to_col=3)
 
     assert game["turn_count"] == 2
     assert game["board_state"][2][2][0].get("is_stunned", False)
     assert game["board_state"][2][4][0].get("is_stunned", False)
 
     with pytest.raises(HTTPException):
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["position_in_play"] = [2, 2]
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=False)
+        game = select_black_piece(game=game, row=2, col=2)
 
     with pytest.raises(HTTPException):
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["board_state"][3][2] = game_on_next_turn["board_state"][2][2]
-        game_on_next_turn["board_state"][2][2] = None
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=False)
+        game = move_black_piece(game=game, from_row=2, from_col=2, to_row=3, to_col=2)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [2, 3]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][6][7] = game_on_next_turn["board_state"][2][3]
-    game_on_next_turn["board_state"][2][3] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=2, from_col=3, to_row=6, to_col=7)
 
     assert game["turn_count"] == 3
     assert not game["board_state"][2][2][0].get("is_stunned", False)
@@ -1952,16 +1566,11 @@ def test_queen_kill_reset(game):
     assert game["queen_reset"]
     assert game["turn_count"] == 0
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][4][0] = game_on_next_turn["board_state"][1][3]
-    game_on_next_turn["board_state"][1][3] = None
-
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = move_white_piece(game=game, from_row=1, from_col=3, to_row=4, to_col=0)
 
     assert not game["queen_reset"]
     assert game["turn_count"] == 1
-
+    
 
 def test_queen_assist_reset(game):
     # test that a queen is able to go again after getting a assist
@@ -1983,7 +1592,7 @@ def test_queen_assist_reset(game):
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["position_in_play"] = [1, 2]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
+    game = api.update_game_state(game["id"], game_state, Response())
     
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][1][3] = game_on_next_turn["board_state"][1][2]
@@ -1997,12 +1606,7 @@ def test_queen_assist_reset(game):
     assert game["queen_reset"]
     assert game["turn_count"] == 0
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][4][3] = game_on_next_turn["board_state"][3][3]
-    game_on_next_turn["board_state"][3][3] = None
-
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = move_white_piece(game=game, from_row=3, from_col=3, to_row=4, to_col=3)
 
     assert not game["queen_reset"]
     assert game["turn_count"] == 1
@@ -2027,7 +1631,7 @@ def test_queen_turn_reset_limitations(game):
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["position_in_play"] = [1, 2]
     game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
+    game = api.update_game_state(game["id"], game_state, Response())
     
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][1][3] = game_on_next_turn["board_state"][1][2]
@@ -2042,45 +1646,20 @@ def test_queen_turn_reset_limitations(game):
     assert game["turn_count"] == 0
 
     with pytest.raises(HTTPException):
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["position_in_play"] = [1, 3]
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=False)
+        game = select_black_piece(game=game, row=1, col=3)
     
     with pytest.raises(HTTPException):
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["board_state"][1][4] = game_on_next_turn["board_state"][1][3]
-        game_on_next_turn["board_state"][1][3] = None
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=False)
+        game = move_black_piece(game=game, from_row=1, from_col=3, to_row=1, to_col=4)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][4][3] = game_on_next_turn["board_state"][3][3]
-    game_on_next_turn["board_state"][3][3] = None
-
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = move_white_piece(game=game, from_row=3, from_col=3, to_row=4, to_col=3)
 
     assert not game["queen_reset"]
     assert game["turn_count"] == 1
 
     with pytest.raises(HTTPException):
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["board_state"][5][3] = game_on_next_turn["board_state"][4][3]
-        game_on_next_turn["board_state"][4][3] = None
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response())
-    
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [1, 7]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+        game = move_white_piece(game=game, from_row=4, from_col=3, to_row=5, to_col=3)
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][2][7] = game_on_next_turn["board_state"][1][7]
-    game_on_next_turn["board_state"][1][7] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = move_black_piece(game=game, from_row=1, from_col=7, to_row=2, to_col=7)
 
     assert not game["queen_reset"]
     assert game["turn_count"] == 2
@@ -2100,17 +1679,7 @@ def test_neutral_monster_captures_after_spawning_on_any_non_king_piece(game):
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
     
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [3, 7]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][4][7] = game_on_next_turn["board_state"][3][7]
-    game_on_next_turn["board_state"][3][7] = None
-
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_black_piece(game=game, from_row=3, from_col=7, to_row=4, to_col=7)
 
     assert game["turn_count"] == 10
     assert game["board_state"][4][7][0].get("type") == "neutral_dragon"
@@ -2139,24 +1708,9 @@ def test_neutral_monster_ends_game_after_spawning_on_king(game):
 
         game_on_next_turn = copy.deepcopy(game)
         if side == "black":
-            game_on_next_turn = copy.deepcopy(game)
-            game_on_next_turn["position_in_play"] = [3, 7]
-            game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-            game_on_next_turn["board_state"][4][7] = game_on_next_turn["board_state"][3][7]
-            game_on_next_turn["board_state"][3][7] = None
+            game = select_and_move_black_piece(game=game, from_row=3, from_col=7, to_row=4, to_col=7)
         else:
-            game_on_next_turn = copy.deepcopy(game)
-            game_on_next_turn["position_in_play"] = [7, 1]
-            game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response(), player=True)
-
-            game_on_next_turn["board_state"][7][2] = game_on_next_turn["board_state"][7][1]
-            game_on_next_turn["board_state"][7][1] = None
-
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
+            game = select_and_move_white_piece(game=game, from_row=7, from_col=1, to_row=7, to_col=2)
 
         assert (game["board_state"][4][7] or [{}])[0].get("type") == "neutral_dragon"
         if side == "black":
@@ -2181,17 +1735,7 @@ def test_sword_in_the_stone_spawn(game):
             game_state = api.GameState(**game_on_next_turn)
             game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
             
-            game_on_next_turn = copy.deepcopy(game)
-            game_on_next_turn["position_in_play"] = [3, 3]
-            game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-            game_on_next_turn = copy.deepcopy(game)
-            game_on_next_turn["board_state"][4][3] = game_on_next_turn["board_state"][3][3]
-            game_on_next_turn["board_state"][3][3] = None
-
-            game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response(), player=False)
+            game = select_and_move_black_piece(game=game, from_row=3, from_col=3, to_row=4, to_col=3)
 
             if tuple(game["sword_in_the_stone_position"]) in locations:
                 locations[tuple(game["sword_in_the_stone_position"])] += 1
@@ -2222,17 +1766,10 @@ def test_sword_in_the_stone_retrieval(game):
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
         
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["position_in_play"] = [3, 3]
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=retrieval_side=="white")
-
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["board_state"][3][4] = game_on_next_turn["board_state"][3][3]
-        game_on_next_turn["board_state"][3][3] = None
-
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=retrieval_side=="white")
+        if retrieval_side == "white":
+            game = select_and_move_white_piece(game=game, from_row=3, from_col=3, to_row=3, to_col=4)
+        else:
+            game = select_and_move_black_piece(game=game, from_row=3, from_col=3, to_row=3, to_col=4)
 
         assert game["sword_in_the_stone_position"] is None
         assert game["board_state"][3][4][0]["check_protection"] == 1
@@ -2253,17 +1790,10 @@ def test_sword_in_the_stone_stacks(game):
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["position_in_play"] = [3, 3]
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=retrieval_side=="white")
-
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["board_state"][3][4] = game_on_next_turn["board_state"][3][3]
-        game_on_next_turn["board_state"][3][3] = None
-
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(),player=retrieval_side=="white")
+        if retrieval_side == "white":
+            game = select_and_move_white_piece(game=game, from_row=3, from_col=3, to_row=3, to_col=4)
+        else:
+            game = select_and_move_black_piece(game=game, from_row=3, from_col=3, to_row=3, to_col=4)
 
         assert game["sword_in_the_stone_position"] is None
         assert game["board_state"][3][4][0]["check_protection"] == 2
@@ -2283,63 +1813,23 @@ def test_neutral_monster_health_regen(game):
 
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [2, 7]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][3][7] = game_on_next_turn["board_state"][2][7]
-    game_on_next_turn["board_state"][2][7] = None
-
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    
+    game = select_and_move_black_piece(game=game, from_row=2, from_col=7, to_row=3, to_col=7)
 
     assert game["board_state"][4][7][0]["health"] == 4
     assert game["turn_count"] == 12
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [7, 7]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][7][6] = game_on_next_turn["board_state"][7][7]
-    game_on_next_turn["board_state"][7][7] = None
-
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=7, from_col=7, to_row=7, to_col=6)
 
     assert game["board_state"][4][7][0]["health"] == 4
     assert game["turn_count"] == 13
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [0, 0]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][0][1] = game_on_next_turn["board_state"][0][0]
-    game_on_next_turn["board_state"][0][0] = None
-
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+    game = select_and_move_black_piece(game=game, from_row=0, from_col=0, to_row=0, to_col=1)
 
     assert game["board_state"][4][7][0]["health"] == 4
     assert game["turn_count"] == 14
 
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["position_in_play"] = [7, 6]
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=True)
-
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][7][5] = game_on_next_turn["board_state"][7][6]
-    game_on_next_turn["board_state"][7][6] = None
-
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response())
+    game = select_and_move_white_piece(game=game, from_row=7, from_col=6, to_row=7, to_col=5)
 
     assert game["board_state"][4][7][0]["health"] == 5
     assert game["turn_count"] == 15
@@ -2363,17 +1853,10 @@ def test_check(game):
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["position_in_play"] = [5, 2]
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=opposite_side=="white")
-        
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["board_state"][7][2] = game_on_next_turn["board_state"][5][2]
-        game_on_next_turn["board_state"][5][2] = None
-
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=opposite_side=="white")
+        if opposite_side == "white":
+            game = select_and_move_white_piece(game=game, from_row=5, from_col=2, to_row=7, to_col=2)
+        else:
+            game = select_and_move_black_piece(game=game, from_row=5, from_col=2, to_row=7, to_col=2)
         
         assert game["check"][f"{side}"] and not game["check"][f"{opposite_side}"]
         assert game["position_in_play"] == [7, 0]
@@ -2381,17 +1864,15 @@ def test_check(game):
 
         # must get out of check
         with pytest.raises(HTTPException):
-            game_on_next_turn = copy.deepcopy(game)
-            game_on_next_turn["board_state"][7][1] = game_on_next_turn["board_state"][7][0]
-            game_on_next_turn["board_state"][7][0] = None
-            game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
+            if side == "white":
+                game = move_white_piece(game=game, from_row=7, from_col=0, to_row=7, to_col=1)
+            else:
+                game = move_black_piece(game=game, from_row=7, from_col=0, to_row=7, to_col=1)
         
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["board_state"][6][0] = game_on_next_turn["board_state"][7][0]
-        game_on_next_turn["board_state"][7][0] = None
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
+        if side == "white":
+            game = move_white_piece(game=game, from_row=7, from_col=0, to_row=6, to_col=0)
+        else:
+            game = move_black_piece(game=game, from_row=7, from_col=0, to_row=6, to_col=0)
 
         assert not game["check"][f"{side}"] and not game["check"][f"{opposite_side}"]
         assert game["position_in_play"] == [None, None]
@@ -2416,17 +1897,10 @@ def test_check_protection_against_check(game):
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["position_in_play"] = [5, 2]
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=opposite_side=="white")
-        
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["board_state"][7][2] = game_on_next_turn["board_state"][5][2]
-        game_on_next_turn["board_state"][5][2] = None
-
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=opposite_side=="white")
+        if opposite_side == "white":
+            game = move_white_piece(game=game, from_row=5, from_col=2, to_row=7, to_col=2)
+        else:
+            game = move_black_piece(game=game, from_row=5, from_col=2, to_row=7, to_col=2)
 
         assert not game["check"][f"white"] and not game["check"][f"black"]
         assert game["position_in_play"] == [None, None]
@@ -2456,17 +1930,10 @@ def test_check_and_needs_a_non_king_piece_to_get_it_out_of_check_through_block(g
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["position_in_play"] = [7, 5]
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=opposite_side=="white")
-        
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["board_state"][7][0] = game_on_next_turn["board_state"][7][5]
-        game_on_next_turn["board_state"][7][5] = None
-
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=opposite_side=="white")
+        if opposite_side == "white":
+            game = select_and_move_white_piece(game=game, from_row=7, from_col=5, to_row=7, to_col=0)
+        else:
+            game = select_and_move_black_piece(game=game, from_row=7, from_col=5, to_row=7, to_col=0)
 
         assert game["check"][f"{side}"] and not game["check"][f"{opposite_side}"]
         assert game["position_in_play"] == [0, 0]
@@ -2475,29 +1942,19 @@ def test_check_and_needs_a_non_king_piece_to_get_it_out_of_check_through_block(g
 
         # must get out of check
         with pytest.raises(HTTPException):
-            game_on_next_turn = copy.deepcopy(game)
-            game_on_next_turn["board_state"][1][0] = game_on_next_turn["board_state"][0][0]
-            game_on_next_turn["board_state"][0][0] = None
-            game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response())
+            game = move_white_piece(game=game, from_row=0, from_col=0, to_row=1, to_col=0)
 
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["position_in_play"] = [1, 2]
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
+        if side == "white":
+            game = select_and_move_white_piece(game=game, from_row=1, from_col=2, to_row=1, to_col=0)
+        else:
+            game = select_and_move_black_piece(game=game, from_row=1, from_col=2, to_row=1, to_col=0)
 
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["board_state"][1][0] = game_on_next_turn["board_state"][1][2]
-        game_on_next_turn["board_state"][1][2] = None
-
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
 
         assert not game["check"][f"{side}"] and not game["check"][f"{opposite_side}"]
         assert game["position_in_play"] == [None, None]
         assert not game[f"{side}_defeat"] and not game[f"{opposite_side}_defeat"]
 
-
+# TODO: FINISH REFACTORING
 def test_check_and_needs_a_non_king_piece_to_get_it_out_of_check_through_capture(game):
     # test that when king is in check and can't move anywhere to get out of check
     # but another piece of the same side can save it, the game doesn't improperly end
@@ -2997,7 +2454,7 @@ def test_capture_behavior_when_neutral_and_normal_piece_are_on_same_square(game)
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["position_in_play"] = [1, 7]
         game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=True)
+        game = api.update_game_state(game["id"], game_state, Response())
 
         game_on_next_turn = copy.deepcopy(game)
         white_rook = game_on_next_turn["board_state"][1][7][0]

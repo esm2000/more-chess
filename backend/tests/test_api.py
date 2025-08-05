@@ -2426,3 +2426,4 @@ def test_same_gaem_state_not_allowed():
 # prevent buying of pieces when it's not a side's turn (will break the testcase for it)
 
 # TODO: remove disable_turn_check argument
+# TODO: split into multiple files! 2400+ lines is way too much 

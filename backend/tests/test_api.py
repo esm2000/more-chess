@@ -758,29 +758,26 @@ def test_castle_should_not_be_allowed_after_moving_rook(game):
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
+def test_invalid_moves_should_not_be_allowed(game):
+    game = clear_game(game)
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn['board_state'] = starting_game['board_state']
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    # white 
+    with pytest.raises(HTTPException):
+        game = select_and_move_white_piece(game=game, from_row=6, from_col=7, to_row=3, to_col=7)
+    
+    game = select_and_move_white_piece(game=game, from_row=6, from_col=7, to_row=5, to_col=7)
+
+    # black
+    with pytest.raises(HTTPException):
+        game = select_and_move_black_piece(game=game, from_row=1, from_col=7, to_row=4, to_col=7)
+    
 
 # TODO: currently broken as its being split up
 def test_alter_game(game):
-    # invalid moves should not be allowed
-        # white
-    with pytest.raises(HTTPException):
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["board_state"][3][5] = game_on_next_turn["board_state"][6][5]
-        game_on_next_turn["board_state"][6][5] = None
-        game_on_next_turn["turn_count"] += 1
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
-
-        # black
-        # TODO: change turn so that we fail for the right reasons
-    with pytest.raises(HTTPException):
-        game_on_next_turn = copy.deepcopy(game)
-        game_on_next_turn["board_state"][4][5] = game_on_next_turn["board_state"][1][5]
-        game_on_next_turn["board_state"][1][5] = None
-        game_on_next_turn["turn_count"] += 1
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response(), player=False, disable_turn_check=True)
-
     # buying pieces with not enough gold should not be allowed
         # white
     with pytest.raises(HTTPException):

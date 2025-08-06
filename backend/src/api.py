@@ -213,7 +213,6 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     # if a king has check protection, exhaust one stack and prevent check for that turn
     utils.manage_check_status(old_game_state, new_game_state)
     
-    
     # check for checkmate by seeing if the king has anywhere to go
     utils.end_game_on_checkmate(old_game_state, new_game_state)
 

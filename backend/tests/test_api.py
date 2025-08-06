@@ -777,7 +777,7 @@ def test_invalid_moves_should_not_be_allowed(game):
         game = select_and_move_black_piece(game=game, from_row=1, from_col=7, to_row=4, to_col=7)
     
 
-def test_validate_buying_pieces_with_not_enough_gold_should_not_be_allowed(game):
+def test_buying_pieces_with_not_enough_gold_should_not_be_allowed(game):
     game = clear_game(game)
     game_on_next_turn = copy.deepcopy(game)
     
@@ -811,17 +811,41 @@ def test_validate_buying_pieces_with_not_enough_gold_should_not_be_allowed(game)
     assert not game["board_state"][5][6]
     
 
+def test_buying_kings_and_queens_should_not_be_allowed(game):
+    game = clear_game(game)
+    game_on_next_turn = copy.deepcopy(game)
+    
+    game_on_next_turn['board_state'][0][0] = [{"type": "black_king"}]
+    game_on_next_turn['board_state'][7][7] = [{"type": "white_king"}]
+    game_on_next_turn['board_state'][6][7] = [{"type": "white_pawn", "pawn_buff": 0}]
+    game_on_next_turn['board_state'][1][0] = [{"type": "black_pawn", "pawn_buff": 0}]
+
+    game_on_next_turn["gold_count"] = {"white": 12, "black": 12}
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    # white
+    for piece in ["queen", "king"]:
+        with pytest.raises(HTTPException):
+            game_on_next_turn = copy.deepcopy(game)
+            game_on_next_turn["board_state"][5][6] = [{"type": f"white_{piece}"}]
+            game_state = api.GameState(**game_on_next_turn)
+            game = api.update_game_state(game["id"], game_state, Response())
+    
+    game = select_and_move_white_piece(game=game, from_row=6, from_col=7, to_row=5, to_col=7)
+
+    # black
+    for piece in ["queen", "king"]:
+        with pytest.raises(HTTPException):
+            game_on_next_turn = copy.deepcopy(game)
+            game_on_next_turn["board_state"][5][6] = [{"type": f"black_{piece}"}]
+            game_state = api.GameState(**game_on_next_turn)
+            game = api.update_game_state(game["id"], game_state, Response())
+
+
 # TODO: currently broken as its being split up
 def test_alter_game(game):
-    # buying a king or queen should not be allowed
-    for side in ["white", "black"]:
-        for piece in ["queen", "king"]:
-            with pytest.raises(HTTPException):
-                game_on_next_turn = copy.deepcopy(game)
-                game_on_next_turn["board_state"][5][6] = [{"type": f"{side}_{piece}"}]
-                game_state = api.GameState(**game_on_next_turn)
-                game = api.update_game_state(game["id"], game_state, Response(), player=side=="white", disable_turn_check=True)
-
     # buying pieces
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["gold_count"] = {

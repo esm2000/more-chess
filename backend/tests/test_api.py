@@ -881,24 +881,44 @@ def test_buying_pieces(game):
         assert game["gold_count"]["black"] == 5 - pieces[piece]
 
 
-# TODO: currently broken as its being split up
-def test_alter_game(game):
-    # assert that neutral monsters can't move
+def test_neutral_monsters_cannot_move(game):
+    game = clear_game(game)
+    game_on_next_turn = copy.deepcopy(game)
+        
+    game_on_next_turn['board_state'][0][0] = [{"type": "black_king"}]
+    game_on_next_turn['board_state'][7][7] = [{"type": "white_king"}]
+    game_on_next_turn['board_state'][6][0] = [{"type": "white_pawn", "pawn_buff": 0}]
+    game_on_next_turn['board_state'][1][0] = [{"type": "black_pawn", "pawn_buff": 0}]
+
+    game_on_next_turn["turn_count"] = 9
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game = select_and_move_black_piece(game=game, from_row=1, from_col=0, to_row=2, to_col=0)
+
+    assert game["turn_count"] == 10
+    assert any([piece.get("type") == "neutral_dragon" for piece in game["board_state"][4][7]])
+    assert any([piece.get("type") == "neutral_board_herald" for piece in game["board_state"][3][0]])
+
     for is_player in [True, False]:
         with pytest.raises(HTTPException):
             game_on_next_turn = copy.deepcopy(game)
             game_on_next_turn["board_state"][4][6] = game_on_next_turn["board_state"][4][7]
             game_on_next_turn["board_state"][4][7] = None
             game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response(), player=is_player, disable_turn_check=True)
+            game = api.update_game_state(game["id"], game_state, Response(), player=is_player)
 
         with pytest.raises(HTTPException):
             game_on_next_turn = copy.deepcopy(game)
             game_on_next_turn["board_state"][3][1] = game_on_next_turn["board_state"][3][0]
             game_on_next_turn["board_state"][3][0] = None
             game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response(), player=is_player, disable_turn_check=True)
+            game = api.update_game_state(game["id"], game_state, Response(), player=is_player)
 
+
+# TODO: currently broken as its being split up
+def test_alter_game(game):
     # assert that additional captured pieces can't be added from nowhere
     for side in ["white", "black"]:
         with pytest.raises(HTTPException):

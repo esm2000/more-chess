@@ -133,7 +133,6 @@ def get_piece_value(piece_type):
 
 
 def spawn_neutral_monsters(game_state):
-    cached_game_state = copy.deepcopy(game_state)
     turn_count = game_state["turn_count"]
     monster_info = copy.deepcopy(MONSTER_INFO)
 
@@ -144,6 +143,9 @@ def spawn_neutral_monsters(game_state):
         monsters.append("neutral_board_herald")
     if (turn_count - 20) % 15 == 0 and turn_count > 20:
         monsters.append("neutral_baron_nashor")
+    
+    if not monsters:
+        return
 
     for monster in monsters:
         monster_piece = [{"type": monster, "health": monster_info[monster]["max_health"], "turn_spawned": turn_count}]
@@ -186,21 +188,30 @@ def carry_out_neutral_monster_attacks(game_state):
             for j in range(monster_info[monster]["position"][1] - 1, monster_info[monster]["position"][1] + 2):
                 if i >= 0 and i <= 7 and j >= 0 and j <= 7:
                     if game_state["board_state"][i][j]:
-                        for k, piece in enumerate(game_state["board_state"][i][j].copy()):
+                        k = 0
+                        while k < len(game_state["board_state"][i][j]):
+                            piece = game_state["board_state"][i][j][k]
                             side = piece["type"].split("_")[0]
                             if side in sides:
                                 neutral_kill_mark = piece.get("neutral_kill_mark", -1)
-                                
+
                                 if neutral_kill_mark == game_state["turn_count"]:
                                     # if a king gets captured that's game over
                                     if "king" in piece["type"]:
                                         game_state["black_defeat"] = side == "black"
                                         game_state["white_defeat"] = side == "white"
+                                        k += 1
                                     else:
                                         game_state["board_state"][i][j].remove(piece)
                                         game_state["graveyard"].append(piece.get("type", ""))
+                                        # Don't increment k since we removed an element
                                 elif game_state["turn_count"] - neutral_kill_mark > 2:
                                     game_state["board_state"][i][j][k]["neutral_kill_mark"] = game_state["turn_count"] + 2
+                                    k += 1
+                                else:
+                                    k += 1
+                            else:
+                                k += 1
 
 
 def is_neutral_monster_spawned(neutral_monster_type, board_state):

@@ -957,58 +957,73 @@ def test_additional_captured_pieces_cannot_be_added_from_nowhere(game):
         game_on_next_turn["captured_pieces"]["black"].append(f"white_pawn")
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=False)
+
+
+def test_neutral_monsters_can_be_hurt(game):
+    game = clear_game(game)
+    game_on_next_turn = copy.deepcopy(game)
+        
+    game_on_next_turn['board_state'][0][0] = [{"type": "black_king"}]
+    game_on_next_turn['board_state'][7][7] = [{"type": "white_king"}]
+    game_on_next_turn['board_state'][6][0] = [{"type": "white_pawn", "pawn_buff": 0}]
+    game_on_next_turn['board_state'][1][0] = [{"type": "black_pawn", "pawn_buff": 0}]
     
+    game_on_next_turn["board_state"][2][5] = [{"type": "black_bishop"}]
+    game_on_next_turn["board_state"][2][7] = [{"type": "black_rook"}]
+
+    game_on_next_turn["board_state"][6][5] = [{"type": "white_bishop"}]
+    game_on_next_turn["board_state"][6][7] = [{"type": "white_rook"}]
+
+    game_on_next_turn["turn_count"] = 9
+
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    game = select_and_move_black_piece(game=game, from_row=1, from_col=0, to_row=2, to_col=0)
+
+    assert game["turn_count"] == 10
+    assert any([piece.get("type") == "neutral_dragon" for piece in game["board_state"][4][7]])
+    assert any([piece.get("type") == "neutral_board_herald" for piece in game["board_state"][3][0]])
+    assert any([piece.get("health", 0) == 5 for piece in game["board_state"][4][7]])
+    assert any([piece.get("health", 0) == 5 for piece in game["board_state"][3][0]])
+
+    # landing directly on neutral monster
+    game = select_white_piece(game=game, row=6, col=5)
+    
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][4][7].append(game_on_next_turn["board_state"][6][5][0])
+    game_on_next_turn["board_state"][6][5] = None
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response())
+
+    assert game["board_state"][4][7][0]["health"] == 4
+
+    game = select_black_piece(game=game, row=2, col=5)
+    
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["board_state"][4][7].append(game_on_next_turn["board_state"][2][5][0])
+    game_on_next_turn["board_state"][2][5] = None
+    game_state = api.GameState(**game_on_next_turn)
+    game = api.update_game_state(game["id"], game_state, Response(), player=False)
+
+    assert game["board_state"][4][7][0]["health"] == 3
+    assert any([piece.get("type") == "black_bishop" for piece in game["board_state"][4][7]])
+    assert not any([piece.get("type") == "white_bishop" for piece in game["board_state"][4][7]])
+
+    # landing adjacent to neutral monster
+    game = select_and_move_white_piece(game=game, from_row=6, from_col=7, to_row=5, to_col=7)
+
+    assert game["board_state"][4][7][0]["health"] == 2
+    # Bishops can be captured by landing on any square adjacent to it, even those not on diagonals.
+    assert not any([piece.get("type") == "black_bishop" for piece in game["board_state"][4][7]])
+
+    game = select_and_move_black_piece(game=game, from_row=2, from_col=7, to_row=3, to_col=7)
+    
+    assert game["board_state"][4][7][0]["health"] == 1
+
 
 # TODO: currently broken as its being split up
 def test_alter_game(game):
-    # assert that neutral monsters can be hurt
-        # white
-    neutral_monster_health_before = game["board_state"][4][7][0]["health"]
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][4][7].append(game_on_next_turn["board_state"][6][7][0])
-    game_on_next_turn["board_state"][6][7] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
-    neutral_monster_health = game["board_state"][4][7][0]["health"]
-
-    assert neutral_monster_health_before == 5
-    assert neutral_monster_health_before - neutral_monster_health == 1
-
-    neutral_monster_health_before = game["board_state"][4][7][0]["health"]
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][4][6] = game_on_next_turn["board_state"][6][6]
-    game_on_next_turn["board_state"][6][6] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), disable_turn_check=True)
-    neutral_monster_health = game["board_state"][4][7][0]["health"]
-
-    assert neutral_monster_health_before == 4
-    assert neutral_monster_health_before - neutral_monster_health == 1
-
-        # black
-
-    neutral_monster_health_before = game["board_state"][4][7][0]["health"]
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][3][7] = game_on_next_turn["board_state"][1][7]
-    game_on_next_turn["board_state"][1][7] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False, disable_turn_check=True)
-    neutral_monster_health = game["board_state"][4][7][0]["health"]
-
-    assert neutral_monster_health_before == 3
-    assert neutral_monster_health_before - neutral_monster_health == 1
-
-    neutral_monster_health_before = game["board_state"][4][7][0]["health"]
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["board_state"][4][7].append(game_on_next_turn["board_state"][3][7][0])
-    game_on_next_turn["board_state"][3][7] = None
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state(game["id"], game_state, Response(), player=False, disable_turn_check=True)
-    neutral_monster_health = game["board_state"][4][7][0]["health"]
-
-    assert neutral_monster_health_before == 2
-    assert neutral_monster_health_before - neutral_monster_health == 1
-
     # assert that capture point advantage is calculated right
     piece_values = {
         "pawn": 1,

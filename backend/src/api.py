@@ -154,7 +154,10 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
 
     gold_spent = utils.get_gold_spent(old_game_state, moved_pieces)
 
-    is_pawn_exchange_possible = utils.check_is_pawn_exhange_is_possible(old_game_state, new_game_state, moved_pieces)
+    is_pawn_exchange_required_this_turn, is_valid_game_state = utils.check_if_pawn_exchange_is_required(old_game_state, new_game_state, moved_pieces, is_valid_game_state)
+
+    is_pawn_exchange_possibly_being_carried_out = utils.check_if_pawn_exhange_is_possibly_being_carried_out(old_game_state, new_game_state, moved_pieces)
+    
     move_count_for_white, move_count_for_black = utils.get_move_counts(moved_pieces)
 
     is_valid_game_state = utils.invalidate_game_if_more_than_one_side_moved(move_count_for_white, move_count_for_black, is_valid_game_state)
@@ -177,14 +180,24 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
         moved_pieces, 
         is_valid_game_state, 
         capture_positions, 
-        is_pawn_exchange_possible
+        is_pawn_exchange_possibly_being_carried_out
     )
+
+    # should_increment_turn_count does not account for pawn exchanges
+    should_increment_turn_count_for_pawn_exchange = utils.should_turn_count_be_incremented_for_pawn_exchange(old_game_state, is_pawn_exchange_possibly_being_carried_out)
+
+    if should_increment_turn_count_for_pawn_exchange:
+        utils.increment_turn_count(old_game_state, new_game_state, moved_pieces, 1)
+    
+    # pawn exchanges must be carried out on the same turn
+    if not should_increment_turn_count_for_pawn_exchange and is_pawn_exchange_required_this_turn:
+        utils.reset_turn_count(old_game_state, new_game_state)
 
     # mutates new_game_state object
     utils.clean_bishop_special_captures(new_game_state)
     # mutates new_game_state and moved_pieces objects
     utils.damage_neutral_monsters(new_game_state, moved_pieces)
-    is_valid_game_state = utils.invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_game_state, new_game_state, moved_pieces, is_valid_game_state, is_pawn_exchange_possible)
+    is_valid_game_state = utils.invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_game_state, new_game_state, moved_pieces, is_valid_game_state, is_pawn_exchange_possibly_being_carried_out)
 
     # if a neutral monster is killed and a piece has not moved to its position, invalidate 
     if utils.get_neutral_monster_slain_position(moved_pieces) and not utils.is_neutral_monster_killed(moved_pieces):
@@ -253,7 +266,7 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     # determine possibleMoves if a position_in_play is not [null, null]
     # and add to new_game_state 
     reset_position_in_play = reset_position_in_play_queen and reset_position_in_play_king
-    utils.determine_possible_moves(old_game_state, new_game_state, moved_pieces, player, reset_position_in_play)
+    utils.determine_possible_moves(old_game_state, new_game_state, moved_pieces, player, reset_position_in_play, is_pawn_exchange_required_this_turn)
 
     # handle draw conditions (draws are when both players lose)
     utils.handle_draw_conditions(old_game_state, new_game_state)

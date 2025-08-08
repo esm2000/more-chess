@@ -1074,7 +1074,7 @@ def test_capture_point_advantage_calculation(game):
                     assert game["turn_count"] == 2
                     assert game["capture_point_advantage"] == ["black", piece_values[piece_type]]
     
-    
+
 def test_king_cannot_be_captured(game):
     for side in ["white", "black"]:
         game = clear_game(game)
@@ -1104,108 +1104,71 @@ def test_king_cannot_be_captured(game):
             game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
 
 
-# TODO: currently broken as its being split up
-def test_alter_game(game):
-    # assert that capture point advantage is calculated right
-    piece_values = {
-        "pawn": 1,
-        "knight": 3,
-        "bishop": 3,
-        "rook": 5,
-        "queen": 9, 
-        "king": None
-    }
-
+def test_pawn_exchange(game):
     for side in ["white", "black"]:
-        for piece_type in piece_values:
-            game = clear_game(game)
-            game_on_next_turn = copy.deepcopy(game)
-            game_on_next_turn["turn_count"] = 0
-            game_on_next_turn["board_state"] = copy.deepcopy(empty_game["board_state"])
-            game_on_next_turn["board_state"][3][4] = [{"type": f"black_{piece_type}"}] if side == "white" else [{"type": "black_pawn", "pawn_buff": 0}]
-            game_on_next_turn["board_state"][4][3] = [{"type": "white_pawn", "pawn_buff": 0}] if side == "white" else [{"type": f"white_{piece_type}"}]
-            if piece_type == "bishop":
-                game_on_next_turn["board_state"][3 if side == "white" else 4][4 if side == "white" else 3][0]["energize_stacks"] = 0
-            if piece_type != "king":
-                game_on_next_turn["board_state"][7][2] = [{"type": f"white_king"}]
-                game_on_next_turn["board_state"][0][5] = [{"type": f"black_king"}]
-            game_on_next_turn["graveyard"] = []
-            game_on_next_turn["gold_count"] = {
-                "white": 0,
-                "black": 0
-            }
-            game_on_next_turn["captured_pieces"] = {"white": [], "black": []}
-            del game_on_next_turn["previous_state"]
-            game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
-            game_on_next_turn = copy.deepcopy(game)
-            if side == "white":
-                game_on_next_turn["board_state"][3][4] = game_on_next_turn["board_state"][4][3]
-                game_on_next_turn["board_state"][4][3] = None
-                game_on_next_turn["captured_pieces"]["white"].append(f"black_{piece_type}")
-            else:
-                game_on_next_turn["board_state"][4][3] = game_on_next_turn["board_state"][3][4]
-                game_on_next_turn["board_state"][3][4] = None
-                game_on_next_turn["captured_pieces"]["black"].append(f"white_{piece_type}")
-            game_state = api.GameState(**game_on_next_turn)
-            if piece_type != "king":
-                game = api.update_game_state(game["id"], game_state, Response(), player=side=="white", disable_turn_check=True)
-                if side == "white":
-                    assert game["board_state"][3][4][0]["type"] == "white_pawn"
-                    assert game["board_state"][4][3] is None
-                    # none of black's pieces are left so its turn is skipped
-                    assert game["turn_count"] == 1
-                    assert game["capture_point_advantage"] == ["white", piece_values[piece_type]]
-                else:
-                    assert game["board_state"][4][3][0]["type"] == "black_pawn"
-                    assert game["board_state"][3][4] is None
-                    assert game["turn_count"] == 1
-                    assert game["capture_point_advantage"] == ["black", piece_values[piece_type]]
-        # assert that kings can't be captured
-            else:
-                with pytest.raises(HTTPException):
-                    game = api.update_game_state(game["id"], game_state, Response(), player=side=="white", disable_turn_check=True)
-    # validate pawn exchange
-            if piece_type == "pawn":
-                continue
+        for piece_type in ["knight", "bishop", "rook", "queen", "king"]:
             game = clear_game(game)
             game_on_next_turn = copy.deepcopy(game)
             if side == "white":
                 game_on_next_turn["board_state"][1][3] = [{"type": "white_pawn", "pawn_buff": 0}] 
                 game_on_next_turn["board_state"][3][4] = [{"type": f"black_king"}]
                 game_on_next_turn["board_state"][7][2] = [{"type": f"white_king"}]
+                
             else:
                 game_on_next_turn["board_state"][6][3] = [{"type": "black_pawn", "pawn_buff": 0}] 
                 game_on_next_turn["board_state"][3][4] = [{"type": f"white_king"}]
                 game_on_next_turn["board_state"][0][5] = [{"type": f"black_king"}]
+                game_on_next_turn["turn_count"] = 1
         
             game_state = api.GameState(**game_on_next_turn)
             game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-            game_on_next_turn = copy.deepcopy(game)
             if side == "white":
-                game_on_next_turn["board_state"][0][3] = game_on_next_turn["board_state"][1][3]
-                game_on_next_turn["board_state"][1][3] = None
+                game = select_and_move_white_piece(game=game, from_row=1, from_col=3, to_row=0, to_col=3)
             else:
-                game_on_next_turn["board_state"][7][3] = game_on_next_turn["board_state"][6][3]
-                game_on_next_turn["board_state"][6][3] = None
-            game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response(), player=side=="white", disable_turn_check=True)
-
+                game = select_and_move_black_piece(game=game, from_row=6, from_col=3, to_row=7, to_col=3)
+                        
             turn_count_for_pawn_exchange_initiation = game["turn_count"]
-            game_on_next_turn = copy.deepcopy(game)
-            if side == "white":
-                game_on_next_turn["board_state"][0][3] = [{"type": f"white_{piece_type}"}]
-            else:
-                game_on_next_turn["board_state"][7][3] = [{"type": f"black_{piece_type}"}]
-            game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response(), player=side=="white", disable_turn_check=True)
-            turn_count_for_end_of_pawn_exhange = game["turn_count"]
+            assert turn_count_for_pawn_exchange_initiation == 0 if side == "white" else 1
 
-            assert turn_count_for_pawn_exchange_initiation == turn_count_for_end_of_pawn_exhange
-            assert len(game["board_state"][0 if side=="white"else 7][3] or []) == 1
-            assert game["board_state"][0 if side=="white" else 7][3][0]["type"] == f"{side}_{piece_type}"
-            assert game["previous_state"]["board_state"][0 if side=="white" else 7][3][0]["type"] == f"{side}_pawn"
+            if piece_type != "king":
+                # a non-pawn exchange action should not be allowed in the middle of a pawn exchange
+                with pytest.raises(HTTPException):
+                    if side == "white":
+                        game = select_and_move_white_piece(game=game, from_row=3, from_col=4, to_row=4, to_col=4)
+                    else:
+                        game = select_and_move_black_piece(game=game, from_row=3, from_col=4, to_row=4, to_col=4)
+
+                # the other side should not be allowed to move in the middle of a pawn exchange
+                with pytest.raises(HTTPException):
+                    if side == "black":
+                        game = select_and_move_white_piece(game=game, from_row=3, from_col=4, to_row=4, to_col=4)
+                    else:
+                        game = select_and_move_black_piece(game=game, from_row=3, from_col=4, to_row=4, to_col=4)
+
+                game_on_next_turn = copy.deepcopy(game)
+                if side == "white":
+                    game_on_next_turn["board_state"][0][3] = [{"type": f"white_{piece_type}"}]
+                else:
+                    game_on_next_turn["board_state"][7][3] = [{"type": f"black_{piece_type}"}]
+                game_state = api.GameState(**game_on_next_turn)
+                game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
+                turn_count_for_end_of_pawn_exhange = game["turn_count"]
+
+                assert turn_count_for_end_of_pawn_exhange == turn_count_for_pawn_exchange_initiation + 1
+                assert len(game["board_state"][0 if side=="white"else 7][3] or []) == 1
+                assert game["board_state"][0 if side=="white" else 7][3][0]["type"] == f"{side}_{piece_type}"
+                assert game["previous_state"]["board_state"][0 if side=="white" else 7][3][0]["type"] == f"{side}_pawn"
+            # pawn exchanges for kings should not be allowed
+            else:
+                with pytest.raises(HTTPException):
+                    game_on_next_turn = copy.deepcopy(game)
+                    if side == "white":
+                        game_on_next_turn["board_state"][0][3] = [{"type": f"white_{piece_type}"}]
+                    else:
+                        game_on_next_turn["board_state"][7][3] = [{"type": f"black_{piece_type}"}]
+                    game_state = api.GameState(**game_on_next_turn)
+                    game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
 
 
 def test_bishop_energize_stacks(game):

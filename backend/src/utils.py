@@ -422,6 +422,9 @@ def increment_turn_count(old_game_state, new_game_state, moved_pieces, number_of
     if len(moved_pieces) > 0:
         new_game_state["turn_count"] = old_game_state["turn_count"] + number_of_turns
 
+def reset_turn_count(old_game_state, new_game_state):
+    new_game_state["turn_count"] = old_game_state["turn_count"] 
+
 # do not allow for updates to graveyard
 def prevent_client_side_updates_to_graveyard(old_game_state, new_game_state):
     new_game_state["graveyard"] = old_game_state["graveyard"]
@@ -643,7 +646,7 @@ def check_for_disappearing_pieces(
     moved_pieces, 
     is_valid_game_state, 
     capture_positions, 
-    is_pawn_exchange_possible
+    is_pawn_exchange_possibly_being_carried_out
 ):
     for moved_piece in moved_pieces:
         # if any piece captured this turn doesn't have a captor, invalidate (keep in mind that adjacent 
@@ -669,8 +672,14 @@ def check_for_disappearing_pieces(
                             captured_piece_accounted_for = True
 
                 # check to see if a pawn exchange has occurred
-                if "pawn" in moved_piece["piece"]["type"] and is_pawn_exchange_possible[moved_piece["side"]]:
+                if "pawn" in moved_piece["piece"]["type"] and is_pawn_exchange_possibly_being_carried_out[moved_piece["side"]]:
                     captured_piece_accounted_for = True
+
+                    row = moved_piece["previous_position"][0]
+                    col = moved_piece["previous_position"][1]
+                    if any("king" in piece.get("type") for piece in (new_game_state["board_state"][row][col] or [])):
+                        logger.error(f"A king cannot be exchanged for a pawn")
+                        is_valid_game_state = False
             
             if not captured_piece_accounted_for and new_game_state["bishop_special_captures"]:
                 # check to see if piece was captured via full bishop debuff stacked
@@ -708,7 +717,7 @@ def damage_neutral_monsters(new_game_state, moved_pieces):
 
 # if any new pieces in the captured pieces array have not been captured this turn, invalidate
 # (it's imperative that this code section is placed after we've updated captured_pieces)
-def invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_game_state, new_game_state, moved_pieces, is_valid_game_state, is_pawn_exchange_possible):
+def invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_game_state, new_game_state, moved_pieces, is_valid_game_state, is_pawn_exchange_possibly_being_carried_out):
     captured_pieces_array = new_game_state["captured_pieces"]["white"].copy() + new_game_state["captured_pieces"]["black"].copy() + new_game_state["graveyard"]
     for captured_piece in old_game_state["captured_pieces"]["white"] + old_game_state["captured_pieces"]["black"] + old_game_state["graveyard"]:
         captured_pieces_array.remove(captured_piece)
@@ -718,7 +727,7 @@ def invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_gam
             try:
                 captured_pieces_array.remove(moved_piece["piece"]['type'])
             except ValueError as e:
-                if not ("pawn" in moved_piece["piece"]["type"] and is_pawn_exchange_possible[moved_piece["side"]]):
+                if not ("pawn" in moved_piece["piece"]["type"] and is_pawn_exchange_possibly_being_carried_out[moved_piece["side"]]):
                     logger.error(f"Captured piece {moved_piece['piece']['type']} has not been recorded as a captured piece")
                     is_valid_game_state = False
     
@@ -729,7 +738,7 @@ def invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_gam
     return is_valid_game_state
 
 # determine possibleMoves if a position_in_play is not [null, null]
-def determine_possible_moves(old_game_state, new_game_state, moved_pieces, player, reset_position_in_play):
+def determine_possible_moves(old_game_state, new_game_state, moved_pieces, player, reset_position_in_play, is_pawn_exchange_required_this_turn):
     has_non_neutral_piece_moved = False
     for moved_piece in moved_pieces:
         if moved_piece["side"] == "neutral":
@@ -761,6 +770,9 @@ def determine_possible_moves(old_game_state, new_game_state, moved_pieces, playe
 
         new_game_state["possible_moves"] = moves_info["possible_moves"]
         new_game_state["possible_captures"] = moves_info["possible_captures"]
+    if is_pawn_exchange_required_this_turn:
+        new_game_state["possible_moves"] = []
+        new_game_state["possible_captures"] = []
 
 
 # gets the cumulative values of each side's pieces
@@ -855,8 +867,8 @@ def invalidate_game_if_more_than_one_side_moved(move_count_for_white, move_count
     return is_valid_game_state
 
 
-def check_is_pawn_exhange_is_possible(old_game_state, new_game_state, moved_pieces):
-    is_pawn_exchange_possible = {"white": False, "black": False}
+def check_if_pawn_exhange_is_possibly_being_carried_out(old_game_state, new_game_state, moved_pieces):
+    is_pawn_exchange_possibly_being_carried_out = {"white": False, "black": False}
 
     for side in old_game_state["captured_pieces"]:
         for moved_piece in moved_pieces:
@@ -867,9 +879,30 @@ def check_is_pawn_exhange_is_possible(old_game_state, new_game_state, moved_piec
                 previous_position = moved_piece['previous_position']
                 square_on_current_game_state = new_game_state["board_state"][previous_position[0]][previous_position[1]]
                 if square_on_current_game_state and all(side == piece["type"].split("_")[0] for piece in square_on_current_game_state):
-                    is_pawn_exchange_possible[side] = True
-    return is_pawn_exchange_possible
+                    is_pawn_exchange_possibly_being_carried_out[side] = True
+    return is_pawn_exchange_possibly_being_carried_out
 
+
+def check_if_pawn_exchange_is_required(old_game_state, new_game_state, moved_pieces, is_valid_game_state):
+    side_that_should_be_moving = "white" if not old_game_state["turn_count"] % 2 else "black"
+    side_that_should_not_be_moving = "black" if side_that_should_be_moving == "white" else "white"
+
+    row = 0 if side_that_should_be_moving == "white" else 7
+    is_pawn_exchange_required_this_turn = False
+
+    for col in range(8):
+        if any([piece.get("type") == f"{side_that_should_be_moving}_pawn" for piece in (new_game_state["board_state"][row][col] or [])]):
+            is_pawn_exchange_required_this_turn = True
+
+    if is_pawn_exchange_required_this_turn:
+        for moved_piece in moved_pieces:
+            if moved_piece["side"] == side_that_should_not_be_moving and moved_piece["current_position"][0] is not None:
+                is_valid_game_state = False
+    return is_pawn_exchange_required_this_turn, is_valid_game_state
+
+def should_turn_count_be_incremented_for_pawn_exchange(old_game_state, is_pawn_exchange_possibly_being_carried_out):
+    side_that_should_be_moving = "white" if not old_game_state["turn_count"] % 2 else "black"
+    return  is_pawn_exchange_possibly_being_carried_out[side_that_should_be_moving]
 
 def get_gold_spent(old_game_state, moved_pieces):
     gold_spent = {"white": 0, "black": 0}

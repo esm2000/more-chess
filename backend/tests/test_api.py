@@ -841,7 +841,7 @@ def test_buying_kings_and_queens_should_not_be_allowed(game):
             game_on_next_turn = copy.deepcopy(game)
             game_on_next_turn["board_state"][5][6] = [{"type": f"black_{piece}"}]
             game_state = api.GameState(**game_on_next_turn)
-            game = api.update_game_state(game["id"], game_state, Response())
+            game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
 def test_buying_pieces(game):
     pieces = {
@@ -876,9 +876,49 @@ def test_buying_pieces(game):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][0][6] = [{"type": f"black_{piece}"}]
         game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state(game["id"], game_state, Response())
+        game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
         assert game["gold_count"]["black"] == 5 - pieces[piece]
+
+
+def test_buying_pieces_when_it_is_not_your_turn_not_allowed(game):
+    pieces = {
+        "pawn": 1,
+        "knight": 3,
+        "bishop": 3,
+        "rook": 5
+    }
+    for piece in pieces:
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
+        
+        game_on_next_turn['board_state'][0][0] = [{"type": "black_king"}]
+        game_on_next_turn['board_state'][7][7] = [{"type": "white_king"}]
+        game_on_next_turn['board_state'][6][7] = [{"type": "white_pawn", "pawn_buff": 0}]
+        game_on_next_turn['board_state'][1][0] = [{"type": "black_pawn", "pawn_buff": 0}]
+
+        game_on_next_turn["gold_count"] = {"white": 5, "black": 5}
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+        assert game["turn_count"] == 0
+
+        # black
+        with pytest.raises(HTTPException):
+            game_on_next_turn = copy.deepcopy(game)
+            game_on_next_turn["board_state"][0][6] = [{"type": f"black_{piece}"}]
+            game_state = api.GameState(**game_on_next_turn)
+            game = api.update_game_state(game["id"], game_state, Response(), player=False)
+
+        game = select_and_move_white_piece(game=game, from_row=6, from_col=7, to_row=5, to_col=7)
+
+        # white
+        with pytest.raises(HTTPException):
+            game_on_next_turn = copy.deepcopy(game)
+            game_on_next_turn["board_state"][5][6] = [{"type": f"white_{piece}"}]
+            game_state = api.GameState(**game_on_next_turn)
+            game = api.update_game_state(game["id"], game_state, Response())
 
 
 def test_neutral_monsters_cannot_move(game):
@@ -2532,14 +2572,4 @@ def test_capture_behavior_when_neutral_and_normal_piece_are_on_same_square(game)
             assert "neutral_dragon" in game["captured_pieces"]["black"]
 
 
-def test_same_game_state_not_allowed():
-    pass
-
-
-# TODO: split test_alter_game() into several test cases (piece selection and movement is enough for original function)
-
-# TODO:     # change API behavior to force a fail when a piece attempts to buy pieces not on its turn or move not on its turn...
-# prevent buying of pieces when it's not a side's turn (create new test case)
-
-# TODO: remove disable_turn_check argument
 # TODO: split into multiple files! 2400+ lines is way too much 

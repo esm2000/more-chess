@@ -1122,7 +1122,7 @@ def record_moved_pieces_this_turn(new_game_state, moved_pieces):
 # old game's turn count is representative of what side should be moving (even is white, odd is black)
 def invalidate_game_if_wrong_side_moves(moved_pieces, is_valid_game_state, old_game_turn_count):
     side_that_should_be_moving = "white" if not old_game_turn_count % 2 else "black"
-    for side in [piece_info["side"] for piece_info in moved_pieces if piece_info["previous_position"][0] is not None and piece_info["current_position"][0] is not None]:
+    for side in [piece_info["side"] for piece_info in moved_pieces if piece_info["current_position"][0] is not None]:
         if side != side_that_should_be_moving and side != "neutral":
             logger.error(f"{side} moved instead of {side_that_should_be_moving}")
             is_valid_game_state = False

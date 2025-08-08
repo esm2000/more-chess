@@ -64,7 +64,7 @@ def delete_game(id):
 
 
 @router.put("/game/{id}", status_code=200)
-def update_game_state(id, state: GameState, response: Response, player=True, disable_turn_check=False):
+def update_game_state(id, state: GameState, response: Response, player=True):
     new_game_state = dict(state)
     old_game_state = retrieve_game_state(id, response)
 
@@ -165,8 +165,7 @@ def update_game_state(id, state: GameState, response: Response, player=True, dis
     is_valid_game_state = utils.invalidate_game_if_stunned_piece_moves(moved_pieces, is_valid_game_state)
 
     # old game's turn count is representative of what side should be moving (even is white, odd is black)
-    if not disable_turn_check:
-        is_valid_game_state = utils.invalidate_game_if_wrong_side_moves(moved_pieces, is_valid_game_state, old_game_state["turn_count"])
+    is_valid_game_state = utils.invalidate_game_if_wrong_side_moves(moved_pieces, is_valid_game_state, old_game_state["turn_count"])
 
     is_valid_game_state = utils.invalidate_game_if_too_much_gold_is_spent(old_game_state, gold_spent, is_valid_game_state)
     # mutates new_game_state object

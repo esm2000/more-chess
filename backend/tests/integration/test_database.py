@@ -1,6 +1,3 @@
-import os
-import sys
-
 from src.database import mongo_client
 
 

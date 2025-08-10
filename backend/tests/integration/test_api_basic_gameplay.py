@@ -4,7 +4,7 @@ import pytest
 
 from mocks.starting_game import starting_game
 import src.api as api
-from src.utils import clear_game
+from src.utils.game_state import clear_game
 from tests.test_utils import (
     select_white_piece, select_black_piece, 
     move_white_piece, move_black_piece, 

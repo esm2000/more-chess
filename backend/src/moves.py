@@ -1,6 +1,7 @@
 import copy
 
-from src.utils import enable_adjacent_bishop_captures, evaluate_current_position
+from src.utils.piece_mechanics import enable_adjacent_bishop_captures
+from src.utils.board_analysis import evaluate_current_position
 # get_moves() returns possible_moves_dict
 # {
 #   "possible_moves": [[row, col], ...] - positions where piece can move

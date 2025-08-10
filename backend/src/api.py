@@ -152,7 +152,7 @@ def update_game_state(id, state: GameState, response: Response, player=True):
 
     utils.update_castle_log(new_game_state, moved_pieces)
 
-    gold_spent = utils.get_gold_spent(old_game_state, moved_pieces)
+    gold_spent = utils.get_gold_spent(moved_pieces)
 
     is_pawn_exchange_required_this_turn, is_valid_game_state = utils.check_if_pawn_exchange_is_required(old_game_state, new_game_state, moved_pieces, is_valid_game_state)
 

@@ -2,7 +2,7 @@ import copy
 from fastapi import Response
 
 import src.api as api
-from src.utils import clear_game
+from src.utils.game_state import clear_game
 from tests.test_utils import (
     select_and_move_white_piece, select_and_move_black_piece
 )

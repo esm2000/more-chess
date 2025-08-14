@@ -49,15 +49,15 @@ def check_to_see_if_more_than_one_piece_has_moved(
                 if moved_piece["current_position"] not in moves_info["possible_moves"] + moves_info["castle_moves"]:
                     logger.error(f"Square {moved_piece['previous_position']} to square {moved_piece['current_position']} invalid for {moved_piece['piece']['type']}")
                     is_valid_game_state = False
-        # if a piece has spawned without being exchanged for a pawn
-        # take note of gold count that is supposed to be spent to obtain it
+            # if a piece has spawned without being exchanged for a pawn
+            # take note of gold count that is supposed to be spent to obtain it
             if moved_piece["current_position"][0] is not None \
             and moved_piece["previous_position"][0] is None \
             and not any(p['previous_position'] == moved_piece["current_position"] for p in moved_pieces if p["previous_position"][0] is not None):          
                 if "queen" in moved_piece["piece"]["type"] or "king" in moved_piece["piece"]["type"]:
                     logger.error(f"A {'queen' if 'queen' in moved_piece['piece']['type'] else 'king'} has been bought")
                     is_valid_game_state = False
-        # if more one piece moves and it's not a castle, invalidate 
+            # if more one piece moves and it's not a castle, invalidate 
         if count_of_pieces_on_new_state > 2:
             logger.error("3 or more pieces of the same side have moved in one turn")
             is_valid_game_state = False

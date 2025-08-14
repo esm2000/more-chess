@@ -44,7 +44,8 @@ def check_to_see_if_more_than_one_piece_has_moved(
                 except Exception as e:
                     logger.error(f"Unable to determine move for {moved_piece['piece']['type']} due to: {traceback.format_exc()}")
                     is_valid_game_state = False
-        # if move(s) are invalid, invalidate
+
+                # if move(s) are invalid, invalidate
                 if moved_piece["current_position"] not in moves_info["possible_moves"] + moves_info["castle_moves"]:
                     logger.error(f"Square {moved_piece['previous_position']} to square {moved_piece['current_position']} invalid for {moved_piece['piece']['type']}")
                     is_valid_game_state = False

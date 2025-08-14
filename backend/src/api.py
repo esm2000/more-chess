@@ -86,9 +86,8 @@ def update_game_state(id, state: GameState, response: Response, player=True):
         # ]
         moved_pieces = utils.determine_pieces_that_have_moved(new_game_state["board_state"], old_game_state["board_state"])
     except Exception as e:
-        if "More than one" in str(e):
-            raise HTTPException(status_code=400, detail=utils.INVALID_GAME_STATE_ERROR_MESSAGE)
-        raise e
+        logger.error(f"Unable to determine pieces that have moved: {e}")
+        raise HTTPException(status_code=400, detail=utils.INVALID_GAME_STATE_ERROR_MESSAGE)
     
     is_valid_game_state = True
     capture_positions = []

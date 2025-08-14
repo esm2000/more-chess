@@ -220,8 +220,9 @@ def trim_moves(moves_info, unsafe_position_for_one_side):
 
     i = 0
     while i < len(moves_info_copy["possible_captures"]):
-        if tuple(moves_info_copy["possible_captures"][0][i]) in unsafe_positions_set:
-            moves_info_copy["possible_captures"][0].pop(i)
+        # Check if the capture destination position is unsafe
+        if tuple(moves_info_copy["possible_captures"][i][0]) in unsafe_positions_set:
+            moves_info_copy["possible_captures"].pop(i)
         else:
             i += 1
     

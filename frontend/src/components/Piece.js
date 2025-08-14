@@ -20,18 +20,13 @@ const Piece = (props) => {
     const leftPosition = props.col * 3.7 * (isMobile ? 2: 1)
 
     const handlePieceClick = () => {
-        if (props.side === PLAYERS[0] && !props.isStunned) {
-            
-            if(
-                gameState.positionInPlay.toString() === [null, null].toString() || 
-                (gameState.positionInPlay[0] !== props.row || gameState.positionInPlay[1] !== props.col)
-            ) {
-                gameState.updateGameState({...gameState, positionInPlay: [props.row, props.col]})
-            } else if(gameState.positionInPlay[0] === props.row && gameState.positionInPlay[1] === props.col) {
-                gameState.updateGameState({...gameState, positionInPlay: [null, null]})
-            }
+        const isNeutralPiecePresent = () => {
+            if (props.side === "neutral") return true
+            const square = gameState.boardState[props.row]?.[props.col] || []
+            return square.some(piece => piece.type.includes("neutral"))
         }
-        if (props.side === PLAYERS[1] && positionInPlay?.[0] != null && positionInPlay?.[1] != null) {
+
+        const capturePiece = (type) => {
             const newBoardState = [...gameState.boardState]
             const newPositionInPlay = [null, null]
             const pieceInPlay = newBoardState[positionInPlay[0]][positionInPlay[1]].find(piece => piece.type.includes(PLAYERS[0]))
@@ -41,7 +36,7 @@ const Piece = (props) => {
             var capturedPieceValue
 
             for (let i = 0; i < newBoardState[props.row][props.col]?.length; i++) {
-                if (snakeToCamel(newBoardState[props.row][props.col][i]?.type) === props.type) {
+                if (snakeToCamel(newBoardState[props.row][props.col][i]?.type) === type) {
                     capturedPiece = newBoardState[props.row][props.col][i]
                     capturedPieceValue = getPiecePrice(snakeToCamel(capturedPiece.type))
                     newCapturedPieces[PLAYERS[0]].push(capturedPiece.type)
@@ -50,7 +45,7 @@ const Piece = (props) => {
             }
             newGoldCount[PLAYERS[0]] += capturedPieceValue ? capturedPieceValue : 0
 
-            newBoardState[props.row][props.col] = newBoardState[props.row][props.col].filter(piece => piece.type === props.type)
+            newBoardState[props.row][props.col] = newBoardState[props.row][props.col].filter(piece => !piece.type.includes(PLAYERS[1]))
             newBoardState[props.row][props.col].push(pieceInPlay)
             newBoardState[positionInPlay[0]][positionInPlay[1]] = newBoardState[positionInPlay[0]][positionInPlay[1]]?.filter(piece => piece.type !== pieceInPlay.type)
 
@@ -62,6 +57,70 @@ const Piece = (props) => {
                 positionInPlay: newPositionInPlay
             })
         }
+        
+        if (props.side === PLAYERS[0] && !props.isStunned) {
+            if(
+                gameState.positionInPlay.toString() === [null, null].toString() || 
+                (gameState.positionInPlay[0] !== props.row || gameState.positionInPlay[1] !== props.col)
+            ) {
+                gameState.updateGameState({...gameState, positionInPlay: [props.row, props.col]})
+            } else if(gameState.positionInPlay[0] === props.row && gameState.positionInPlay[1] === props.col) {
+                gameState.updateGameState({...gameState, positionInPlay: [null, null]})
+            }
+        }
+        else if (props.side === PLAYERS[1] && positionInPlay?.[0] != null && positionInPlay?.[1] != null) {
+            capturePiece(props.type)
+        }
+
+        // scenario 0 - a neutral monster is present with another friendly piece and there's no piece in play make it the piece in play
+        else if (
+            isNeutralPiecePresent() && 
+            positionInPlay?.[0] === null &&
+            positionInPlay?.[1] === null &&
+            gameState.boardState[props.row][props.col].some((piece) => piece.type.includes(PLAYERS[0]))
+        ) {
+            gameState.updateGameState({...gameState, positionInPlay: [props.row, props.col]})
+
+        }
+
+        else if (isNeutralPiecePresent() && positionInPlay?.[0] != null && positionInPlay?.[1] != null) {
+            const newBoardState = [...gameState.boardState]
+            const pieceInPlay = newBoardState[positionInPlay[0]][positionInPlay[1]].find(piece => piece.type.includes(PLAYERS[0]))
+            const newCapturedPieces = {...gameState.capturedPieces}
+            var newGoldCount = {...gameState.goldCount}
+
+            // scenario 1 - only a neutral monster is present with greater than 1 health
+            // scenario 2 - only a neutral monster is present with 1 health
+            if (gameState.boardState[props.row][props.col].length == 1) {
+                for (let i = 0; i < newBoardState[props.row][props.col]?.length; i++) {
+                    if (snakeToCamel(newBoardState[props.row][props.col][i]?.type) === props.type) {
+                        // damage handled by backend
+                        newBoardState[props.row][props.col].push(pieceInPlay)
+                        newBoardState[positionInPlay[0]][positionInPlay[1]] = newBoardState[positionInPlay[0]][positionInPlay[1]].filter(piece => !piece.type.includes(PLAYERS[0]));
+                    }
+                }
+                gameState.updateGameState({
+                    ...gameState, 
+                    capturedPieces: newCapturedPieces,
+                    goldCount: newGoldCount,
+                    boardState: newBoardState,
+                    positionInPlay: [null, null]
+                })
+            }
+            // scenario 3 - a neutral monster is present with greater than 1 health and another piece is present
+            // scenario 4 - a neutral monster is present with 1 health and another piece is present
+            else {
+                // if the piece is friendly do nothing
+                const square = gameState.boardState[props.row][props.col]
+                // if the piece is an enemy piece capture it and damage the neutral monster
+                // damage/capture on neutral monster handled by backend
+                const enemyPiece = square.find(piece => piece.type.includes(PLAYERS[1]))
+                
+                if (enemyPiece) capturePiece(enemyPiece.type)
+            }
+
+            
+        }   
     }
 
     const handleSpareButtonClick = () => {
@@ -188,7 +247,6 @@ const Piece = (props) => {
                 }): null
             }
             {
-                // TODO: add onClick functions that make API calls to capture or spare piece
                 props.bishopDebuff === 3 && props.side === PLAYERS[1]?
                 <div>
                     <button

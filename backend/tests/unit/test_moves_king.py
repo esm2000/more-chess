@@ -24,10 +24,11 @@ def test_king_movement():
     ## 5 |##|__|##|__|##|__|##|__|
     ## 6 |__|##|__|##|__|##|__|##|
     ## 7 |##|__|##|__|##|__|##|__|
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         curr_game_state = copy.deepcopy(empty_game)
         curr_game_state["turn_count"] = 0
-        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_king"}]
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_king"}]
 
         prev_game_state = copy.deepcopy(curr_game_state)
         curr_position = [3, 3]
@@ -66,12 +67,13 @@ def test_king_capture():
     ## 5 |##|__|##|__|##|__|##|__|
     ## 6 |__|##|__|##|__|##|__|##|
     ## 7 |##|__|##|__|##|__|##|__|
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         for enemy_position in [[2, 3], [2, 4], [3, 4], [4, 4], [4, 3], [4, 2], [3, 2], [2, 2]]:
             curr_game_state = copy.deepcopy(empty_game)
             curr_game_state["turn_count"] = 0
-            curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_king"}]
-            curr_game_state["board_state"][enemy_position[0]][enemy_position[1]] = [{"type": f"{'black' if not i else 'white'}_knight"}]
+            curr_game_state["board_state"][3][3] = [{"type": f"{side}_king"}]
+            curr_game_state["board_state"][enemy_position[0]][enemy_position[1]] = [{"type": f"{opposite_side}_knight"}]
 
             prev_game_state = copy.deepcopy(curr_game_state)
             curr_position = [3, 3]
@@ -112,12 +114,12 @@ def test_king_interactions_with_neutral_monsters():
     ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
     ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
     neutral_monster_positions = [[2, 3], [2, 4], [3, 4], [4, 4], [4, 3], [4, 2], [3, 2], [2, 2]]
-    for i in range(2):
+    for side in ["white", "black"]:
         for neutral_monster_position in neutral_monster_positions:
             for health in [5, 1]:
                 for monster in ["dragon", "baron_nashor", "board_herald"]:
                     curr_game_state = copy.deepcopy(empty_game)
-                    curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_king"}]
+                    curr_game_state["board_state"][3][3] = [{"type": f"{side}_king"}]
                     curr_game_state["board_state"][neutral_monster_position[0]][neutral_monster_position[1]] = [{
                         "type": f"neutral_{monster}",
                         "health": health
@@ -163,10 +165,11 @@ def test_king_capturing_adjacent_bishop():
     ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
     ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
 
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_king"}]
-        curr_game_state["board_state"][2][5] = [{"type": f"{'black' if not i else 'white'}_bishop"}]
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_king"}]
+        curr_game_state["board_state"][2][5] = [{"type": f"{opposite_side}_bishop"}]
         possible_moves_and_captures = moves.get_moves_for_king(curr_game_state, None, [3, 3])
         assert [[2, 4], [2, 5]] in sorted(possible_moves_and_captures["possible_captures"])
 
@@ -190,11 +193,11 @@ def test_king_being_allowed_to_move_to_sword_in_stone_square():
     ## 5 |##|__|##|__|##|__|##|__|
     ## 6 |__|##|__|##|__|##|__|##|
     ## 7 |##|__|##|__|##|__|##|__|
-    for i in range(2):
+    for side in ["white", "black"]:
         for sword_in_the_stone_position in [[2, 3], [2, 4], [3, 4], [4, 4], [4, 3], [4, 2], [3, 2], [2, 2]]:
             curr_game_state = copy.deepcopy(empty_game)
             curr_game_state["turn_count"] = 0
-            curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_king"}]
+            curr_game_state["board_state"][3][3] = [{"type": f"{side}_king"}]
             curr_game_state["sword_in_the_stone_position"] = sword_in_the_stone_position
 
             prev_game_state = copy.deepcopy(curr_game_state)

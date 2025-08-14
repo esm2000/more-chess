@@ -141,10 +141,12 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * win + loss screens ✅
 * checkmate protection status effect ✅
 * shop (with light/normal green square for shop square) ✅
+* Ensure the player can deselect a selected piece
 * rename game to League of Chess
 * change favicon and website/tab title
 * add castle button
-* add UI for draw
+* make victory and defeat UI transparent
+* add UI for draw (if a UI is unable to be found, just add test next to defeat UI)
 * neutral monster buff UI (small monster icons next to pieces, with an accompanying number for stacked effects)
 * create a screen directing users to refresh or try again later when POST request fails
 * shop rework 
@@ -153,6 +155,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * visual cue for turn being skipped
 * redo assets for rules
 * give player option to switch between chess sprites and league sprites (make league sprites default (with button [chess piece] <-> [league character]))
+* settle all TODOs
 
 ##### Backend 
 * MongoDB database  ✅
@@ -170,11 +173,14 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
         - getPossibleMovesForRook() ✅
         - getPossibleMovesForQueen() ✅
         - getPossibleMovesForKing() ✅
-    - add check and checkmate logic
-    - handle possibility that a piece can move to a square containing a neutral monster and another piece (where it captures the other piece and damages the neutral monster)
+    - add check and checkmate logic ✅
+    - handle possibility that a piece can move to a square containing a neutral monster and another piece (where it captures the other piece and damages the neutral monster) ✅
+    - neutral monster buff implementation
     - finalize shop and pawn exchange logic (and UI)
     - expand getPossibleMoves() to be able to dynamically take into consideration neutral monster buffs (while finalizing UI)
     - clean up PUT game endpoint for easier readibility and maintainability
+* Ensure player can deselect a selected piece
+* Finishing touches on frontend
 * Enhance instructions with local database setup
 * AI - https://www.chessprogramming.org/Evaluation#Publications
     - rudimentary EASY enemy AI (chooses random moves from possible moves)

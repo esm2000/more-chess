@@ -151,3 +151,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Utility script
+temp_setup.py

@@ -24,9 +24,9 @@ def test_knight_movement():
     ## 5 |##|__|##|__|##|__|##|__|
     ## 6 |__|##|__|##|__|##|__|##|
     ## 7 |##|__|##|__|##|__|##|__|
-    for i in range(2):
+    for side in ["white", "black"]:
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_knight"}]
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_knight"}]
 
         prev_game_state = copy.deepcopy(curr_game_state)
 
@@ -57,22 +57,23 @@ def test_knight_capture():
 #     ## 5 |##|__|wp|__|wp|__|##|__|
 #     ## 6 |__|##|__|##|__|##|__|##|
 #     ## 7 |##|__|##|__|##|__|##|__|
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_knight"}]
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_knight"}]
 
-        curr_game_state["board_state"][1][4] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][2][5] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][4][5] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][5][2] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][5][4] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][4][1] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][2][1] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-        curr_game_state["board_state"][1][2] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][1][4] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][2][5] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][4][5] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][5][2] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][5][4] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][4][1] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][2][1] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][1][2] = [{"type": f"{opposite_side}_pawn"}]
 
         prev_game_state = copy.deepcopy(curr_game_state)
         prev_game_state["board_state"][2][1] = None
-        prev_game_state["board_state"][1][1] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        prev_game_state["board_state"][1][1] = [{"type": f"{opposite_side}_pawn"}]
 
         curr_position = [3, 3]
 
@@ -124,7 +125,8 @@ def test_knight_blocked():
     enemy_positions = [[4, 1], [5, 2], [5, 4], [4, 5], [2, 5], [1, 4], [1, 2], [2, 1]]
     curr_position = [3, 3]
 
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         for enemy_position in enemy_positions:
             path_1_blocking_positions = []
             path_2_blocking_positions = []
@@ -150,9 +152,9 @@ def test_knight_blocked():
             # confirm that being blocked on one of the two paths to a square shouldn't block knight
             for blocking_position in path_1_blocking_positions + path_2_blocking_positions:
                 curr_game_state = copy.deepcopy(empty_game)
-                curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_knight"}]
-                curr_game_state["board_state"][enemy_position[0]][enemy_position[1]] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-                curr_game_state["board_state"][blocking_position[0]][blocking_position[1]] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+                curr_game_state["board_state"][3][3] = [{"type": f"{side}_knight"}]
+                curr_game_state["board_state"][enemy_position[0]][enemy_position[1]] = [{"type": f"{opposite_side}_pawn"}]
+                curr_game_state["board_state"][blocking_position[0]][blocking_position[1]] = [{"type": f"{opposite_side}_pawn"}]
 
                 prev_game_state = copy.deepcopy(curr_game_state)
 
@@ -166,12 +168,12 @@ def test_knight_blocked():
                     path_2_blocking_position = path_2_blocking_positions[path_2_blocking_index]
                     
                     curr_game_state = copy.deepcopy(empty_game)
-                    curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_knight"}]
+                    curr_game_state["board_state"][3][3] = [{"type": f"{side}_knight"}]
                     for enemy_position_ in enemy_positions:
-                        curr_game_state["board_state"][enemy_position_[0]][enemy_position_[1]] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+                        curr_game_state["board_state"][enemy_position_[0]][enemy_position_[1]] = [{"type": f"{opposite_side}_pawn"}]
 
-                    curr_game_state["board_state"][path_1_blocking_position[0]][path_1_blocking_position[1]] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
-                    curr_game_state["board_state"][path_2_blocking_position[0]][path_2_blocking_position[1]] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+                    curr_game_state["board_state"][path_1_blocking_position[0]][path_1_blocking_position[1]] = [{"type": f"{opposite_side}_pawn"}]
+                    curr_game_state["board_state"][path_2_blocking_position[0]][path_2_blocking_position[1]] = [{"type": f"{opposite_side}_pawn"}]
 
                     prev_game_state = copy.deepcopy(curr_game_state)
 
@@ -219,11 +221,12 @@ def test_knight_cant_capture_king():
     ]
     curr_position = [3, 3]
 
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         for enemy_position in enemy_positions:
             curr_game_state = copy.deepcopy(empty_game)
-            curr_game_state["board_state"][curr_position[0]][curr_position[0]] = [{"type": f"{'white' if not i else 'black'}_knight"}]
-            curr_game_state["board_state"][enemy_position[0]][enemy_position[1]] = [{"type": f"{'black' if not i else 'white'}_king"}]
+            curr_game_state["board_state"][curr_position[0]][curr_position[0]] = [{"type": f"{side}_knight"}]
+            curr_game_state["board_state"][enemy_position[0]][enemy_position[1]] = [{"type": f"{opposite_side}_king"}]
 
             prev_game_state = copy.deepcopy(curr_game_state)
 
@@ -236,14 +239,14 @@ def test_knight_cant_capture_king():
 
 
 def test_knight_overflow():
-    for i in range(2):
+    for side in ["white", "black"]:
         relative_positions = [[1, 2], [-1, 2], [1, -2], [-1, -2], [2, 1], [-2, 1], [2, -1], [-2, -1]]
         rows_and_columns = [0, 1, 6, 7]
 
         for row in rows_and_columns:
             for col in rows_and_columns:
                 curr_game_state = copy.deepcopy(empty_game)
-                curr_game_state["board_state"][row][col] = [{"type": f"{'white' if not i else 'black'}_knight"}]
+                curr_game_state["board_state"][row][col] = [{"type": f"{side}_knight"}]
                 prev_game_state = copy.deepcopy(curr_game_state)
                 for relative_position in relative_positions:
                     ending_position = [relative_position[0] + row, relative_position[1] + col]
@@ -278,13 +281,13 @@ def test_knight_interactions_with_neutral_monster():
 
     relative_positions = [[1, 2], [-1, 2], [1, -2], [-1, -2], [2, 1], [-2, 1], [2, -1], [-2, -1]]
 
-    for i in range(2):
+    for side in ["white", "black"]:
         for health in [5, 1]:
             for monster in ["dragon", "baron_nashor", "board_herald"]:
                 for relative_position in relative_positions:
                     monster_position = [3 + relative_position[0], 3 + relative_position[1]]
                     curr_game_state = copy.deepcopy(empty_game)
-                    curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_knight"}]
+                    curr_game_state["board_state"][3][3] = [{"type": f"{side}_knight"}]
                     curr_game_state["board_state"][monster_position[0]][monster_position[1]] = [
                         {
                             "type": f"neutral_{monster}",
@@ -320,11 +323,12 @@ def test_knight_capturing_adjacent_bishop():
     ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
     ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
     
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_knight"}]
-        curr_game_state["board_state"][1][5] = [{"type": f"{'black' if not i else 'white'}_bishop"}]
-        curr_game_state["board_state"][2][5] = [{"type": f"{'black' if not i else 'white'}_pawn"}]
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_knight"}]
+        curr_game_state["board_state"][1][5] = [{"type": f"{opposite_side}_bishop"}]
+        curr_game_state["board_state"][2][5] = [{"type": f"{opposite_side}_pawn"}]
 
         possible_moves_and_captures = moves.get_moves_for_knight(curr_game_state, None, [3, 3])
 
@@ -366,11 +370,11 @@ def test_knight_not_being_allowed_to_move_to_sword_in_stone_square():
     ## 5 |##|__|##|__|##|__|##|__|
     ## 6 |__|##|__|##|__|##|__|##|
     ## 7 |##|__|##|__|##|__|##|__|
-    for i in range(2):
+    for side in ["white", "black"]:
         for sword_in_the_stone_position in [[1, 4], [2, 5], [4, 5], [5, 2], [5, 4], [4, 1], [2, 1], [1, 2]]:
             curr_game_state = copy.deepcopy(empty_game)
             curr_game_state["turn_count"] = 0
-            curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_knight"}]
+            curr_game_state["board_state"][3][3] = [{"type": f"{side}_knight"}]
             curr_game_state["sword_in_the_stone_position"] = sword_in_the_stone_position
 
             prev_game_state = copy.deepcopy(curr_game_state)
@@ -403,12 +407,13 @@ def test_knight_blocked_by_sword_in_stone_and_another_piece():
     ## 5 |##|__|##|__|##|__|##|__|
     ## 6 |__|##|__|##|__|##|__|##|
     ## 7 |##|__|##|__|##|__|##|__|
-    for i in range(2):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
         curr_game_state = copy.deepcopy(empty_game)
         curr_game_state["turn_count"] = 0
-        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_knight"}]
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_knight"}]
         curr_game_state["sword_in_the_stone_position"] = [2, 2]
-        curr_game_state["board_state"][2][4] = [{"type": f"{'black' if not i else 'white'}_knight"}]
+        curr_game_state["board_state"][2][4] = [{"type": f"{opposite_side}_knight"}]
 
         prev_game_state = copy.deepcopy(curr_game_state)
         curr_position = [3, 3]
@@ -440,10 +445,10 @@ def test_knight_partially_blocked_by_sword_in_stone():
     ## 5 |##|__|##|__|##|__|##|__|
     ## 6 |__|##|__|##|__|##|__|##|
     ## 7 |##|__|##|__|##|__|##|__|
-    for i in range(2):
+    for side in ["white", "black"]:
         curr_game_state = copy.deepcopy(empty_game)
         curr_game_state["turn_count"] = 0
-        curr_game_state["board_state"][3][3] = [{"type": f"{'white' if not i else 'black'}_knight"}]
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_knight"}]
         curr_game_state["sword_in_the_stone_position"] = [2, 2]
 
         prev_game_state = copy.deepcopy(curr_game_state)
@@ -453,3 +458,47 @@ def test_knight_partially_blocked_by_sword_in_stone():
         expected_positions = [[1, 2], [1, 4], [2, 1], [2, 5]]
         for expected_position in expected_positions:
             assert expected_position in possible_moves_and_captures["possible_moves"]
+
+
+def test_knight_threatening_move():
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|bK|__|##|__| 
+    ## 2 |__|##|__|##|__|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|wk|##|__|##|__|      ## 3 |##|__|##|wk|__|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|wK|__|##|__| 
+    ## 2 |__|##|__|##|__|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|bk|##|__|##|__|      ## 3 |##|__|##|bk|__|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+    king_positions = [[None, None], [1, 4], [4, 5], [5, 4], [5, 2], [4, 1], [2, 1], [1, 2]]
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        for king_position in king_positions:
+            curr_game_state = copy.deepcopy(empty_game)
+            curr_game_state["board_state"][3][3] = [{"type": f"{side}_knight"}]
+            if king_position[0] is not None:
+                curr_game_state["board_state"][king_position[0]][king_position[1]] = [{"type": f"{opposite_side}_king"}]
+
+            prev_game_state = copy.deepcopy(curr_game_state)
+
+            curr_position = [3, 3]
+
+            possible_moves_and_captures = moves.get_moves_for_knight(curr_game_state, prev_game_state, curr_position)
+
+            assert [king_position, king_position] not in possible_moves_and_captures["possible_captures"]
+            assert len(possible_moves_and_captures["possible_captures"]) == 0
+            if king_position[0] is not None:
+                assert [king_position] == possible_moves_and_captures["threatening_move"]
+            else:
+                assert [king_position] not in possible_moves_and_captures["threatening_move"]
+                assert len(possible_moves_and_captures["threatening_move"]) == 0

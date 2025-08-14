@@ -23,8 +23,8 @@ const Board = () => {
     const possibleCaptures = gameState.possibleCaptures
     const swordInTheStonePosition = gameState.swordInTheStonePosition
     const isMobile = determineIsMobile()
-    const playerVictory = gameState.playerVictory
-    const playerDefeat = gameState.playerDefeat
+    const blackDefeat = gameState.blackDefeat
+    const whiteDefeat = gameState.whiteDefeat
 
     const [shopPieceSelected, setShopPieceSelected] = useState(null)
 
@@ -95,8 +95,8 @@ const Board = () => {
                         col={swordInTheStonePosition[1]}
                     /> : null
                 }
-                {playerVictory ?
-                    <Victory isMobile={isMobile}/> : playerDefeat ?
+                {blackDefeat ?
+                    <Victory isMobile={isMobile}/> : whiteDefeat ?
                     <Defeat isMobile={isMobile}/> : null
                 }
             </div>

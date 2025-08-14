@@ -171,6 +171,7 @@ const camelToSnake = (str) =>
         return `_${letter.toLowerCase()}`;
     });
 
+// TODO: incorporate recursion but keep side effects in mind from the non-recursive implementation with snakeToCamel()
 const convertKeysToCamelCase = (obj) => {
     let newObj = {};
     for (let key in obj) {
@@ -182,6 +183,7 @@ const convertKeysToCamelCase = (obj) => {
     return newObj;
 }
 
+// TODO: incorporate recursion but keep side effects in mind from the non-recursive implementation with camelToSnake()
 function convertKeysToSnakeCase(obj) {
     const result = {};
     for (const key in obj) {
@@ -216,6 +218,18 @@ const determineBackgroundColor = (row, col, positionInPlay, possibleCaptures, is
         return LIGHT_BLUE_SQUARE_COLOR
     }
 
+    if (
+        positionInPlay.toString() !== [null, null].toString() &&
+        positionInPlay[0] === row &&
+        positionInPlay[1] === col
+    ) {
+        green = GREEN_SELECTED_SQUARE_COLOR
+        white = WHITE_SELECTED_SQUARE_COLOR
+
+        return (col + offset) % 2 === 0 ? white : green
+
+    }
+
     for(const boss in dangerZonePositions) {
         if (dangerZonePositions[boss].some((danger_zone_position, i) => 
             JSON.stringify(currentPosition) === JSON.stringify(danger_zone_position))) {
@@ -236,15 +250,6 @@ const determineBackgroundColor = (row, col, positionInPlay, possibleCaptures, is
     if ([0, 4].toString() === [row, col].toString() || [7, 4].toString() === [row, col].toString()) {
         green = WHITE_SHOP_SQUARE_COLOR
         white = BLACK_SHOP_SQUARE_COLOR
-    }
-
-    if (
-        positionInPlay.toString() !== [null, null].toString() &&
-        positionInPlay[0] === row &&
-        positionInPlay[1] === col
-    ) {
-        green = GREEN_SELECTED_SQUARE_COLOR
-        white = WHITE_SELECTED_SQUARE_COLOR
     }
     
     return (col + offset) % 2 === 0 ? white : green

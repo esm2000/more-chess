@@ -19,12 +19,18 @@ const GameStateContext = createContext({
     capturedPieces: [],
     SwordInTheStonePosition: null,
     capturePointAdvantage: null,
-    playerVictory: false,
-    playerDefeat: false,
+    blackDefeat: false,
+    whiteDefeat: false,
     goldCount: null,
     bishopSpecialCaptures: [],
     latestMovement: null,
-    queenReset: false
+    queenReset: false,
+    check: {white: false, black: false},
+    // for consistency add recursion to convertKeysToSnakeCase()
+    castleLog: {
+        white: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false},
+        black: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false}
+    }
 })
 
 export function GameStateContextData() {
@@ -87,8 +93,8 @@ export function GameStateProvider({children}) {
         graveyard: [],
         swordInTheStonePosition: null,
         capturePointAdvantage: null,
-        playerVictory: false,
-        playerDefeat: false,
+        blackDefeat: false,
+        whiteDefeat: false,
         goldCount: {
             [PLAYERS[0]]: 0,
             [PLAYERS[1]]: 0
@@ -96,7 +102,16 @@ export function GameStateProvider({children}) {
         bishopSpecialCaptures: [],
         latestMovement: {},
         queenReset: false,
-        neutralAttackLog: {}
+        neutralAttackLog: {},
+        check: {
+            [PLAYERS[0]]: false,
+            [PLAYERS[1]]: false
+        },
+        // for consistency add recursion to convertKeysToSnakeCase()
+        castleLog: {
+            white: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false},
+            black: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false}
+        }
     }
     const [gameState, setGameState] = useState(initGameState);
 
@@ -125,7 +140,7 @@ export function GameStateProvider({children}) {
         .then(response => response.json())
         .then(result => {
             if (method === "POST") {
-                console.log(`Game ID - ${result["id"]}`)
+                console.log(`POST Game ID - ${result["id"]}`)
             } else {
                 console.log(`GET Game ${result["id"]}`)
             }

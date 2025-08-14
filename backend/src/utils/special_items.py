@@ -2,8 +2,8 @@ import random
 
 
 # conditionally mutates new_game_state
-def spawn_sword_in_the_stone(new_game_state):
-    if new_game_state["turn_count"] and not new_game_state["turn_count"] % 10:
+def spawn_sword_in_the_stone(old_game_state, new_game_state):
+    if new_game_state["turn_count"] and not new_game_state["turn_count"] % 10 and old_game_state["turn_count"] % 10:
         row_range = range(2, 6)
         candidate_squares = []
         for i in row_range:

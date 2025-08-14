@@ -27,6 +27,7 @@ def test_spawn_monsters(game):
 
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["turn_count"] = 34
+    game_on_next_turn["sword_in_the_stone_position"] = None
     game_state = api.GameState(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
@@ -35,26 +36,32 @@ def test_spawn_monsters(game):
     assert game["board_state"][3][0][0]["type"] == "neutral_baron_nashor"
     
 
-
 def test_neutral_monsters_cannot_move(game):
-    game = clear_game(game)
-    game_on_next_turn = copy.deepcopy(game)
-        
-    game_on_next_turn['board_state'][0][0] = [{"type": "black_king"}]
-    game_on_next_turn['board_state'][7][7] = [{"type": "white_king"}]
-    game_on_next_turn['board_state'][6][0] = [{"type": "white_pawn", "pawn_buff": 0}]
-    game_on_next_turn['board_state'][1][0] = [{"type": "black_pawn", "pawn_buff": 0}]
+    conditions_met_for_test = False
 
-    game_on_next_turn["turn_count"] = 9
+    while not conditions_met_for_test:
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
+            
+        game_on_next_turn['board_state'][0][0] = [{"type": "black_king"}]
+        game_on_next_turn['board_state'][7][7] = [{"type": "white_king"}]
+        game_on_next_turn['board_state'][6][0] = [{"type": "white_pawn", "pawn_buff": 0}]
+        game_on_next_turn['board_state'][1][0] = [{"type": "black_pawn", "pawn_buff": 0}]
 
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+        game_on_next_turn["turn_count"] = 9
 
-    game = select_and_move_black_piece(game=game, from_row=1, from_col=0, to_row=2, to_col=0)
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    assert game["turn_count"] == 10
-    assert any([piece.get("type") == "neutral_dragon" for piece in game["board_state"][4][7]])
-    assert any([piece.get("type") == "neutral_board_herald" for piece in game["board_state"][3][0]])
+        game = select_and_move_black_piece(game=game, from_row=1, from_col=0, to_row=2, to_col=0)
+
+        assert game["turn_count"] == 10
+        assert any([piece.get("type") == "neutral_dragon" for piece in game["board_state"][4][7]])
+        assert any([piece.get("type") == "neutral_board_herald" for piece in game["board_state"][3][0]])
+
+        # a sword in the stone randomly in the way of the pieces can cause a failure
+        if game["sword_in_the_stone_position"] not in [[5, 0]]:
+            conditions_met_for_test = True
 
     with pytest.raises(HTTPException):
         game_on_next_turn = copy.deepcopy(game)
@@ -86,35 +93,43 @@ def test_neutral_monsters_cannot_move(game):
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
+
 def test_neutral_monsters_can_be_hurt(game):
-    game = clear_game(game)
-    game_on_next_turn = copy.deepcopy(game)
+    conditions_met_for_test = False
+
+    while not conditions_met_for_test:
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
+            
+        game_on_next_turn['board_state'][0][0] = [{"type": "black_king"}]
+        game_on_next_turn['board_state'][7][7] = [{"type": "white_king"}]
+        game_on_next_turn['board_state'][6][0] = [{"type": "white_pawn", "pawn_buff": 0}]
+        game_on_next_turn['board_state'][1][0] = [{"type": "black_pawn", "pawn_buff": 0}]
         
-    game_on_next_turn['board_state'][0][0] = [{"type": "black_king"}]
-    game_on_next_turn['board_state'][7][7] = [{"type": "white_king"}]
-    game_on_next_turn['board_state'][6][0] = [{"type": "white_pawn", "pawn_buff": 0}]
-    game_on_next_turn['board_state'][1][0] = [{"type": "black_pawn", "pawn_buff": 0}]
-    
-    game_on_next_turn["board_state"][2][5] = [{"type": "black_bishop"}]
-    game_on_next_turn["board_state"][2][7] = [{"type": "black_rook"}]
+        game_on_next_turn["board_state"][2][5] = [{"type": "black_bishop"}]
+        game_on_next_turn["board_state"][2][7] = [{"type": "black_rook"}]
 
-    game_on_next_turn["board_state"][6][5] = [{"type": "white_bishop"}]
-    game_on_next_turn["board_state"][6][7] = [{"type": "white_rook"}]
+        game_on_next_turn["board_state"][6][5] = [{"type": "white_bishop"}]
+        game_on_next_turn["board_state"][6][7] = [{"type": "white_rook"}]
 
-    game_on_next_turn["turn_count"] = 9
+        game_on_next_turn["turn_count"] = 9
 
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    game = select_and_move_black_piece(game=game, from_row=1, from_col=0, to_row=2, to_col=0)
+        game = select_and_move_black_piece(game=game, from_row=1, from_col=0, to_row=2, to_col=0)
 
-    assert game["turn_count"] == 10
-    assert any([piece.get("type") == "neutral_dragon" for piece in game["board_state"][4][7]])
-    assert any([piece.get("type") == "neutral_board_herald" for piece in game["board_state"][3][0]])
-    assert any([piece.get("health", 0) == 5 for piece in game["board_state"][4][7]])
-    assert any([piece.get("health", 0) == 5 for piece in game["board_state"][3][0]])
+        assert game["turn_count"] == 10
+        assert any([piece.get("type") == "neutral_dragon" for piece in game["board_state"][4][7]])
+        assert any([piece.get("type") == "neutral_board_herald" for piece in game["board_state"][3][0]])
+        assert any([piece.get("health", 0) == 5 for piece in game["board_state"][4][7]])
+        assert any([piece.get("health", 0) == 5 for piece in game["board_state"][3][0]])
 
-    # landing directly on neutral monster
+        # a sword in the stone randomly in the way of the pieces can cause a failure
+        if game["sword_in_the_stone_position"] not in [[5, 6], [3, 6], [3, 7], [5, 7]]:
+            conditions_met_for_test = True
+
+        # landing directly on neutral monster
     game = select_white_piece(game=game, row=6, col=5)
     
     game_on_next_turn = copy.deepcopy(game)
@@ -143,7 +158,6 @@ def test_neutral_monsters_can_be_hurt(game):
     assert game["board_state"][4][7][0]["health"] == 2
     # Bishops can be captured by landing on any square adjacent to it, even those not on diagonals.
     assert not any([piece.get("type") == "black_bishop" for piece in game["board_state"][4][7]])
-
     game = select_and_move_black_piece(game=game, from_row=2, from_col=7, to_row=3, to_col=7)
     
     assert game["board_state"][4][7][0]["health"] == 1
@@ -244,7 +258,6 @@ def test_neutral_monster_health_regen(game):
     assert game["turn_count"] == 15
 
 
-
 def test_check_by_neutral_monster(game):
     # test that the game ends when a king stays near a neutral monster
     for side in ["white", "black"]:
@@ -306,21 +319,28 @@ def test_check_by_neutral_monster(game):
 def test_capture_behavior_when_neutral_and_normal_piece_are_on_same_square(game):
     # test both when the neutral monster has over 1hp and when it has 1 hp
     for test_case in ["damage", "slay"]:
-        game = clear_game(game)
-        game_on_next_turn = copy.deepcopy(game)
+        conditions_met_for_test = False
 
-        game_on_next_turn["board_state"][0][0] = [{"type": f"white_king"}]
-        game_on_next_turn["board_state"][7][0] = [{"type": f"black_king"}]
-        game_on_next_turn["board_state"][1][7] = [{"type": f"white_rook"}]
-        game_on_next_turn["board_state"][7][7] = [{"type": f"black_rook"}]
+        while not conditions_met_for_test:
+            game = clear_game(game)
+            game_on_next_turn = copy.deepcopy(game)
 
-        game_on_next_turn["turn_count"] = 9
+            game_on_next_turn["board_state"][0][0] = [{"type": f"white_king"}]
+            game_on_next_turn["board_state"][7][0] = [{"type": f"black_king"}]
+            game_on_next_turn["board_state"][1][7] = [{"type": f"white_rook"}]
+            game_on_next_turn["board_state"][7][7] = [{"type": f"black_rook"}]
 
-        game_state = api.GameState(**game_on_next_turn)
-        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+            game_on_next_turn["turn_count"] = 9
 
-        game = select_and_move_black_piece(game=game, from_row=7, from_col=0, to_row=6, to_col=0)
+            game_state = api.GameState(**game_on_next_turn)
+            game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
+            game = select_and_move_black_piece(game=game, from_row=7, from_col=0, to_row=6, to_col=0)
+
+            # a sword in the stone randomly in the way of the pieces can cause a failure
+            if game["sword_in_the_stone_position"] not in [[2, 7], [3, 7], [5, 7], [6, 7]]:
+                conditions_met_for_test = True
+        
         if test_case == "slay":
             game_on_next_turn = copy.deepcopy(game)
             game_on_next_turn["board_state"][4][7][0]["health"] = 2

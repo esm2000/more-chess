@@ -297,6 +297,7 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
     possible_captures = []
     threatening_move = []
 
+
     directions = [[1, 1], [1, -1], [-1, -1], [-1, 1]]
     for direction in directions:
         possible_position = [curr_position[0] + direction[0], curr_position[1] + direction[1]]

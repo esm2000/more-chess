@@ -271,7 +271,7 @@ def update_game_state(id, state: GameState, response: Response, player=True):
     utils.handle_draw_conditions(old_game_state, new_game_state)
     
     # spawn sword in the stone when appropriate
-    utils.spawn_sword_in_the_stone(new_game_state)
+    utils.spawn_sword_in_the_stone(old_game_state, new_game_state)
 
     # exhaust sword in stone when appropriate
     utils.exhaust_sword_in_the_stone(new_game_state, moved_pieces)

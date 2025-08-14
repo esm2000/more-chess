@@ -32,7 +32,7 @@ def get_unsafe_positions_for_kings(old_game_state, new_game_state):
                 piece = p
 
         if piece is None:
-            logger.error(f"Unable to location of {side} king when calculating unsafe positions")
+            logger.error(f"Unable to find location of {side} king when calculating unsafe positions")
             continue
 
         moves_info = moves.get_moves(old_game_state, new_game_state, [row, col], piece)

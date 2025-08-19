@@ -4,7 +4,7 @@ from .board_analysis import (
     get_piece_value, 
     get_move_counts,
     evaluate_current_position,
-    get_neutral_monster_slain_position
+    get_neutral_monster_slain_positions
 )
 
 # Game state functions  
@@ -80,7 +80,8 @@ from .monsters import (
     damage_neutral_monsters,
     heal_neutral_monsters,
     is_neutral_monster_spawned,
-    is_neutral_monster_killed
+    is_neutral_monster_killed,
+    grant_neutral_monster_buffs
 )
 
 # Check and checkmate functions

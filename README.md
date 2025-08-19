@@ -143,6 +143,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * shop (with light/normal green square for shop square) ✅
 * Ensure the player can deselect a selected piece
 * rename game to League of Chess
+* for consistency add recursion to convertKeysToSnakeCase() and convertKeysToCamelCase()
 * provide button so that player can choose what piece to lose when facing five dragon stacks
 * provide UI to indicate neutral monster buffs (color tint + number for stacked buffs)
 * change favicon and website/tab title

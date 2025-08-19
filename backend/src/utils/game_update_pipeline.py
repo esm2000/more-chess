@@ -140,10 +140,13 @@ def handle_captures_and_combat(old_game_state, new_game_state, moved_pieces, is_
     )
     
     # Neutral monster validation
-    if utils.get_neutral_monster_slain_position(moved_pieces) and not utils.is_neutral_monster_killed(moved_pieces):
+    if utils.get_neutral_monster_slain_positions(moved_pieces) and not utils.is_neutral_monster_killed(moved_pieces):
         logger.error("A neutral monster disappeared from board without being captured")
         is_valid_game_state = False
     
+    # Conditionally grants neutral monster buffs
+    utils.grant_neutral_monster_buffs(moved_pieces, new_game_state)
+
     # King capture validation
     if utils.is_invalid_king_capture(moved_pieces):
         logger.error("A king has been captured or has disappeared from board")

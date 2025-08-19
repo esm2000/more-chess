@@ -1,6 +1,7 @@
 import copy
 
-from .board_analysis import get_neutral_monster_slain_position
+from src.log import logger
+from .board_analysis import get_neutral_monster_slain_positions
 
 
 MONSTER_INFO = {
@@ -179,7 +180,7 @@ def is_neutral_monster_spawned(neutral_monster_type, board_state):
 
 
 def is_neutral_monster_killed(moved_pieces):
-    neutral_monster_slain_position = get_neutral_monster_slain_position(moved_pieces)
+    neutral_monster_slain_position = get_neutral_monster_slain_positions(moved_pieces)
     was_neutral_monster_killed = False
 
     for moved_piece in moved_pieces:
@@ -190,3 +191,42 @@ def is_neutral_monster_killed(moved_pieces):
             abs(moved_piece["current_position"][1] - neutral_monster_slain_position[1]) in [0, 1]:
                 was_neutral_monster_killed = True
     return was_neutral_monster_killed
+
+
+def grant_neutral_monster_buffs(moved_pieces, capture_positions, new_game_state, is_valid_game_state):
+    # mark new buffs for any side that has captured a neutral monster
+    # and apply buff if board herald buff acquired
+    for moved_piece in moved_pieces:
+        if moved_piece["side"] == "neutral" and moved_piece["current_position"][0] is None and moved_piece["previous_position"][0] is not None:
+            captor = None
+            captor_position = None
+
+            for capture_info in capture_positions:
+                if capture_info[1] != moved_piece["previous_position"]:
+                    continue
+                captor_position = capture_info[0]
+                square = new_game_state[captor_position[0]][captor_position[1]] or []
+
+                if square:
+                    captor = square[0]
+
+            if not captor:
+                neutral_monster_type = moved_piece["piece"].get("type", "Unknown")
+                logger.error(f'Unable to find captor of {neutral_monster_type} (slain at {moved_piece["previous_position"]})')
+                is_valid_game_state = False
+            else:
+                side = "white" if "white" in captor.get["type"] else "black"
+                neutral_monster_type = moved_piece["type"].replace("neutral_")
+
+                if neutral_monster_type == "dragon":
+                    if new_game_state["neutral_buff_log"][side]["dragon"] < 5:
+                        new_game_state["neutral_buff_log"][side]["dragon"] += 1
+                else:
+                    new_game_state["neutral_buff_log"][side][neutral_monster_type] = True
+
+                    # TODO: grant board herald buff to captor if neutral_monster_type == "board_herald"
+    
+    # TODO: grant dragon and baron nashor buffs using neutral buff log (redundantly reapply all buffs just in case new pieces have been acquired through pawn exchange or the shop)
+
+    return is_valid_game_state
+

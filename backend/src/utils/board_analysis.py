@@ -125,9 +125,9 @@ def evaluate_current_position(curr_position, curr_game_state):
         raise Exception(f"No piece at position {curr_position}")
 
 
-def get_neutral_monster_slain_position(moved_pieces):
-    neutral_monster_slain_position = None
+def get_neutral_monster_slain_positions(moved_pieces):
+    neutral_monster_slain_position = []
     for moved_piece in moved_pieces:
         if moved_piece["side"] == "neutral" and moved_piece["current_position"][0] is None and moved_piece["previous_position"][0] is not None:
-            neutral_monster_slain_position = moved_piece["previous_position"]
+            neutral_monster_slain_position.append(moved_piece["previous_position"])
     return neutral_monster_slain_position

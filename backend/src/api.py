@@ -44,6 +44,7 @@ class GameState(BaseModel, extra=Extra.allow):
     neutral_attack_log: dict
     check: dict
     castle_log: dict
+    neutral_buff_log: dict
 
 
 @router.post("/game", status_code=201)

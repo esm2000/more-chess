@@ -31,6 +31,18 @@ empty_game = {
             "has_right_rook_moved": False
         }
     },
+    "neutral_buff_log": {
+        "white": {
+            "dragon": 0,
+            "board_herald": False,
+            "baron_nashor": False
+        },
+        "black": {
+            "dragon": 0,
+            "board_herald": False,
+            "baron_nashor": False
+        }
+    },
     "board_state": [
         [None] * 8,
         [None] * 8,

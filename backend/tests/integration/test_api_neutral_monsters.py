@@ -380,3 +380,22 @@ def test_capture_behavior_when_neutral_and_normal_piece_are_on_same_square(game)
             assert len(game["board_state"][4][7]) == 1
             assert game["board_state"][4][7][0]["type"] == "black_rook"
             assert "neutral_dragon" in game["captured_pieces"]["black"]
+
+
+# TODO: complete tests
+def test_buff_acquired_from__dragon_slain():
+    # validate neutral_monster_log update + buffs granted
+    pass
+
+
+def test_buff_acquired_from__board_herald_slain():
+    # validate neutral_monster_log update + buffs granted
+    pass
+
+
+def test_buff_acquired_from__baron_nashor_slain():
+    # validate neutral_monster_log update + buffs granted
+    pass
+
+
+

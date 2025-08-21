@@ -383,19 +383,50 @@ def test_capture_behavior_when_neutral_and_normal_piece_are_on_same_square(game)
 
 
 # TODO: complete tests
-def test_buff_acquired_from__dragon_slain():
+def test_buff_acquired_from_dragon_slain_stack_1():
     # validate neutral_monster_log update + buffs granted
     pass
 
 
-def test_buff_acquired_from__board_herald_slain():
+def test_buff_acquired_from_dragon_slain_stack_2():
     # validate neutral_monster_log update + buffs granted
     pass
 
 
-def test_buff_acquired_from__baron_nashor_slain():
+def test_buff_acquired_from_dragon_slain_stack_3():
     # validate neutral_monster_log update + buffs granted
     pass
 
 
+def test_buff_acquired_from_dragon_slain_stack_4():
+    # validate neutral_monster_log update + buffs granted
+    pass
 
+
+def test_buff_acquired_from_dragon_slain_stack_4():
+    # validate neutral_monster_log update + buffs granted
+    pass
+
+
+def test_buff_acquired_from_dragon_slain_stack_5():
+    # validate neutral_monster_log update + buffs granted
+    pass
+
+
+def test_buff_acquired_from_dragon_slain_stack_5_duration():
+    pass
+
+
+def test_buff_acquired_from_dragon_slain_restack_5_after_expiration():
+    # validate neutral_monster_log update + buffs granted
+    pass
+
+
+def test_buff_acquired_from_board_herald_slain():
+    # validate neutral_monster_log update + buffs granted
+    pass
+
+
+def test_buff_acquired_from_baron_nashor_slain():
+    # validate neutral_monster_log update + buffs granted
+    pass

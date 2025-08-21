@@ -32,8 +32,8 @@ const GameStateContext = createContext({
         black: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false}
     },
     neutralBuffLog: {
-        white: {dragon: 0, boardHerald: false, baronNashor: false},
-        black: {dragon: 0, boardHerald: false, baronNashor: false}
+        white: {dragon: {stacks:0, turn: 0}, boardHerald: false, baronNashor: false},
+        black: {dragon: {stacks:0, turn: 0}, boardHerald: false, baronNashor: false}
     }
 })
 
@@ -117,8 +117,8 @@ export function GameStateProvider({children}) {
             black: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false}
         },
         neutralBuffLog: {
-        white: {dragon: 0, boardHerald: false, baronNashor: false},
-        black: {dragon: 0, boardHerald: false, baronNashor: false}
+        white: {dragon: {stacks:0, turn: 0}, boardHerald: false, baronNashor: false},
+        black: {dragon: {stacks:0, turn: 0}, boardHerald: false, baronNashor: false}
     }
     }
     const [gameState, setGameState] = useState(initGameState);

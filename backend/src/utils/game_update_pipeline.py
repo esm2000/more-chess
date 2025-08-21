@@ -145,7 +145,7 @@ def handle_captures_and_combat(old_game_state, new_game_state, moved_pieces, is_
         is_valid_game_state = False
     
     # Conditionally grants neutral monster buffs
-    utils.grant_neutral_monster_buffs(moved_pieces, new_game_state)
+    is_valid_game_state = utils.handle_neutral_monster_buffs(moved_pieces, capture_positions, new_game_state, is_valid_game_state)
 
     # King capture validation
     if utils.is_invalid_king_capture(moved_pieces):

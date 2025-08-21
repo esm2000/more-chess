@@ -81,7 +81,7 @@ from .monsters import (
     heal_neutral_monsters,
     is_neutral_monster_spawned,
     is_neutral_monster_killed,
-    grant_neutral_monster_buffs
+    handle_neutral_monster_buffs
 )
 
 # Check and checkmate functions

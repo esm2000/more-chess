@@ -33,12 +33,12 @@ empty_game = {
     },
     "neutral_buff_log": {
         "white": {
-            "dragon": 0,
+            "dragon": {"stacks":0, "turn": 0},
             "board_herald": False,
             "baron_nashor": False
         },
         "black": {
-            "dragon": 0,
+            "dragon": {"stacks":0, "turn": 0},
             "board_herald": False,
             "baron_nashor": False
         }

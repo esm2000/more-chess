@@ -111,7 +111,24 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
 
     if not piece_in_play:
         raise Exception(f"No pawn found at position {curr_position}")
-    # TODO: check and record if game-wide buffs are active 
+    # TODO: check and record if game-wide buffs are active
+    # check to see if a piece with the board herald buff is nearby 
+    board_herald_buff_active = False
+
+    deltas = [(0, 0), (1, 0), (0, 1), (-1, 0), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
+    for delta in deltas:
+        position = curr_position
+        position[0] += delta[0]
+        position[1] += delta[1]
+
+        if position[0] > 7 or position[0] < 0 or position[1] > 7 or position[1] < 0:
+            continue
+
+        square = curr_game_state["board_state"][position[0]][position[1]] or []
+
+        for piece in square:
+            if side in piece.get("type", "") and piece.get("board_herald_buff", False):
+                board_herald_buff_active = True
     
     # check and record what buffs that the pawn has 
     pawn_buff = piece.get("pawn_buff", 0)
@@ -142,6 +159,13 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
         if pawn_buff >= 1 and \
         not is_square_ahead_free and \
         any(piece.get("type", "None") == f"{opposing_side}_pawn" and piece.get("pawn_buff", 0) < 1 for piece in square_ahead):
+            possible_moves.append([row_ahead, curr_position[1]])
+            possible_captures.append([[row_ahead, curr_position[1]], [row_ahead, curr_position[1]]])
+
+        # if the board herald buff is active and enemy piece is present on square ahead add to list of possible moves
+        if board_herald_buff_active and \
+        not is_square_ahead_free and \
+        any(opposing_side in piece.get("type", "")):
             possible_moves.append([row_ahead, curr_position[1]])
             possible_captures.append([[row_ahead, curr_position[1]], [row_ahead, curr_position[1]]])
 

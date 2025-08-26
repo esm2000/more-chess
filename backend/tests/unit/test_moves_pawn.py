@@ -599,3 +599,14 @@ def test_pawn_threatening_move():
 
 
 # TODO: test pawn file control with 1st stack of dragon buff
+
+
+def test_board_herald_buff_enables_pawn_forward_capture():
+    pass
+
+
+def test_board_herald_buff_enables_adjacent_pawn_forward_capture():
+    # test multiple positions with the board_herald buff location 
+
+    # test multiple piece types with the piece being captured or in danger
+    pass

@@ -196,6 +196,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * Restructure project for deployment ✅
 * Dockerize project with Dockerfile ✅
 * Add database setup to instructions in README
+* change backend code to only use "pure functions" and remove side effects
 * Un-nest the code (extraction and inversion) - https://www.youtube.com/watch?v=CFRhGnuXG-4&t=40s
 * Clean up and refactor code
 * Linting

@@ -475,7 +475,30 @@ def test_pawn_en_passant_capture():
 
         assert sorted([[5 if side == 'black' else 2, 4], [5 if side == 'black' else 2, 3]]) == sorted(possible_moves_and_captures["possible_moves"])
         assert [[[5 if side == 'black' else 2, 3], [4 if side == 'black' else 3, 3]]] == possible_moves_and_captures["possible_captures"]
-    
+
+
+# TODO: create two tests for en_passant that fails due to the reasoning below
+#  Issues:
+
+#   Critical Logic Error (line 223):
+#   (all("king" not in piece.get("type", "None") for piece in (curr_game_state["board_state"][curr_position[0]][lateral_position[1]] or [])))
+#   This checks [curr_position[0]][lateral_position[1]] but should check the destination square [row_ahead][lateral_position[1]].
+
+#   Missing Validation:
+#   - Should verify the destination square is empty
+#   - Should check that the lateral pawn moved exactly 2 squares in the previous turn (standard en passant rule)
+
+#   Corrected version should be:
+#   # Line 223 should check the destination square, not current row
+#   (all("king" not in piece.get("type", "None") for piece in (curr_game_state["board_state"][row_ahead][lateral_position[1]] or [])))
+
+#   # And add destination square validation:
+#   destination_square = curr_game_state["board_state"][row_ahead][lateral_position[1]]
+#   if destination_square:  # destination must be empty
+#       continue
+
+#   The core logic is sound, but you need to fix the king check and add destination validation for proper en passant
+
 
 def test_pawn_capturing_adjacent_bishop():
     ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
@@ -605,8 +628,30 @@ def test_board_herald_buff_enables_pawn_forward_capture():
     pass
 
 
+def test_board_herald_buff_enables_pawn_forward_check():
+    pass
+
+
 def test_board_herald_buff_enables_adjacent_pawn_forward_capture():
     # test multiple positions with the board_herald buff location 
 
     # test multiple piece types with the piece being captured or in danger
+    pass
+
+
+def test_baron_nashor_buff_enables_forward_capture():
+    pass
+
+
+def test_baron_nashor_buff_enables_forward_check():
+    pass
+
+
+def test_baron_nashor_buff_prevents_pawn_capture():
+    # test all possible pawn capture scenarios (even en passant and special buffs)
+    pass
+
+
+def test_baron_nashor_buff_negates_baron_nashor_buff_forward_capture():
+    # test all possible pawn capture scenarios (even en passant and special buffs)
     pass

@@ -386,3 +386,11 @@ def test_king_cant_get_close_to_king(game):
                 game = move_white_piece(game=game, from_row=3, from_col=2, to_row=3, to_col=3)
             else:
                 game = move_black_piece(game=game, from_row=3, from_col=2, to_row=3, to_col=3)
+
+
+def test_king_in_check_from_pawn_with_board_herald_buff(game):
+    pass
+
+
+def test_king_in_check_from_pawn_with_baron_nashor_buff(game):
+    pass

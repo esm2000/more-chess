@@ -424,3 +424,6 @@ def test_queen_threatening_move():
             else:
                 assert [king_position] not in possible_moves_and_captures["threatening_move"]
                 assert len(possible_moves_and_captures["threatening_move"]) == 0
+
+def test_queen_file_control_limitations():
+    pass

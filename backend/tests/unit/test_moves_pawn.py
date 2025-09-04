@@ -498,6 +498,12 @@ def test_pawn_en_passant_capture():
 #       continue
 
 #   The core logic is sound, but you need to fix the king check and add destination validation for proper en passant
+def test_pawn_en_passant_neagtive_1():
+    pass
+
+
+def test_pawn_en_passant_neagtive_2():
+    pass
 
 
 def test_pawn_capturing_adjacent_bishop():
@@ -620,9 +626,15 @@ def test_pawn_threatening_move():
                 assert [king_position] not in possible_moves_and_captures["threatening_move"]
                 assert len(possible_moves_and_captures["threatening_move"]) == 0
 
+def test_pawn_forward_capture_when_average_piece_value_is_at_least_two_points_higher():
+    # might need to change how its calculated in update_capture_point_advantage()
+    # might need to implement
+    pass
 
-# TODO: test pawn file control with 1st stack of dragon buff
-
+def test_pawn_immunity_when_average_piece_value_is_at_least_three_points_higher():
+    # might need to change how its calculated in update_capture_point_advantage()
+    # might need to implement
+    pass
 
 def test_board_herald_buff_enables_pawn_forward_capture():
     pass
@@ -654,4 +666,14 @@ def test_baron_nashor_buff_prevents_pawn_capture():
 
 def test_baron_nashor_buff_negates_baron_nashor_buff_forward_capture():
     # test all possible pawn capture scenarios (even en passant and special buffs)
+    pass
+
+def test_pawn_extended_movement_with_one_or_more_dragon_buff_stacks():
+    pass
+
+def test_pawn_extended_diagonal_capture_with_one_or_more_dragon_buff_stacks():
+    pass
+
+def test_pawn_forward_capture_extended_range_with_one_or_more_dragon_buff_stacks():
+    # there are multiple conditions/buffs that allow for a forward capture, account for them all
     pass

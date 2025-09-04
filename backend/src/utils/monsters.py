@@ -102,7 +102,7 @@ def carry_out_neutral_monster_attacks(game_state):
 
 
 
-def damage_neutral_monsters(new_game_state, moved_pieces):
+def damage_neutral_monsters(new_game_state, moved_pieces, capture_positions):
     for moved_piece in moved_pieces:
         # if a piece is on the same square or adjacent to neutral monsters, they should damage or kill them
         if moved_piece["previous_position"][0] is not None and moved_piece["current_position"][0] is not None:
@@ -124,6 +124,8 @@ def damage_neutral_monsters(new_game_state, moved_pieces):
                                         "previous_position": MONSTER_INFO[neutral_monster]["position"],
                                         "current_position": [None, None]
                                     })
+                                    # Add capture information so handle_neutral_monster_buffs can find the captor
+                                    capture_positions.append([moved_piece["current_position"], MONSTER_INFO[neutral_monster]["position"]])
 
 
 
@@ -180,17 +182,18 @@ def is_neutral_monster_spawned(neutral_monster_type, board_state):
 
 
 def is_neutral_monster_killed(moved_pieces):
-    neutral_monster_slain_position = get_neutral_monster_slain_positions(moved_pieces)
-    was_neutral_monster_killed = False
+    neutral_monster_slain_positions = get_neutral_monster_slain_positions(moved_pieces)
 
     for moved_piece in moved_pieces:
-        if neutral_monster_slain_position:
+        if neutral_monster_slain_positions:
             if moved_piece["side"] != "neutral" and \
-            moved_piece["current_position"][0] is not None and \
-            abs(moved_piece["current_position"][0] - neutral_monster_slain_position[0]) in [0, 1] and \
-            abs(moved_piece["current_position"][1] - neutral_monster_slain_position[1]) in [0, 1]:
-                was_neutral_monster_killed = True
-    return was_neutral_monster_killed
+            moved_piece["current_position"][0] is not None:
+                # Check if the piece is adjacent to ANY slain position
+                for slain_position in neutral_monster_slain_positions:
+                    if abs(moved_piece["current_position"][0] - slain_position[0]) in [0, 1] and \
+                    abs(moved_piece["current_position"][1] - slain_position[1]) in [0, 1]:
+                        return True
+    return False
 
 
 def handle_neutral_monster_buffs(moved_pieces, capture_positions, new_game_state, is_valid_game_state):
@@ -215,7 +218,7 @@ def handle_neutral_monster_buffs(moved_pieces, capture_positions, new_game_state
                 logger.error(f'Unable to find captor of {neutral_monster_type} (slain at {moved_piece["previous_position"]})')
                 is_valid_game_state = False
             else:
-                side = "white" if "white" in captor("type", "") else "black"
+                side = "white" if "white" in captor.get("type", "") else "black"
                 neutral_monster_type = moved_piece["piece"]["type"].replace("neutral_", "")
 
                 if neutral_monster_type == "dragon":
@@ -228,12 +231,11 @@ def handle_neutral_monster_buffs(moved_pieces, capture_positions, new_game_state
 
                     # grant board herald buff to captor if neutral_monster slain was board_herald
                     if neutral_monster_type == "board_herald":
-                        new_game_state[captor_position[0]][captor_position[1]][0]["board_herald_buff"] = True
-    
+                        new_game_state["board_state"][captor_position[0]][captor_position[1]][0]["board_herald_buff"] = True    
     # grant dragon and baron nashor buffs using neutral buff log (redundantly reapply all buffs just in case new pieces have been acquired through pawn exchange or the shop)
     for side in new_game_state["neutral_buff_log"]:
         if new_game_state["neutral_buff_log"][side]["baron_nashor"]:
-            for row in len(new_game_state["board_state"]):
+            for row in range(len(new_game_state["board_state"])):
                 for col in len(new_game_state["board_state"][0]):
                     square = new_game_state["board_state"][row][col] or []
 
@@ -244,7 +246,7 @@ def handle_neutral_monster_buffs(moved_pieces, capture_positions, new_game_state
         if new_game_state["neutral_buff_log"][side]["dragon"]["stacks"]:
             for row in range(len(new_game_state["board_state"])):
                 for col in range(len(new_game_state["board_state"][0])):
-                    square = new_game_state["board_state"][row][col]
+                    square = new_game_state["board_state"][row][col] or []
 
                     for piece in square:
                         if new_game_state["neutral_buff_log"][side]["dragon"]["stacks"] == 1:

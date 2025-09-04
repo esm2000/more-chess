@@ -115,6 +115,7 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
     # check to see if a piece with the board herald buff is nearby 
     board_herald_buff_active = False
     baron_buff_active = False
+    dragon_buff = 0
 
     deltas = [(0, 0), (1, 0), (0, 1), (-1, 0), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
     for delta in deltas:
@@ -135,90 +136,109 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
 
     # check and record what buffs that the pawn has 
     pawn_buff = piece_in_play.get("pawn_buff", 0)
+    dragon_buff = piece_in_play.get("dragon_buff", 0)
+    
     
     possible_moves = []
     possible_captures = []
     threatening_move = []
+    
+    pawn_range = 2 if dragon_buff >= 1 else 1
     # if square ahead is blank or only has neutral monsters add to list of possible moves
-    row_ahead = curr_position[0] + (-1 if side == "white" else 1)
-    if row_ahead > -1 and row_ahead < 8:
-        
-        square_ahead = curr_game_state["board_state"][row_ahead][curr_position[1]] or []
-        is_square_ahead_free = not square_ahead or any("neutral" in piece.get("type", "None") for piece in square_ahead)
-        
-        if is_square_ahead_free:
-            possible_moves.append([row_ahead, curr_position[1]])
-
-            two_rows_ahead = curr_position[0] + (-2 if side == "white" else 2)
-            if two_rows_ahead > -1 and two_rows_ahead < 8:
-                # if pawn is in starting square include square two squares ahead if square ahead is blank or neutral monster is present
-                starting_row = 6 if side == "white" else 1
-                square_two_squares_ahead = curr_game_state["board_state"][two_rows_ahead][curr_position[1]]
-                is_square_two_squares_ahead_free = not square_two_squares_ahead or any(["neutral" in piece_in_square.get("type") for piece_in_square in square_two_squares_ahead])
-                if curr_position[0] == starting_row and is_square_two_squares_ahead_free:
-                    possible_moves.append([two_rows_ahead, curr_position[1]])
-        
-        # not having the baron buff and an opposing pawn having the baron buff makes the opposing pawn immune
-        if not (
-            not baron_buff_active and \
-            any([piece.get("baron_nashor_buff") and f"{opposing_side}_pawn" == piece.get("type") for piece in square_ahead])
-        ):
+    for distance in range(1, pawn_range+1):
+        row_ahead = curr_position[0] + (-distance if side == "white" else distance)
+        if row_ahead > -1 and row_ahead < 8:
+            modifier = -1 if side == "white" else 1
+            squares_ahead = [curr_game_state["board_state"][curr_position[0] + (modifier*d)][curr_position[1]] or [] for d in range(1, distance+1)]
+            are_squares_ahead_free = all(
+                [not square or any("neutral" in piece.get("type", "None") for piece in square) for square in squares_ahead]
+            )
+            if len(squares_ahead) == 1:
+                are_squares_leading_to_square_ahead_free = True
+            else:
+                are_squares_leading_to_square_ahead_free = all(
+                    [not square or any("neutral" in piece.get("type", "None") for piece in square) for square in squares_ahead[:-1]]
+                )
             
-            # if capture point advantage is +2 or pawn buff = 1 and enemy pawn is present on square ahead add to list of possible moves
-            if pawn_buff >= 1 and \
-            not is_square_ahead_free and \
-            any(piece.get("type", "None") == f"{opposing_side}_pawn" and piece.get("pawn_buff", 0) < 1 for piece in square_ahead):
+            if are_squares_ahead_free:
                 possible_moves.append([row_ahead, curr_position[1]])
-                possible_captures.append([[row_ahead, curr_position[1]], [row_ahead, curr_position[1]]])
 
-            # if the board herald buff is active and enemy piece is present on square ahead add to list of possible moves
-            if board_herald_buff_active and \
-            not is_square_ahead_free:
-                if any([f"{opposing_side}_king" == piece.get("type", "") for piece in square_ahead]) and not threatening_move:
-                    threatening_move.append([row_ahead, curr_position[1]])
-                elif any([opposing_side in piece.get("type", "") for piece in square_ahead]):
-                    possible_moves.append([row_ahead, curr_position[1]])
-                    possible_captures.append([[row_ahead, curr_position[1]], [row_ahead, curr_position[1]]])
-
-            # if the baron nashor buff is active and enemy piece is present on square ahead add to list of possible moves                
-            if baron_buff_active and \
-            not is_square_ahead_free and \
-            not any([piece.get("baron_nashor_buff") and f"{opposing_side}_pawn" == piece.get("type") for piece in square_ahead]):
-                if any([f"{opposing_side}_king" == piece.get("type", "") for piece in square_ahead]) and not threatening_move:
-                    threatening_move.append([row_ahead, curr_position[1]])
-                elif any([opposing_side in piece.get("type", "") for piece in square_ahead]):
-                    possible_moves.append([row_ahead, curr_position[1]])
-                    possible_captures.append([[row_ahead, curr_position[1]], [row_ahead, curr_position[1]]])
-
-        # check if diagonally forward adjacent squares have enemy non-king piece or neutral monster or a non pawn-buffed (2) pawn 
-        # and add it to list of possible moves
-        diagonal_forward_adjacent_positions = [
-            [row_ahead, curr_position[1] - 1], [row_ahead, curr_position[1] + 1]
-        ]
-
-        for diagonal_forward_adjacent_position in diagonal_forward_adjacent_positions:
-            if diagonal_forward_adjacent_position[1] < 0 or diagonal_forward_adjacent_position[1] > 7:
-                continue
-
-            square = curr_game_state["board_state"][diagonal_forward_adjacent_position[0]][diagonal_forward_adjacent_position[1]]
-
-            if not square:
-                continue
+                extra_row_ahead = curr_position[0] + (-distance - 1 if side == "white" else distance + 1)
+                if extra_row_ahead > -1 and extra_row_ahead < 8:
+                    # if pawn is in starting square include square two squares ahead if square ahead is blank or neutral monster is present
+                    starting_row = 6 if side == "white" else 1
+                    square_extra_row_ahead = curr_game_state["board_state"][extra_row_ahead][curr_position[1]] or []
+                    is_square_two_squares_ahead_free = not square_extra_row_ahead or any(["neutral" in piece_in_square.get("type") for piece_in_square in square_extra_row_ahead])
+                    if curr_position[0] == starting_row and is_square_two_squares_ahead_free:
+                        possible_moves.append([extra_row_ahead, curr_position[1]])
             
             # not having the baron buff and an opposing pawn having the baron buff makes the opposing pawn immune
             if not (
                 not baron_buff_active and \
-                any([piece.get("baron_nashor_buff") and f"{opposing_side}_pawn" == piece.get("type") for piece in square])
+                any([piece.get("baron_nashor_buff") and f"{opposing_side}_pawn" == piece.get("type") for piece in squares_ahead[-1]])
             ):
-                if all((opposing_side in piece.get("type", "") or "neutral" in piece.get("type", "")) and \
-                    not ("pawn" in piece.get("type", "") and piece.get("pawn_buff", 0) > 1) \
-                    for piece in square):
-                    if any("king" in piece.get('type', '') for piece in square):
-                        threatening_move.append(diagonal_forward_adjacent_position)
-                    else:
-                        possible_moves.append(diagonal_forward_adjacent_position)
-                        if not all("neutral" in piece.get("type", "") and piece.get("health", 0) != 1 for piece in square):
-                            possible_captures.append([diagonal_forward_adjacent_position, diagonal_forward_adjacent_position])
+                
+                # if capture point advantage is +2 or pawn buff = 1 and enemy pawn is present on square ahead add to list of possible moves
+                if pawn_buff >= 1 and \
+                not are_squares_ahead_free and \
+                are_squares_leading_to_square_ahead_free and \
+                any(piece.get("type", "None") == f"{opposing_side}_pawn" and piece.get("pawn_buff", 0) < 1 for piece in squares_ahead[-1]):
+                    possible_moves.append([row_ahead, curr_position[1]])
+                    possible_captures.append([[row_ahead, curr_position[1]], [row_ahead, curr_position[1]]])
+
+                # if the board herald buff is active and enemy piece is present on square ahead add to list of possible moves
+                if board_herald_buff_active and \
+                not are_squares_ahead_free and \
+                are_squares_leading_to_square_ahead_free:
+                    if any([f"{opposing_side}_king" == piece.get("type", "") for piece in squares_ahead[-1]]) and not threatening_move:
+                        threatening_move.append([row_ahead, curr_position[1]])
+                    elif any([opposing_side in piece.get("type", "") for piece in squares_ahead[-1]]):
+                        possible_moves.append([row_ahead, curr_position[1]])
+                        possible_captures.append([[row_ahead, curr_position[1]], [row_ahead, curr_position[1]]])
+
+                # if the baron nashor buff is active and enemy piece is present on square ahead add to list of possible moves                
+                if baron_buff_active and \
+                not are_squares_ahead_free and \
+                are_squares_leading_to_square_ahead_free and \
+                not any([piece.get("baron_nashor_buff") and f"{opposing_side}_pawn" == piece.get("type") for piece in squares_ahead[-1]]):
+                    if any([f"{opposing_side}_king" == piece.get("type", "") for piece in squares_ahead[-1]]) and not threatening_move:
+                        threatening_move.append([row_ahead, curr_position[1]])
+                    elif any([opposing_side in piece.get("type", "") for piece in squares_ahead[-1]]):
+                        possible_moves.append([row_ahead, curr_position[1]])
+                        possible_captures.append([[row_ahead, curr_position[1]], [row_ahead, curr_position[1]]])
+
+            # check if diagonally forward adjacent squares have enemy non-king piece or neutral monster or a non pawn-buffed (2) pawn 
+            # and add it to list of possible moves
+            diagonal_forward_adjacent_positions = [
+                [row_ahead, curr_position[1] - distance], [row_ahead, curr_position[1] + distance]
+            ]
+
+            for i, diagonal_forward_adjacent_position in enumerate(diagonal_forward_adjacent_positions):
+                modifier = -1 if not i else 1
+                if diagonal_forward_adjacent_position[1] < 0 or diagonal_forward_adjacent_position[1] > 7:
+                    continue
+
+                square = curr_game_state["board_state"][diagonal_forward_adjacent_position[0]][diagonal_forward_adjacent_position[1]]
+                row_modifier = -1 if side == "white" else 1
+                squares_ahead = [curr_game_state["board_state"][curr_position[0]+(d*row_modifier)][curr_position[1]+(d*modifier)] or [] for d in range(1, distance+1)]
+
+                if not square or any([s for s in squares_ahead[:-1]]):
+                    continue
+                
+                # not having the baron buff and an opposing pawn having the baron buff makes the opposing pawn immune
+                if not (
+                    not baron_buff_active and \
+                    any([piece.get("baron_nashor_buff") and f"{opposing_side}_pawn" == piece.get("type") for piece in square])
+                ):
+                    if all((opposing_side in piece.get("type", "") or "neutral" in piece.get("type", "")) and \
+                        not ("pawn" in piece.get("type", "") and piece.get("pawn_buff", 0) > 1) \
+                        for piece in square):
+                        if any("king" in piece.get('type', '') for piece in square):
+                            threatening_move.append(diagonal_forward_adjacent_position)
+                        else:
+                            possible_moves.append(diagonal_forward_adjacent_position)
+                            if not all("neutral" in piece.get("type", "") and piece.get("health", 0) != 1 for piece in square):
+                                possible_captures.append([diagonal_forward_adjacent_position, diagonal_forward_adjacent_position])
 
     # En passant
     # if side is black and on row 4 or side is white and on row 3

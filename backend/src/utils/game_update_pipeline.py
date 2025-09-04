@@ -132,7 +132,7 @@ def handle_captures_and_combat(old_game_state, new_game_state, moved_pieces, is_
     
     # Clean bishop special captures and damage monsters
     utils.clean_bishop_special_captures(new_game_state)
-    utils.damage_neutral_monsters(new_game_state, moved_pieces)
+    utils.damage_neutral_monsters(new_game_state, moved_pieces, capture_positions)
     
     # Validate captures
     is_valid_game_state = utils.invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(

@@ -107,25 +107,27 @@ def damage_neutral_monsters(new_game_state, moved_pieces, capture_positions):
         # if a piece is on the same square or adjacent to neutral monsters, they should damage or kill them
         if moved_piece["previous_position"][0] is not None and moved_piece["current_position"][0] is not None:
             for neutral_monster in MONSTER_INFO:
+                neutral_monster_info = neutral_monster_info
                 if is_neutral_monster_spawned(neutral_monster,new_game_state["board_state"]):
-                    row_diff = abs(moved_piece["current_position"][0] - MONSTER_INFO[neutral_monster]["position"][0])
-                    col_diff = abs(moved_piece["current_position"][1] - MONSTER_INFO[neutral_monster]["position"][1])
+                    row_diff = abs(moved_piece["current_position"][0] - neutral_monster_info["position"][0])
+                    col_diff = abs(moved_piece["current_position"][1] - neutral_monster_info["position"][1])
+                    damage = 2 if moved_piece["piece"].get("dragon_buff", 0) >= 2 else 1
                     if row_diff in [-1, 0, 1] and col_diff in [-1, 0, 1]:
-                        for i, piece in enumerate(new_game_state["board_state"][MONSTER_INFO[neutral_monster]["position"][0]][MONSTER_INFO[neutral_monster]["position"][1]]):
+                        for i, piece in enumerate(new_game_state["board_state"][neutral_monster_info["position"][0]][neutral_monster_info["position"][1]]):
                             if piece.get("type", "") == neutral_monster:
-                                new_game_state["board_state"][MONSTER_INFO[neutral_monster]["position"][0]][MONSTER_INFO[neutral_monster]["position"][1]][i]["health"] = piece["health"] - 1
+                                new_game_state["board_state"][neutral_monster_info["position"][0]][neutral_monster_info["position"][1]][i]["health"] = piece["health"] - damage
                     
-                                if new_game_state["board_state"][MONSTER_INFO[neutral_monster]["position"][0]][MONSTER_INFO[neutral_monster]["position"][1]][i]["health"] < 1:
-                                    neutral_monster_piece = new_game_state["board_state"][MONSTER_INFO[neutral_monster]["position"][0]][MONSTER_INFO[neutral_monster]["position"][1]].pop(i)
+                                if new_game_state["board_state"][neutral_monster_info["position"][0]][neutral_monster_info["position"][1]][i]["health"] < 1:
+                                    neutral_monster_piece = new_game_state["board_state"][neutral_monster_info["position"][0]][neutral_monster_info["position"][1]].pop(i)
                                     new_game_state["captured_pieces"][moved_piece["side"]].append(neutral_monster)
                                     moved_pieces.append({
                                         "piece": neutral_monster_piece,
                                         "side": "neutral",
-                                        "previous_position": MONSTER_INFO[neutral_monster]["position"],
+                                        "previous_position": neutral_monster_info["position"],
                                         "current_position": [None, None]
                                     })
                                     # Add capture information so handle_neutral_monster_buffs can find the captor
-                                    capture_positions.append([moved_piece["current_position"], MONSTER_INFO[neutral_monster]["position"]])
+                                    capture_positions.append([moved_piece["current_position"], neutral_monster_info["position"]])
 
 
 

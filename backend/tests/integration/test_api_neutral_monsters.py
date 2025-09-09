@@ -163,7 +163,6 @@ def test_neutral_monsters_can_be_hurt(game):
     assert game["board_state"][4][7][0]["health"] == 1
 
 
-
 def test_neutral_monster_captures_after_spawning_on_any_non_king_piece(game):
     # neutral monster should automatically send non-king pieces to the graveyard
     game = clear_game(game)
@@ -429,4 +428,15 @@ def test_buff_acquired_from_board_herald_slain():
 
 def test_buff_acquired_from_baron_nashor_slain():
     # validate neutral_monster_log update + buffs granted
+    pass
+
+
+def test_neutral_monsters_receive_double_damage_when_attacker_has_at_least_two_dragon_buffs():
+    # test with only two dragon buffs and greater than two dragon buffs
+    pass
+
+
+def test_neutral_monsters_die_to_double_damage_when_attacker_has_at_least_two_dragon_buffs():
+    # test with only two dragon buffs and greater than two dragon buffs
+        # test with 1 HP and 2 HP
     pass

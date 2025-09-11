@@ -677,3 +677,10 @@ def test_pawn_extended_diagonal_capture_with_one_or_more_dragon_buff_stacks():
 def test_pawn_forward_capture_extended_range_with_one_or_more_dragon_buff_stacks():
     # there are multiple conditions/buffs that allow for a forward capture, account for them all
     pass
+
+def test_pawn_ignored_unit_collision_with_ally_pawns_with_three_or_more_dragon_buff_stacks():
+    # test starting square case
+    # test extended range starting square case
+    # test extended range standard movement case
+    # test extended range diagonal capture case
+    pass

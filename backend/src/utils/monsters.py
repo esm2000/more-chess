@@ -107,7 +107,7 @@ def damage_neutral_monsters(new_game_state, moved_pieces, capture_positions):
         # if a piece is on the same square or adjacent to neutral monsters, they should damage or kill them
         if moved_piece["previous_position"][0] is not None and moved_piece["current_position"][0] is not None:
             for neutral_monster in MONSTER_INFO:
-                neutral_monster_info = neutral_monster_info
+                neutral_monster_info = MONSTER_INFO[neutral_monster]
                 if is_neutral_monster_spawned(neutral_monster,new_game_state["board_state"]):
                     row_diff = abs(moved_piece["current_position"][0] - neutral_monster_info["position"][0])
                     col_diff = abs(moved_piece["current_position"][1] - neutral_monster_info["position"][1])

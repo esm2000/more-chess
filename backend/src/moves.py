@@ -150,19 +150,37 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
         if row_ahead > -1 and row_ahead < 8:
             modifier = -1 if side == "white" else 1
             squares_ahead = [curr_game_state["board_state"][curr_position[0] + (modifier*d)][curr_position[1]] or [] for d in range(1, distance+1)]
-            are_squares_ahead_free = all(
-                [not square or any("neutral" in piece.get("type", "None") for piece in square) for square in squares_ahead]
-            )
+            
+            # unit collision with ally pawns are allowed with three dragon buff stacks
+            if dragon_buff == 3:
+                are_squares_ahead_free = all(
+                    [not square or
+                    (any("neutral" in piece.get("type", "") for piece in square) and all(opposing_side not in piece.get("type", "") for piece in square)) or
+                    any(f"{side}_pawn" == piece.get("type", "") for piece in square)
+                    for square in squares_ahead]
+                )
+            # TODO: add separate logic for dragon_buff >= 4
+            else:
+                are_squares_ahead_free = all(
+                    [not square or (any("neutral" in piece.get("type", "") for piece in square) and all(side not in piece.get("type", "") and opposing_side not in piece.get("type", "") for piece in square)) for square in squares_ahead]
+                )
+
             if len(squares_ahead) == 1:
                 are_squares_leading_to_square_ahead_free = True
+            elif dragon_buff == 3:
+                are_squares_leading_to_square_ahead_free = all(
+                    [not square or
+                    (any("neutral" in piece.get("type", "") for piece in square) and all(opposing_side not in piece.get("type", "") for piece in square)) or
+                    any(f"{side}_pawn" == piece.get("type", "") for piece in square)
+                    for square in squares_ahead[:-1]]
+                )
+            # TODO: add separate logic for dragon_buff >= 4
             else:
                 are_squares_leading_to_square_ahead_free = all(
-                    [not square or any("neutral" in piece.get("type", "None") for piece in square) for square in squares_ahead[:-1]]
+                    [not square or (any("neutral" in piece.get("type", "") for piece in square) and all(side not in piece.get("type", "") and opposing_side not in piece.get("type", "") for piece in square)) for square in squares_ahead[:-1]]
                 )
             
             if are_squares_ahead_free:
-                possible_moves.append([row_ahead, curr_position[1]])
-
                 extra_row_ahead = curr_position[0] + (-distance - 1 if side == "white" else distance + 1)
                 if extra_row_ahead > -1 and extra_row_ahead < 8:
                     # if pawn is in starting square include square two squares ahead if square ahead is blank or neutral monster is present
@@ -171,6 +189,18 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
                     is_square_two_squares_ahead_free = not square_extra_row_ahead or any(["neutral" in piece_in_square.get("type") for piece_in_square in square_extra_row_ahead])
                     if curr_position[0] == starting_row and is_square_two_squares_ahead_free:
                         possible_moves.append([extra_row_ahead, curr_position[1]])
+                
+                # are_squares_ahead_free can be True if dragon_buff is 3 and there is a ally pawn in the path
+                if dragon_buff == 3 and \
+                    any(f"{side}_pawn" == piece.get("type") for piece in (curr_game_state["board_state"][row_ahead][curr_position[1]] or [])):
+                    continue
+                    
+                # TODO: UNCOMMENT for 4+ stacks of dragon buff
+                # if dragon_buff >= 4 and \
+                #     any(opposing_side in piece.get("type") for piece in (curr_game_state["board_state"][row_ahead][curr_position[1]] or [])):
+                #     continue
+
+                possible_moves.append([row_ahead, curr_position[1]])
             
             # not having the baron buff and an opposing pawn having the baron buff makes the opposing pawn immune
             if not (
@@ -222,7 +252,11 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
                 row_modifier = -1 if side == "white" else 1
                 squares_ahead = [curr_game_state["board_state"][curr_position[0]+(d*row_modifier)][curr_position[1]+(d*modifier)] or [] for d in range(1, distance+1)]
 
-                if not square or any([s for s in squares_ahead[:-1]]):
+                if not square or \
+                    (dragon_buff < 3 and any([s for s in squares_ahead[:-1]])) or \
+                    (dragon_buff == 3 and any([s and not all(f"{side}_pawn" == p.get("type", "") for p in s) for s in squares_ahead[:-1]])):
+                    # TODO: UNCOMMENT for 4+ stacks of dragon buff
+                    #any(not all(opposing_side not in p.get("type", "") for p in s) for s in squares_ahead[:-1]):
                     continue
                 
                 # not having the baron buff and an opposing pawn having the baron buff makes the opposing pawn immune

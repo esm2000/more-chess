@@ -328,6 +328,9 @@ def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
     possible_moves = []
     possible_captures = []
     threatening_move = []
+
+    dragon_buff = piece_in_play.get("dragon_buff", 0)
+
     # relative_positions represent all possible moves knight can take
     relative_positions = [[1, -2], [1, 2], [2, -1], [2, 1], [-1, -2],  [-1, 2], [-2, -1], [-2, 1]]
     
@@ -360,7 +363,10 @@ def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
         # check if path positions are free
         for i, path_positions in enumerate([path_1_positions, path_2_positions]):
             for path_position in path_positions:
-                if curr_game_state["board_state"][path_position[0]][path_position[1]] or curr_game_state["sword_in_the_stone_position"] == path_position:
+                square = curr_game_state["board_state"][path_position[0]][path_position[1]]
+
+                if (square and not (dragon_buff == 3 and all(piece.get('type') == f"{side}_pawn" for piece in square))) \
+                    or curr_game_state["sword_in_the_stone_position"] == path_position:
                     if not i:
                         path_1_free = False
                     else:

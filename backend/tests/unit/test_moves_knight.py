@@ -502,3 +502,6 @@ def test_knight_threatening_move():
             else:
                 assert [king_position] not in possible_moves_and_captures["threatening_move"]
                 assert len(possible_moves_and_captures["threatening_move"]) == 0
+
+def test_knight_ignored_unit_collision_with_ally_pawns_with_three_or_more_dragon_buff_stacks():
+    pass

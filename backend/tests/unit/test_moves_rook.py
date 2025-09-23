@@ -541,3 +541,7 @@ def test_rook_threatening_move():
 
 def test_rook_file_control_limitations():
     pass
+
+
+def test_rook_with_three_or_more_dragon_buff_stacks_ignores_unit_collision_with_ally_pawns():
+    pass

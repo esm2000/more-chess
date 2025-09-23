@@ -684,3 +684,12 @@ def test_pawn_with_three_or_more_dragon_buff_stacks_ignores_unit_collision_with_
     # test extended range standard movement case
     # test extended range diagonal capture case
     pass
+
+def test_pawn_with_three_dragon_buff_stacks_does_not_ignores_unit_collision_with_ally_non_pawns():
+    pass
+
+def test_pawn_with_three_dragon_buff_stacks_does_not_ignores_unit_collision_with_enemy_pawns():
+    pass
+
+def test_pawn_with_three_dragon_buff_stacks_does_not_ignores_unit_collision_with_enemy_non_pawns():
+    pass

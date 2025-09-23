@@ -495,6 +495,8 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
 
     if current_turn_count >= 15:
         range_limit += (current_turn_count - 10) // 5
+
+    dragon_buff = piece_in_play.get("dragon_buff", 0)
     
     directions = [[0, 1], [1, 0], [0, -1], [-1, 0]]
     for direction in directions:
@@ -503,7 +505,8 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
         while possible_position[0] >= 0 and possible_position[0] <= 7 and possible_position[1] >= 0 and possible_position[1] <= 7 and range_count <= range_limit:
             if not curr_game_state["board_state"][possible_position[0]][possible_position[1]] and possible_position != curr_game_state["sword_in_the_stone_position"]:
                 possible_moves.append(possible_position.copy())
-            else:
+            # if the piece has 3 dragon buff stacks and a same side pawn is on the same square ignore unit collision
+            elif not (dragon_buff == 3 and any(piece.get("type") == f"{side}_pawn" for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]] or [])):
                 # check for a piece from the same side or sword in stone buff, break out of the current loop if there's one present
                 if possible_position == curr_game_state["sword_in_the_stone_position"] or any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                     break
@@ -538,6 +541,7 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
         "king" in piece.get("type", "") 
         for piece in curr_game_state["board_state"][start_row][4] or []
     )
+    # TODO: for 4+ dragon stacks develop some alternate logic to avoid ally unit collision and allow a castle if no friendly pieces are on the destination squares
     if king_present and not curr_game_state["castle_log"][side]["has_king_moved"]:
         # Determine valid rook moves
         if curr_position == [start_row, rook_cols["left"]] and not curr_game_state["castle_log"][side]["has_left_rook_moved"]:

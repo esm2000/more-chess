@@ -568,6 +568,8 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
     possible_moves = []
     possible_captures = []
     threatening_move = []
+
+    dragon_buff = piece_in_play.get("dragon_buff", 0)
     
     directions = [[0, 1], [1, 0], [0, -1], [-1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]]
     for direction in directions:
@@ -575,7 +577,7 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
         while possible_position[0] >= 0 and possible_position[0] <= 7 and possible_position[1] >= 0 and possible_position[1] <= 7:
             if not curr_game_state["board_state"][possible_position[0]][possible_position[1]] and possible_position != curr_game_state["sword_in_the_stone_position"]:
                 possible_moves.append(possible_position.copy())
-            else:
+            elif not (dragon_buff == 3 and any(piece.get("type") == f"{side}_pawn" for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]] or [])):
                 # check for a piece from the same side or sword in stone buff, break out of the current loop if there's one present
                 if possible_position == curr_game_state["sword_in_the_stone_position"] or any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                     break

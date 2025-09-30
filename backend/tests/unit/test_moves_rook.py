@@ -545,11 +545,17 @@ def test_rook_file_control_limitations():
 def test_rook_with_three_or_more_dragon_buff_stacks_ignores_unit_collision_with_ally_pawns():
     pass
 
-def test_rook_with_three_dragon_buff_stacks_does_not_ignores_unit_collision_with_ally_non_pawns():
+def test_rook_with_three_dragon_buff_stacks_does_not_ignore_unit_collision_with_ally_non_pawns():
     pass
 
-def test_rook_with_three_dragon_buff_stacks_does_not_ignores_unit_collision_with_enemy_pawns():
+def test_rook_with_three_dragon_buff_stacks_does_not_ignore_unit_collision_with_enemy_pawns():
     pass
 
-def test_rook_with_three_dragon_buff_stacks_does_not_ignores_unit_collision_with_enemy_non_pawns():
+def test_rook_with_three_dragon_buff_stacks_does_not_ignore_unit_collision_with_enemy_non_pawns():
+    pass
+
+def test_rook_with_four_or_more_dragon_buff_stacks_ignores_unit_collision_with_ally_pieces():
+    pass
+
+def test_rook_with_four_or_more_dragon_buff_stacks_does_not_ignore_unit_collision_with_enemy_pieces():
     pass

@@ -159,7 +159,13 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
                     any(f"{side}_pawn" == piece.get("type", "") for piece in square)
                     for square in squares_ahead]
                 )
-            # TODO: add separate logic for dragon_buff >= 4
+            elif dragon_buff >= 4:
+                are_squares_ahead_free = all(
+                    [not square or
+                    (any("neutral" in piece.get("type", "") for piece in square) and all(opposing_side not in piece.get("type", "") for piece in square)) or
+                    any(side in piece.get("type", "") for piece in square)
+                    for square in squares_ahead]
+                )
             else:
                 are_squares_ahead_free = all(
                     [not square or (any("neutral" in piece.get("type", "") for piece in square) and all(side not in piece.get("type", "") and opposing_side not in piece.get("type", "") for piece in square)) for square in squares_ahead]
@@ -174,7 +180,13 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
                     any(f"{side}_pawn" == piece.get("type", "") for piece in square)
                     for square in squares_ahead[:-1]]
                 )
-            # TODO: add separate logic for dragon_buff >= 4
+            elif dragon_buff >= 4:
+                are_squares_leading_to_square_ahead_free = all(
+                    [not square or
+                    (any("neutral" in piece.get("type", "") for piece in square) and all(opposing_side not in piece.get("type", "") for piece in square)) or
+                    any(side in piece.get("type", "") for piece in square)
+                    for square in squares_ahead[:-1]]
+                )
             else:
                 are_squares_leading_to_square_ahead_free = all(
                     [not square or (any("neutral" in piece.get("type", "") for piece in square) and all(side not in piece.get("type", "") and opposing_side not in piece.get("type", "") for piece in square)) for square in squares_ahead[:-1]]
@@ -195,10 +207,9 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
                     any(f"{side}_pawn" == piece.get("type") for piece in (curr_game_state["board_state"][row_ahead][curr_position[1]] or [])):
                     continue
                     
-                # TODO: UNCOMMENT for 4+ stacks of dragon buff
-                # if dragon_buff >= 4 and \
-                #     any(opposing_side in piece.get("type") for piece in (curr_game_state["board_state"][row_ahead][curr_position[1]] or [])):
-                #     continue
+                if dragon_buff >= 4 and \
+                    any(side in piece.get("type") for piece in (curr_game_state["board_state"][row_ahead][curr_position[1]] or [])):
+                    continue
 
                 possible_moves.append([row_ahead, curr_position[1]])
             
@@ -254,9 +265,8 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
 
                 if not square or \
                     (dragon_buff < 3 and any([s for s in squares_ahead[:-1]])) or \
-                    (dragon_buff == 3 and any([s and not all(f"{side}_pawn" == p.get("type", "") for p in s) for s in squares_ahead[:-1]])):
-                    # TODO: UNCOMMENT for 4+ stacks of dragon buff
-                    #any(not all(opposing_side not in p.get("type", "") for p in s) for s in squares_ahead[:-1]):
+                    (dragon_buff == 3 and any([s and not all(f"{side}_pawn" == p.get("type", "") for p in s) for s in squares_ahead[:-1]])) or \
+                    (dragon_buff >= 4 and any([s and not all(f"{side}_pawn" == p.get("type", "") for p in s) for s in squares_ahead[:-1]])):
                     continue
                 
                 # not having the baron buff and an opposing pawn having the baron buff makes the opposing pawn immune
@@ -366,6 +376,7 @@ def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
                 square = curr_game_state["board_state"][path_position[0]][path_position[1]]
 
                 if (square and not (dragon_buff == 3 and all(piece.get('type') == f"{side}_pawn" for piece in square))) \
+                    or (square and not (dragon_buff >= 4 and all(side in piece.get('type') for piece in square))) \
                     or curr_game_state["sword_in_the_stone_position"] == path_position:
                     if not i:
                         path_1_free = False
@@ -423,7 +434,11 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
             if not curr_game_state["board_state"][possible_position[0]][possible_position[1]] and possible_position != curr_game_state["sword_in_the_stone_position"]:
                 possible_moves.append(possible_position.copy())
             # if the piece has 3 dragon buff stacks and a same side pawn is on the same square ignore unit collision
-            elif not (dragon_buff == 3 and any(piece.get("type") == f"{side}_pawn" for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]] or [])):
+            # or if the piece has 4+ dragon buff stacks and a same side piece on the same square ignore unit collision
+            elif not (
+                (dragon_buff == 3 and any(piece.get("type") == f"{side}_pawn" for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]] or [])) or \
+                (dragon_buff >= 4 and any(side in piece.get("type") for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]] or []))
+            ):
                 # check for a piece from the same side or sword in stone buff, break out of the current loop if there's one present
                 if possible_position == curr_game_state["sword_in_the_stone_position"] or any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                     break
@@ -506,7 +521,10 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
             if not curr_game_state["board_state"][possible_position[0]][possible_position[1]] and possible_position != curr_game_state["sword_in_the_stone_position"]:
                 possible_moves.append(possible_position.copy())
             # if the piece has 3 dragon buff stacks and a same side pawn is on the same square ignore unit collision
-            elif not (dragon_buff == 3 and any(piece.get("type") == f"{side}_pawn" for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]] or [])):
+            elif not (
+                (dragon_buff == 3 and any(piece.get("type") == f"{side}_pawn" for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]] or [])) or \
+                (dragon_buff >= 4 and any(side in piece.get("type") for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]] or []))
+            ):
                 # check for a piece from the same side or sword in stone buff, break out of the current loop if there's one present
                 if possible_position == curr_game_state["sword_in_the_stone_position"] or any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                     break
@@ -577,7 +595,10 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
         while possible_position[0] >= 0 and possible_position[0] <= 7 and possible_position[1] >= 0 and possible_position[1] <= 7:
             if not curr_game_state["board_state"][possible_position[0]][possible_position[1]] and possible_position != curr_game_state["sword_in_the_stone_position"]:
                 possible_moves.append(possible_position.copy())
-            elif not (dragon_buff == 3 and any(piece.get("type") == f"{side}_pawn" for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]] or [])):
+            elif not (
+                (dragon_buff == 3 and any(piece.get("type") == f"{side}_pawn" for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]] or [])) or \
+                (dragon_buff >= 4 and any(side in piece.get("type") for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]] or []))
+            ):                
                 # check for a piece from the same side or sword in stone buff, break out of the current loop if there's one present
                 if possible_position == curr_game_state["sword_in_the_stone_position"] or any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                     break

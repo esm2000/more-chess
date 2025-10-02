@@ -111,7 +111,7 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
 
     if not piece_in_play:
         raise Exception(f"No pawn found at position {curr_position}")
-    # TODO: check and record if game-wide buffs are active
+ 
     # check to see if a piece with the board herald buff is nearby 
     board_herald_buff_active = False
     baron_buff_active = False
@@ -559,7 +559,6 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
         "king" in piece.get("type", "") 
         for piece in curr_game_state["board_state"][start_row][4] or []
     )
-    # TODO: for 4+ dragon stacks develop some alternate logic to avoid ally unit collision and allow a castle if no friendly pieces are on the destination squares
     if king_present and not curr_game_state["castle_log"][side]["has_king_moved"]:
         # Determine valid rook moves
         if curr_position == [start_row, rook_cols["left"]] and not curr_game_state["castle_log"][side]["has_left_rook_moved"]:
@@ -644,6 +643,8 @@ def get_moves_for_king(curr_game_state, prev_game_state, curr_position):
     possible_moves = []
     possible_captures = []
     castle_moves = []
+
+    dragon_buff = piece_in_play.get("dragon_buff", 0)
     
     directions = [[0, 1], [1, 0], [0, -1], [-1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]]
     for direction in directions:
@@ -670,21 +671,35 @@ def get_moves_for_king(curr_game_state, prev_game_state, curr_position):
     
     # Only allow castling if king is in its starting position and hasn't moved
     if curr_position == king_start and not curr_game_state["castle_log"][side]["has_king_moved"]:
-        # Helper function to check if a rook is present on a specific square
         def rook_present(row, col):
             return any(
-                "rook" in piece.get("type", "")
+                piece.get("type", "") == f"{side}_rook" 
                 for piece in curr_game_state["board_state"][row][col] or []
             )
+        
+        def rook_dragon_buff(row, col):
+            dragon_buff = 0
+            for piece in curr_game_state["board_state"][row][col] or []:
+                if piece.get("type", "") == f"{side}_rook":
+                    dragon_buff = piece.get("dragon_buff", 0)
+            return dragon_buff
 
-        # Check for left (queenside) rook
+        def is_path_clear(start_col, end_col):
+            min_col = min(start_col, end_col)
+            max_col = max(start_col, end_col)
+            for col in range(min_col + 1, max_col):
+                if curr_game_state["board_state"][start_row][col]:
+                    return False
+            return True
+
         if (rook_present(start_row, 0) and 
-            not curr_game_state["castle_log"][side]["has_left_rook_moved"]):
-            castle_moves.append([start_row, 2])  # King moves to column 2
+            not curr_game_state["castle_log"][side]["has_left_rook_moved"] and
+            ((rook_dragon_buff(start_row, 0)  >= 4 and dragon_buff >= 4) or is_path_clear(4, 0))):
+            castle_moves.append([start_row, 2])
 
-        # Check for right (kingside) rook
         if (rook_present(start_row, 7) and 
-            not curr_game_state["castle_log"][side]["has_right_rook_moved"]):
-            castle_moves.append([start_row, 6])  # King moves to column 6
+            not curr_game_state["castle_log"][side]["has_right_rook_moved"] and
+            ((rook_dragon_buff(start_row, 7) >= 4 and dragon_buff >= 4) or is_path_clear(4, 7))):
+            castle_moves.append([start_row, 6])
     
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": [], "castle_moves": castle_moves}, is_king=True)

@@ -141,6 +141,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * win + loss screens ✅
 * checkmate protection status effect ✅
 * shop (with light/normal green square for shop square) ✅
+* Add a "Surrender Piece" button to choose which piece to give up after being marked for death amid five dragon buff stacks for the enemy (remember to add piece to captured pieces array)
 * Ensure the player can deselect a selected piece
 * rename game to League of Chess
 * for consistency add recursion to convertKeysToSnakeCase() and convertKeysToCamelCase()

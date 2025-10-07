@@ -186,6 +186,7 @@ def invalidate_game_if_too_much_gold_is_spent(old_game_state, gold_spent, is_val
 
 # if any new pieces in the captured pieces array have not been captured this turn, invalidate
 # (it's imperative that this code section is placed after we've updated captured_pieces)
+# CURRENT TODO: carve out exception when piece was marked for death in the last turn unless more than one pieces were captured using death mark
 def invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_game_state, new_game_state, moved_pieces, is_valid_game_state, is_pawn_exchange_possibly_being_carried_out):
     captured_pieces_array = new_game_state["captured_pieces"]["white"].copy() + new_game_state["captured_pieces"]["black"].copy() + new_game_state["graveyard"]
     for captured_piece in old_game_state["captured_pieces"]["white"] + old_game_state["captured_pieces"]["black"] + old_game_state["graveyard"]:

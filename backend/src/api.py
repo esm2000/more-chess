@@ -99,6 +99,9 @@ def update_game_state(id, state: GameState, response: Response, player=True):
     is_valid_game_state, gold_spent = validate_moves_and_pieces(
         old_game_state, new_game_state, moved_pieces, capture_positions, is_valid_game_state
     )
+
+    # CURRENT TODO: if game state is still valid while marked for death pieces are present that is indicative of 
+    #               one piece being chosen for sacrifice (validate_moves_and_pieces), so unmark all pieces
     
     # Handle pawn exchanges
     is_pawn_exchange_required_this_turn, is_pawn_exchange_possibly_being_carried_out = handle_pawn_exchanges(

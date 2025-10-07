@@ -61,6 +61,8 @@ def manage_turn_progression(old_game_state, new_game_state, moved_pieces, is_val
             old_game_state, new_game_state, moved_pieces, should_increment_turn_count
         )
     
+    # CURRENT TODO: if there are any pieces marked for death on the board, don't increment turn count
+    
     # Clean and increment
     utils.clean_possible_moves_and_possible_captures(new_game_state)
     if should_increment_turn_count:
@@ -75,6 +77,9 @@ def validate_moves_and_pieces(old_game_state, new_game_state, moved_pieces, capt
     is_valid_game_state = utils.check_to_see_if_more_than_one_piece_has_moved(
         old_game_state, new_game_state, moved_pieces, capture_positions, is_valid_game_state
     )
+
+    # CURRENT TODO: Invalidate game state if pieces are marked for death in the old game state and the current turn's side
+    #               did not choose any of them to die
     
     # Update castle log and validate gold
     utils.update_castle_log(new_game_state, moved_pieces)
@@ -180,9 +185,16 @@ def handle_endgame_conditions(old_game_state, new_game_state, moved_pieces, is_v
     if not is_valid_game_state:
         raise HTTPException(status_code=400, detail=utils.INVALID_GAME_STATE_ERROR_MESSAGE)
     
+    # CURRENT TODO: if any of the piece(s) that moved this turn have five dragon buff stacks mark all non-king adjacent pieces for death
+    # but only do this is new_game_state's turn count is greater than old_game_state's turn count
+
     # Handle stunned piece special case
+    # CURRENT TODO: Avoid this condition if pieces were marked for death this turn
     if should_increment_turn_count and utils.are_all_non_king_pieces_stunned(new_game_state) and not utils.can_king_move(old_game_state, new_game_state):
         utils.increment_turn_count(old_game_state, new_game_state, moved_pieces, 2)
+
+    # CURRENT TODO: if there are pieces marked for death in old game state and none marked for death this turn but all of the current player's pieces are stunned increment turn count by 1
+    #               (this is different from the current are_all_non_king_pieces_stunned() because the side that is supposed to be moving this turn should be assessed
     
     # Heal monsters
     utils.heal_neutral_monsters(old_game_state, new_game_state)

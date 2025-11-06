@@ -185,8 +185,25 @@ def handle_endgame_conditions(old_game_state, new_game_state, moved_pieces, is_v
     if not is_valid_game_state:
         raise HTTPException(status_code=400, detail=utils.INVALID_GAME_STATE_ERROR_MESSAGE)
     
-    # CURRENT TODO: if any of the piece(s) that moved this turn have five dragon buff stacks mark all non-king adjacent pieces for death
+    # if any of the piece(s) that moved this turn have five dragon buff stacks mark all non-king adjacent pieces for death
     # but only do this is new_game_state's turn count is greater than old_game_state's turn count
+    if new_game_state["turn_count"] > old_game_state["turn_count"]:
+        for moved_piece in [mp for mp in moved_pieces if mp["previous_position"][0] is not None and mp["current_position"][0] is not None]:
+            if moved_piece["piece"].get("dragon_buff", 0) < 5:
+                continue
+
+            deltas = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]]
+            opposite_side = "white" if moved_piece["side"] == "black" else "black"
+
+            for delta in deltas:
+                position = [moved_piece["current_position"][0] + delta[0], moved_piece["current_position"][1] + delta[1]]
+                if position[0] < 0 or position[0] > 7 or position[1] < 0 or position[1] > 7:
+                    continue
+                
+                square = new_game_state["board_state"][position[0]][position[1]] or []
+                for piece in square:
+                    if opposite_side in piece.get("type") and "king" not in piece.get("type"):
+                        piece["marked_for_death"] = True
 
     # Handle stunned piece special case
     # CURRENT TODO: Avoid this condition if pieces were marked for death this turn

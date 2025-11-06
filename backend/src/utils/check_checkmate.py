@@ -229,6 +229,8 @@ def trim_moves(moves_info, unsafe_position_for_one_side):
     return moves_info_copy
 
 
+# CURRENT TODO: prevent the game from being invalidated from a player being in check after disposing of their marked for death piece
+#               players with marked for death pieces must choose which piece to lose before moving their king out of check
 def invalidate_game_if_player_moves_and_is_in_check(is_valid_game_state, old_game_state, new_game_state, moved_pieces):
     for moved_piece in moved_pieces:
         if moved_piece["previous_position"][0] is not None and moved_piece["previous_position"][1] is not None:

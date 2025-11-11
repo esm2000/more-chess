@@ -92,9 +92,11 @@ def tie_game_if_no_moves_are_possible_next_turn(old_game_state, new_game_state):
         
 
 # new game's turn count is representative of what side should be moving next turn (even is white, odd is black)
-def are_all_non_king_pieces_stunned(new_game_state):
+def are_all_non_king_pieces_stunned(new_game_state, reverse=False):
     new_game_turn_count = new_game_state["turn_count"]
     side_that_should_be_moving_next_turn = "white" if not new_game_turn_count % 2 else "black"
+    if reverse:
+        side_that_should_be_moving_next_turn = "white" if side_that_should_be_moving_next_turn == "black" else "black"
     output = True
     for i in range(len(new_game_state["board_state"])):
         for j in range(len(new_game_state["board_state"][0])):

@@ -218,9 +218,25 @@ def handle_endgame_conditions(old_game_state, new_game_state, moved_pieces, is_v
     if should_increment_turn_count and utils.are_all_non_king_pieces_stunned(new_game_state) and not utils.can_king_move(old_game_state, new_game_state) and not have_any_pieces_been_marked_for_death:
         utils.increment_turn_count(old_game_state, new_game_state, moved_pieces, 2)
 
-    # CURRENT TODO: if there are pieces marked for death in old game state and none marked for death this turn but all of the current player's pieces are stunned increment turn count by 1
-    #               (this is different from the current are_all_non_king_pieces_stunned() because the side that is supposed to be moving this turn should be assessed
+    # if there are pieces marked for death in old game state and none marked for death this turn but all of the current player's pieces are stunned increment turn count by 1
+    # (this is different from the current are_all_non_king_pieces_stunned() because the side that is supposed to be moving this turn should be assessed
+    have_any_pieces_been_marked_for_death_in_past = False
+    for row in range(len(old_game_state["board_state"])):
+        for col in range(len(old_game_state["board_state"][row])):
+            square = old_game_state["board_state"][row][col] or []
+
+            for piece in square:
+                if piece.get("marked_for_death", False):
+                    have_any_pieces_been_marked_for_death_in_past = True
     
+    if have_any_pieces_been_marked_for_death_in_past \
+        and not have_any_pieces_been_marked_for_death \
+        and should_increment_turn_count \
+        and utils.are_all_non_king_pieces_stunned(new_game_state, True) \
+        and not utils.can_king_move(old_game_state, new_game_state, True) \
+        and old_game_state["turn_count"] == new_game_state["turn_count"]:
+        utils.increment_turn_count(old_game_state, new_game_state, moved_pieces, 1)
+
     # Heal monsters
     utils.heal_neutral_monsters(old_game_state, new_game_state)
     

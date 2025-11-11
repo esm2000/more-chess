@@ -61,7 +61,14 @@ def manage_turn_progression(old_game_state, new_game_state, moved_pieces, is_val
             old_game_state, new_game_state, moved_pieces, should_increment_turn_count
         )
     
-    # CURRENT TODO: if there are any pieces marked for death on the board, don't increment turn count
+    # if there are any pieces marked for death on the board, don't increment turn count
+    for row in range(len(new_game_state["board_state"])):
+        for col in range(len(new_game_state["board_state"][row])):
+            square = new_game_state["board_state"][row][col] or []
+
+            for piece in square:
+                if piece.get("marked_for_death", False):
+                    should_increment_turn_count = False
     
     # Clean and increment
     utils.clean_possible_moves_and_possible_captures(new_game_state)

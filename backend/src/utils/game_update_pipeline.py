@@ -187,6 +187,7 @@ def handle_endgame_conditions(old_game_state, new_game_state, moved_pieces, is_v
     
     # if any of the piece(s) that moved this turn have five dragon buff stacks mark all non-king adjacent pieces for death
     # but only do this is new_game_state's turn count is greater than old_game_state's turn count
+    have_any_pieces_been_marked_for_death = False
     if new_game_state["turn_count"] > old_game_state["turn_count"]:
         for moved_piece in [mp for mp in moved_pieces if mp["previous_position"][0] is not None and mp["current_position"][0] is not None]:
             if moved_piece["piece"].get("dragon_buff", 0) < 5:
@@ -204,10 +205,10 @@ def handle_endgame_conditions(old_game_state, new_game_state, moved_pieces, is_v
                 for piece in square:
                     if opposite_side in piece.get("type") and "king" not in piece.get("type"):
                         piece["marked_for_death"] = True
+                        have_any_pieces_been_marked_for_death = True
 
-    # Handle stunned piece special case
-    # CURRENT TODO: Avoid this condition if pieces were marked for death this turn
-    if should_increment_turn_count and utils.are_all_non_king_pieces_stunned(new_game_state) and not utils.can_king_move(old_game_state, new_game_state):
+    # handle stunned piece special case if pieces have not been marked for death this turn
+    if should_increment_turn_count and utils.are_all_non_king_pieces_stunned(new_game_state) and not utils.can_king_move(old_game_state, new_game_state) and not have_any_pieces_been_marked_for_death:
         utils.increment_turn_count(old_game_state, new_game_state, moved_pieces, 2)
 
     # CURRENT TODO: if there are pieces marked for death in old game state and none marked for death this turn but all of the current player's pieces are stunned increment turn count by 1

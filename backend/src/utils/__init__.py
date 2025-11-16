@@ -29,6 +29,7 @@ from .validation import (
     invalidate_game_if_monster_has_moved,
     invalidate_game_if_too_much_gold_is_spent,
     invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array,
+    invalidate_game_if_no_marked_for_death_pieces_have_been_selected,
     check_for_disappearing_pieces,
     check_if_pawn_exchange_is_required,
     check_if_pawn_exhange_is_possibly_being_carried_out,

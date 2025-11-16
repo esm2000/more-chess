@@ -208,6 +208,47 @@ def invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_gam
     return is_valid_game_state
 
 
+def invalidate_game_if_no_marked_for_death_pieces_have_been_selected(old_game_state, new_game_state, is_valid_game_state):
+    marked_for_death_pieces = {}
+    
+    for row in range(len(old_game_state["board_state"])):
+        for col in range(len(old_game_state["board_state"][row])):
+            square = old_game_state["board_state"][row][col] or []
+
+            for piece in square:
+                if piece.get("marked_for_death", False):
+                    marked_for_death_pieces[(row, col)] = piece.get('type')
+    
+    current_count_of_marked_for_death_pieces = 0
+    for row in range(len(new_game_state["board_state"])):
+        for col in range(len(new_game_state["board_state"][row])):
+            square = new_game_state["board_state"][row][col] or []
+
+            for piece in square:
+                if piece.get("marked_for_death", False):
+                    current_count_of_marked_for_death_pieces += 1
+
+    # skip if there are no marked for death pieces in the previous game state or if a piece was selected for death last turn
+    if marked_for_death_pieces or not current_count_of_marked_for_death_pieces:
+        for row in range(len(new_game_state["board_state"])):
+            for col in range(len(new_game_state["board_state"][row])):
+                square = new_game_state["board_state"][row][col] or []
+
+                for piece in square:
+                    if piece.get("marked_for_death", False):
+                        # if there is an additional marked for death piece or a diffent marked for death piece, invalidate game state
+                        if (row, col) not in marked_for_death_pieces or piece.get("type", "") != marked_for_death_pieces[(row, col)]:
+                            is_valid_game_state = False
+                        else:
+                            del marked_for_death_pieces[(row, col)]
+        
+        # if one piece was not selected for death invalidate game state
+        if len(marked_for_death_pieces) != 1:
+            is_valid_game_state = False
+
+    return is_valid_game_state
+
+
 def check_for_disappearing_pieces(
     old_game_state, 
     new_game_state, 

@@ -82,11 +82,20 @@ def manage_turn_progression(old_game_state, new_game_state, moved_pieces, is_val
 def validate_moves_and_pieces(old_game_state, new_game_state, moved_pieces, capture_positions, is_valid_game_state):
     # Core move validation
     is_valid_game_state = utils.check_to_see_if_more_than_one_piece_has_moved(
-        old_game_state, new_game_state, moved_pieces, capture_positions, is_valid_game_state
+        old_game_state,
+        new_game_state,
+        moved_pieces,
+        capture_positions,
+        is_valid_game_state
     )
 
-    # CURRENT TODO: Invalidate game state if pieces are marked for death in the old game state and the current turn's side
-    #               did not choose any of them to die
+    # Invalidate game state if pieces are marked for death in the old game state and the current turn's side
+    # did not choose any of them to die
+    is_valid_game_state = utils.invalidate_game_if_no_marked_for_death_pieces_have_been_selected(
+        old_game_state,
+        new_game_state,
+        is_valid_game_state
+    )
     
     # Update castle log and validate gold
     utils.update_castle_log(new_game_state, moved_pieces)

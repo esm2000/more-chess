@@ -186,7 +186,6 @@ def invalidate_game_if_too_much_gold_is_spent(old_game_state, gold_spent, is_val
 
 # if any new pieces in the captured pieces array have not been captured this turn, invalidate
 # (it's imperative that this code section is placed after we've updated captured_pieces)
-# CURRENT TODO: carve out exception when piece was marked for death in the last turn unless more than one pieces were captured using death mark
 def invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_game_state, new_game_state, moved_pieces, is_valid_game_state, is_pawn_exchange_possibly_being_carried_out):
     captured_pieces_array = new_game_state["captured_pieces"]["white"].copy() + new_game_state["captured_pieces"]["black"].copy() + new_game_state["graveyard"]
     for captured_piece in old_game_state["captured_pieces"]["white"] + old_game_state["captured_pieces"]["black"] + old_game_state["graveyard"]:
@@ -200,6 +199,37 @@ def invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_gam
                 if not ("pawn" in moved_piece["piece"]["type"] and is_pawn_exchange_possibly_being_carried_out[moved_piece["side"]]):
                     logger.error(f"Captured piece {moved_piece['piece']['type']} has not been recorded as a captured piece")
                     is_valid_game_state = False
+    
+    # if a piece that was marked for death has been chosen for capture this turn account for it
+    if len(captured_pieces_array) == 1:
+        old_marked_for_death_pieces = {}
+        new_marked_for_death_pieces = {}
+
+        for row in range(len(old_game_state["board_state"])):
+            for col in range(len(old_game_state["board_state"][row])):
+                square = old_game_state["board_state"][row][col] or []
+
+                for piece in square:
+                    if piece.get("marked_for_death", False):
+                        old_marked_for_death_pieces[(row, col)] = piece.get('type')
+
+        for row in range(len(new_game_state["board_state"])):
+            for col in range(len(new_game_state["board_state"][row])):
+                square = new_game_state["board_state"][row][col] or []
+
+                for piece in square:
+                    if piece.get("marked_for_death", False):
+                        new_marked_for_death_pieces[(row, col)] = piece.get('type')
+
+        all_old_marked_for_death_pieces_accounted_for = False
+        for (row, col) in old_marked_for_death_pieces:
+            if (row, col) not in new_marked_for_death_pieces or old_marked_for_death_pieces[(row, col)] != new_marked_for_death_pieces[(row, col)]:
+                all_old_marked_for_death_pieces_accounted_for = True
+            else:
+                del new_marked_for_death_pieces[(row, col)]
+        
+        if all_old_marked_for_death_pieces_accounted_for and len(new_marked_for_death_pieces) == 1 and captured_pieces_array[0] == list(new_marked_for_death_pieces.values())[0]:
+            captured_pieces_array.pop()
     
     if len(captured_pieces_array) > 0:
         logger.error(f"There are extra captured pieces not accounted for: {captured_pieces_array}")

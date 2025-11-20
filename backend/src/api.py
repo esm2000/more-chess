@@ -20,7 +20,8 @@ from src.utils.game_update_pipeline import (
     handle_captures_and_combat,
     update_game_metrics,
     handle_endgame_conditions,
-    finalize_game_state
+    finalize_game_state,
+    unmark_all_pieces_marked_for_death
 )
 
 router = APIRouter(prefix="/api")
@@ -100,8 +101,10 @@ def update_game_state(id, state: GameState, response: Response, player=True):
         old_game_state, new_game_state, moved_pieces, capture_positions, is_valid_game_state
     )
 
-    # CURRENT TODO: if game state is still valid while marked for death pieces are present that is indicative of 
-    #               one piece being chosen for sacrifice (validate_moves_and_pieces), so unmark all pieces
+    # if game state is still valid while marked for death pieces are present that is indicative of 
+    # one piece being chosen for sacrifice (validate_moves_and_pieces), so unmark all pieces
+    if is_valid_game_state:
+        unmark_all_pieces_marked_for_death(new_game_state)
     
     # Handle pawn exchanges
     is_pawn_exchange_required_this_turn, is_pawn_exchange_possibly_being_carried_out = handle_pawn_exchanges(

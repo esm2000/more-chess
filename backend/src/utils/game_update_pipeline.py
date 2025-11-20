@@ -275,3 +275,13 @@ def finalize_game_state(old_game_state, new_game_state, moved_pieces, player, is
     # Final management and persistence
     utils.manage_game_state(old_game_state, new_game_state)
     utils.perform_game_state_update(new_game_state, mongo_client, id)
+
+
+def unmark_all_pieces_marked_for_death(new_game_state):
+    for row in range(len(new_game_state["board_state"])):
+        for col in range(len(new_game_state["board_state"][row])):
+            square = new_game_state["board_state"][row][col] or []
+
+            for piece in square:
+                if piece.get("marked_for_death", False):
+                    piece["marked_for_death"] = False

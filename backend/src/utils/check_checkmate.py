@@ -229,15 +229,33 @@ def trim_moves(moves_info, unsafe_position_for_one_side):
     return moves_info_copy
 
 
-# CURRENT TODO: prevent the game from being invalidated from a player being in check after disposing of their marked for death piece
-#               players with marked for death pieces must choose which piece to lose before moving their king out of check
 def invalidate_game_if_player_moves_and_is_in_check(is_valid_game_state, old_game_state, new_game_state, moved_pieces):
+    are_pieces_marked_for_death_in_old_game = False
+    are_pieces_marked_for_death_in_new_game = False
+
+    for row in range(len(old_game_state["board_state"])):
+        for col in range(len(old_game_state["board_state"])):
+            old_square = old_game_state["board_state"][row][col] or []
+            new_square = new_game_state["board_state"][row][col] or []
+
+            for piece in old_square:
+                if piece.get("marked_for_death", False):
+                    are_pieces_marked_for_death_in_old_game = True
+
+            for piece in new_square:
+                if piece.get("marked_for_death", False):
+                    are_pieces_marked_for_death_in_new_game = True
+    
     for moved_piece in moved_pieces:
         if moved_piece["previous_position"][0] is not None and moved_piece["previous_position"][1] is not None:
             side = moved_piece["side"]
             if side == "neutral":
                 continue
-            if new_game_state["check"][side] and not is_check_due_to_neutral_monster_spawn_this_turn(old_game_state, new_game_state, side):
+            # prevent the game from being invalidated from a player being in check after disposing of their marked for death
+            # piece players with marked for death pieces must choose which piece to lose before moving their king out of check
+            if new_game_state["check"][side] \
+                and not is_check_due_to_neutral_monster_spawn_this_turn(old_game_state, new_game_state, side) \
+                and not (are_pieces_marked_for_death_in_old_game and not are_pieces_marked_for_death_in_new_game):
                 logger.error(f"{side} moved but is in check")
                 is_valid_game_state = False
     return is_valid_game_state

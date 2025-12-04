@@ -704,3 +704,15 @@ def test_pawn_with_four_or_more_dragon_buff_stacks_ignores_unit_collision_with_a
 
 def test_pawn_with_four_or_more_dragon_buff_stacks_does_not_ignore_unit_collision_with_enemy_pieces():
     pass
+
+def test_pawn_with_five_dragon_buff_stacks_marks_enemy_piece_for_death():
+    pass
+
+def test_pawn_with_five_dragon_buff_stacks_marks_enemy_pieces_for_death():
+    pass
+
+def test_pawn_with_five_dragon_buff_stacks_does_not_mark_enemy_pieces_for_death():
+    pass
+
+def test_pawn_with_five_dragon_buff_stacks_does_not_mark_enemy_kings(game):
+    pass

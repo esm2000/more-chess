@@ -394,3 +394,7 @@ def test_king_in_check_from_pawn_with_board_herald_buff(game):
 
 def test_king_in_check_from_pawn_with_baron_nashor_buff(game):
     pass
+
+
+def test_that_a_user_can_surrender_a_piece_while_in_check(game):
+    pass

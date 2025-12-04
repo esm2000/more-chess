@@ -182,3 +182,19 @@ def test_draw_with_no_possible_moves(game):
 
         assert not game["check"][f"{side}"] and not game["check"][f"{opposite_side}"]
         assert game[f"{side}_defeat"] and game[f"{opposite_side}_defeat"]
+
+def test_five_dragon_stacks_and_death_mark_capture_flow_with_multiple_pieces_marked(game):
+    # test getting the stacks, marking pieces for death, selecting piece for death
+    # ensure turn rotation goes as expected
+    # ensure that surrendered piece is reflected in the captured_pieces array
+    pass
+
+def test_five_dragon_stacks_and_death_mark_capture_flow_with_single_piece_marked(game):
+    pass
+
+def test_that_not_choosing_a_piece_to_die_invalidates_game_state(game):
+    pass
+
+def test_that_surrendering_a_marked_for_death_piece_while_all_pieces_are_stunned(game):
+    # surrendering should be allowed but turn should be skipped after
+    pass

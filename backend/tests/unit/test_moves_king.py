@@ -205,3 +205,15 @@ def test_king_being_allowed_to_move_to_sword_in_stone_square():
 
             possible_moves_and_captures = moves.get_moves_for_king(curr_game_state, prev_game_state, curr_position)
             assert sword_in_the_stone_position in possible_moves_and_captures["possible_moves"]
+
+def test_king_with_five_dragon_buff_stacks_marks_enemy_piece_for_death():
+    pass
+
+def test_king_with_five_dragon_buff_stacks_marks_enemy_pieces_for_death():
+    pass
+
+def test_king_with_five_dragon_buff_stacks_does_not_mark_enemy_pieces_for_death():
+    pass
+
+def test_king_with_five_dragon_buff_stacks_does_not_mark_enemy_kings(game):
+    pass

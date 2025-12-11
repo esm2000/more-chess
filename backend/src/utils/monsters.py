@@ -222,12 +222,11 @@ def handle_neutral_monster_buffs(moved_pieces, capture_positions, new_game_state
             else:
                 side = "white" if "white" in captor.get("type", "") else "black"
                 neutral_monster_type = moved_piece["piece"]["type"].replace("neutral_", "")
-
                 if neutral_monster_type == "dragon":
                     if new_game_state["neutral_buff_log"][side]["dragon"]["stacks"] < 5:
                         new_game_state["neutral_buff_log"][side]["dragon"]["stacks"] += 1
                     
-                    new_game_state["neutral_buff_log"][side]["dragon"]["turn"] = new_game_state["turn_count"]
+                        new_game_state["neutral_buff_log"][side]["dragon"]["turn"] = new_game_state["turn_count"]
                 else:
                     new_game_state["neutral_buff_log"][side][neutral_monster_type] = True
 

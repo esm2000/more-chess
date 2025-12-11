@@ -215,5 +215,5 @@ def test_king_with_five_dragon_buff_stacks_marks_enemy_pieces_for_death():
 def test_king_with_five_dragon_buff_stacks_does_not_mark_enemy_pieces_for_death():
     pass
 
-def test_king_with_five_dragon_buff_stacks_does_not_mark_enemy_kings(game):
+def test_king_with_five_dragon_buff_stacks_does_not_mark_enemy_kings():
     pass

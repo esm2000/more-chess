@@ -259,9 +259,8 @@ def handle_neutral_monster_buffs(moved_pieces, capture_positions, new_game_state
                         elif new_game_state["neutral_buff_log"][side]["dragon"]["stacks"] == 5:
                             if side in piece["type"]:
                                 # fifth dragon stack only lasts 3 turns
-                                # (with new_game_state["turn_count"] already incremented three turns is covered by 5 turns ahead)
-                                # 0th turn, 1st turn*, 2nd turn, 3rd turn*, 4 turn, 5th turn*
-                                if new_game_state["turn_count"] < new_game_state["neutral_buff_log"][side]["dragon"]["turn"] + 6:
+                                # three turns is covered by 6 turns ahead)
+                                if new_game_state["turn_count"] <= new_game_state["neutral_buff_log"][side]["dragon"]["turn"] + 6:
                                     piece["dragon_buff"] = 5
                                 else:
                                     piece["dragon_buff"] = 4

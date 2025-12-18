@@ -226,7 +226,7 @@ def handle_neutral_monster_buffs(moved_pieces, capture_positions, new_game_state
                     if new_game_state["neutral_buff_log"][side]["dragon"]["stacks"] < 5:
                         new_game_state["neutral_buff_log"][side]["dragon"]["stacks"] += 1
                     
-                        new_game_state["neutral_buff_log"][side]["dragon"]["turn"] = new_game_state["turn_count"]
+                    new_game_state["neutral_buff_log"][side]["dragon"]["turn"] = new_game_state["turn_count"]
                 else:
                     new_game_state["neutral_buff_log"][side][neutral_monster_type] = True
 
@@ -243,7 +243,7 @@ def handle_neutral_monster_buffs(moved_pieces, capture_positions, new_game_state
                     for piece in square:
                         if piece["type"] == f"{side}_pawn":
                             piece["baron_nashor_buff"] = True
-        
+
         if new_game_state["neutral_buff_log"][side]["dragon"]["stacks"]:
             for row in range(len(new_game_state["board_state"])):
                 for col in range(len(new_game_state["board_state"][0])):

@@ -12,6 +12,16 @@ from tests.test_utils import (
 )
 
 
+# Helper function to validate dragon buff values on pieces
+def validate_dragon_buffs(game, side, expected_buff, piece_positions):
+    for row, col in piece_positions:
+        pieces = game["board_state"][row][col]
+        if pieces:
+            for piece in pieces:
+                if side in piece.get("type", ""):
+                    assert piece.get("dragon_buff", 0) == expected_buff
+
+
 def test_spawn_monsters(game):
     game = clear_game(game)
     game_on_next_turn = copy.deepcopy(game)
@@ -439,17 +449,11 @@ def test_buff_acquired_from_dragon_slain_stack_1(game):
         assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
         
         # only the pawns should gain the dragon buff
-        assert game["board_state"][6][0][0].get("dragon_buff", 0) == 1
-        assert game["board_state"][6][1][0].get("dragon_buff", 0) == 1
-        assert game["board_state"][7][0][0].get("dragon_buff", 0) == 0
-        assert game["board_state"][7][1][0].get("dragon_buff", 0) == 0
-        assert game["board_state"][7][2][0].get("dragon_buff", 0) == 0
-        assert game["board_state"][7][3][0].get("dragon_buff", 0) == 0
-        assert game["board_state"][4][7][0].get("dragon_buff", 0) == 0
+        validate_dragon_buffs(game, side, 1, [(6, 0), (6, 1)])
+        validate_dragon_buffs(game, side, 0, [(7, 0), (7, 1), (7, 2), (7, 3), (4, 7)])
 
         # enemy pieces should never gain the dragon buff
-        assert game["board_state"][0][0][0].get("dragon_buff", 0) == 0
-        assert game["board_state"][0][1][0].get("dragon_buff", 0) == 0
+        validate_dragon_buffs(game, opposite_side, 0, [(0, 0), (0, 1)])
         
         if side == "white":
             game = select_and_move_black_piece(game=game, from_row=0, from_col=0, to_row=1, to_col=0)
@@ -457,16 +461,10 @@ def test_buff_acquired_from_dragon_slain_stack_1(game):
             game = select_and_move_white_piece(game=game, from_row=0, from_col=0, to_row=1, to_col=0)
 
         # buffs should remain after enemy turn
-        assert game["board_state"][6][0][0].get("dragon_buff", 0) == 1
-        assert game["board_state"][6][1][0].get("dragon_buff", 0) == 1
-        assert game["board_state"][7][0][0].get("dragon_buff", 0) == 0
-        assert game["board_state"][7][1][0].get("dragon_buff", 0) == 0
-        assert game["board_state"][7][2][0].get("dragon_buff", 0) == 0
-        assert game["board_state"][7][3][0].get("dragon_buff", 0) == 0
-        assert game["board_state"][4][7][0].get("dragon_buff", 0) == 0
+        validate_dragon_buffs(game, side, 1, [(6, 0), (6, 1)])
+        validate_dragon_buffs(game, side, 0, [(7, 0), (7, 1), (7, 2), (7, 3), (4, 7)])
 
-        assert game["board_state"][1][0][0].get("dragon_buff", 0) == 0
-        assert game["board_state"][0][1][0].get("dragon_buff", 0) == 0
+        validate_dragon_buffs(game, opposite_side, 0, [(1, 0), (0, 1)])
 
         
 def test_buff_acquired_from_dragon_slain_stack_2(game):
@@ -528,17 +526,10 @@ def test_buff_acquired_from_dragon_slain_stack_2(game):
         assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
 
         # all allied pieces should gain the dragon buff
-        assert game["board_state"][6][0][0].get("dragon_buff", 0) == 2
-        assert game["board_state"][6][1][0].get("dragon_buff", 0) == 2
-        assert game["board_state"][7][0][0].get("dragon_buff", 0) == 2
-        assert game["board_state"][7][1][0].get("dragon_buff", 0) == 2
-        assert game["board_state"][7][2][0].get("dragon_buff", 0) == 2
-        assert game["board_state"][7][3][0].get("dragon_buff", 0) == 2
-        assert game["board_state"][4][7][0].get("dragon_buff", 0) == 2
+        validate_dragon_buffs(game, side, 2, [(6, 0), (6, 1), (7, 0), (7, 1), (7, 2), (7, 3), (4, 7)])
 
         # enemy pieces should never gain the dragon buff
-        assert game["board_state"][0][0][0].get("dragon_buff", 0) == 0
-        assert game["board_state"][0][1][0].get("dragon_buff", 0) == 0
+        validate_dragon_buffs(game, opposite_side, 0, [(0, 0), (0, 1)])
         
         if side == "white":
             game = select_and_move_black_piece(game=game, from_row=0, from_col=0, to_row=1, to_col=0)
@@ -546,16 +537,9 @@ def test_buff_acquired_from_dragon_slain_stack_2(game):
             game = select_and_move_white_piece(game=game, from_row=0, from_col=0, to_row=1, to_col=0)
 
         # buffs should remain after enemy turn
-        assert game["board_state"][6][0][0].get("dragon_buff", 0) == 2
-        assert game["board_state"][6][1][0].get("dragon_buff", 0) == 2
-        assert game["board_state"][7][0][0].get("dragon_buff", 0) == 2
-        assert game["board_state"][7][1][0].get("dragon_buff", 0) == 2
-        assert game["board_state"][7][2][0].get("dragon_buff", 0) == 2
-        assert game["board_state"][7][3][0].get("dragon_buff", 0) == 2
-        assert game["board_state"][4][7][0].get("dragon_buff", 0) == 2
+        validate_dragon_buffs(game, side, 2, [(6, 0), (6, 1), (7, 0), (7, 1), (7, 2), (7, 3), (4, 7)])
 
-        assert game["board_state"][1][0][0].get("dragon_buff", 0) == 0
-        assert game["board_state"][0][1][0].get("dragon_buff", 0) == 0
+        validate_dragon_buffs(game, opposite_side, 0, [(1, 0), (0, 1)])
 
 
 def test_buff_acquired_from_dragon_slain_stack_3(game):
@@ -617,35 +601,10 @@ def test_buff_acquired_from_dragon_slain_stack_3(game):
         assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
 
         # validate that all pieces have dragon buff of 3
-        for piece in game["board_state"][6][0]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 3
-        for piece in game["board_state"][6][1]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 3
-        for piece in game["board_state"][7][0]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 3
-        for piece in game["board_state"][7][1]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 3
-        for piece in game["board_state"][4][7]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 3
-        for piece in game["board_state"][7][3]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 3
-        for piece in game["board_state"][7][2]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 3
+        validate_dragon_buffs(game, side, 3, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 3), (7, 2)])
 
         # validate that enemy pieces don't have any dragon buffs
-        for piece in game["board_state"][0][0]:
-            if f"{opposite_side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff", 0) == 0
-        for piece in game["board_state"][0][1]:
-            if f"{opposite_side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff", 0) == 0
+        validate_dragon_buffs(game, opposite_side, 0, [(0, 0), (0, 1)])
 
 
 def test_buff_acquired_from_dragon_slain_stack_4(game):
@@ -707,35 +666,10 @@ def test_buff_acquired_from_dragon_slain_stack_4(game):
         assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
 
         # validate that all pieces have dragon buff of 4
-        for piece in game["board_state"][6][0]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 4
-        for piece in game["board_state"][6][1]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 4
-        for piece in game["board_state"][7][0]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 4
-        for piece in game["board_state"][7][1]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 4
-        for piece in game["board_state"][4][7]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 4
-        for piece in game["board_state"][7][3]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 4
-        for piece in game["board_state"][7][2]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 4
+        validate_dragon_buffs(game, side, 4, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 3), (7, 2)])
 
         # validate that enemy pieces don't have any dragon buffs
-        for piece in game["board_state"][0][0]:
-            if f"{opposite_side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff", 0) == 0
-        for piece in game["board_state"][0][1]:
-            if f"{opposite_side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff", 0) == 0
+        validate_dragon_buffs(game, opposite_side, 0, [(0, 0), (0, 1)])
 
 
 def test_buff_acquired_from_dragon_slain_stack_5(game):
@@ -797,35 +731,10 @@ def test_buff_acquired_from_dragon_slain_stack_5(game):
         assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
 
         # validate that all pieces have dragon buff of 5
-        for piece in game["board_state"][6][0]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][6][1]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][0]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][1]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][4][7]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][3]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][2]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
+        validate_dragon_buffs(game, side, 5, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 3), (7, 2)])
 
         # validate that enemy pieces don't have any dragon buffs
-        for piece in game["board_state"][0][0]:
-            if f"{opposite_side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff", 0) == 0
-        for piece in game["board_state"][0][1]:
-            if f"{opposite_side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff", 0) == 0
+        validate_dragon_buffs(game, opposite_side, 0, [(0, 0), (0, 1)])
 
 
 def test_buff_acquired_from_dragon_slain_stack_5_duration(game):
@@ -888,35 +797,10 @@ def test_buff_acquired_from_dragon_slain_stack_5_duration(game):
         assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
 
         # validate that all pieces have dragon buff of 5
-        for piece in game["board_state"][6][0]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][6][1]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][0]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][1]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][4][7]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][3]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][2]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
+        validate_dragon_buffs(game, side, 5, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 3), (7, 2)])
 
         # validate that enemy pieces don't have any dragon buffs
-        for piece in game["board_state"][0][0]:
-            if f"{opposite_side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff", 0) == 0
-        for piece in game["board_state"][0][1]:
-            if f"{opposite_side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff", 0) == 0
+        validate_dragon_buffs(game, opposite_side, 0, [(0, 0), (0, 1)])
         
         if opposite_side == "black":
             game = select_and_move_black_piece(game=game, from_row=0, from_col=1, to_row=1, to_col=1)
@@ -930,27 +814,7 @@ def test_buff_acquired_from_dragon_slain_stack_5_duration(game):
             game = select_and_move_black_piece(game=game, from_row=7, from_col=3, to_row=7, to_col=4)
 
         # validate that all pieces have dragon buff of 5
-        for piece in game["board_state"][6][0]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][6][1]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][0]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][1]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][4][7]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][4]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][2]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
+        validate_dragon_buffs(game, side, 5, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 4), (7, 2)])
 
         if opposite_side == "black":
             game = select_and_move_black_piece(game=game, from_row=1, from_col=1, to_row=0, to_col=1)
@@ -964,27 +828,7 @@ def test_buff_acquired_from_dragon_slain_stack_5_duration(game):
             game = select_and_move_black_piece(game=game, from_row=7, from_col=4, to_row=7, to_col=3)
 
         # validate that all pieces have dragon buff of 5
-        for piece in game["board_state"][6][0]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][6][1]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][0]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][1]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][4][7]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][3]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][2]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
+        validate_dragon_buffs(game, side, 5, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 3), (7, 2)])
 
         if opposite_side == "black":
             game = select_and_move_black_piece(game=game, from_row=0, from_col=1, to_row=1, to_col=1)
@@ -998,27 +842,7 @@ def test_buff_acquired_from_dragon_slain_stack_5_duration(game):
             game = select_and_move_black_piece(game=game, from_row=7, from_col=3, to_row=7, to_col=4)
 
         # validate that all pieces have dragon buff of 5
-        for piece in game["board_state"][6][0]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][6][1]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][0]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][1]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][4][7]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][4]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][2]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
+        validate_dragon_buffs(game, side, 5, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 4), (7, 2)])
 
         if opposite_side == "black":
             game = select_and_move_black_piece(game=game, from_row=1, from_col=1, to_row=0, to_col=1)
@@ -1032,27 +856,7 @@ def test_buff_acquired_from_dragon_slain_stack_5_duration(game):
             game = select_and_move_black_piece(game=game, from_row=7, from_col=4, to_row=7, to_col=3)
 
         # validate that all pieces have dragon buff of 4
-        for piece in game["board_state"][6][0]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 4
-        for piece in game["board_state"][6][1]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 4
-        for piece in game["board_state"][7][0]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 4
-        for piece in game["board_state"][7][1]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 4
-        for piece in game["board_state"][4][7]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 4
-        for piece in game["board_state"][7][3]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 4
-        for piece in game["board_state"][7][2]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 4
+        validate_dragon_buffs(game, side, 4, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 3), (7, 2)])
 
 
 def test_buff_acquired_from_dragon_slain_restack_5_after_expiration(game):
@@ -1118,35 +922,10 @@ def test_buff_acquired_from_dragon_slain_restack_5_after_expiration(game):
             assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
 
             # validate that all pieces have dragon buff of 5
-            for piece in game["board_state"][6][0]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][6][1]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][7][0]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][7][1]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][4][7]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][7][3]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][7][2]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
+            validate_dragon_buffs(game, side, 5, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 3), (7, 2)])
 
             # validate that enemy pieces don't have any dragon buffs
-            for piece in game["board_state"][0][0]:
-                if f"{opposite_side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff", 0) == 0
-            for piece in game["board_state"][0][1]:
-                if f"{opposite_side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff", 0) == 0
+            validate_dragon_buffs(game, opposite_side, 0, [(0, 0), (0, 1)])
             
             if opposite_side == "black":
                 game = select_and_move_black_piece(game=game, from_row=0, from_col=1, to_row=1, to_col=1)
@@ -1160,27 +939,7 @@ def test_buff_acquired_from_dragon_slain_restack_5_after_expiration(game):
                 game = select_and_move_black_piece(game=game, from_row=7, from_col=3, to_row=7, to_col=4)
 
             # validate that all pieces have dragon buff of 5
-            for piece in game["board_state"][6][0]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][6][1]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][7][0]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][7][1]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][4][7]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][7][4]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][7][2]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
+            validate_dragon_buffs(game, side, 5, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 4), (7, 2)])
 
             if opposite_side == "black":
                 game = select_and_move_black_piece(game=game, from_row=1, from_col=1, to_row=0, to_col=1)
@@ -1194,27 +953,7 @@ def test_buff_acquired_from_dragon_slain_restack_5_after_expiration(game):
                 game = select_and_move_black_piece(game=game, from_row=7, from_col=4, to_row=7, to_col=3)
 
             # validate that all pieces have dragon buff of 5
-            for piece in game["board_state"][6][0]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][6][1]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][7][0]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][7][1]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][4][7]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][7][3]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][7][2]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
+            validate_dragon_buffs(game, side, 5, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 3), (7, 2)])
 
             if opposite_side == "black":
                 game = select_and_move_black_piece(game=game, from_row=0, from_col=1, to_row=1, to_col=1)
@@ -1228,27 +967,7 @@ def test_buff_acquired_from_dragon_slain_restack_5_after_expiration(game):
                 game = select_and_move_black_piece(game=game, from_row=7, from_col=3, to_row=7, to_col=4)
 
             # validate that all pieces have dragon buff of 5
-            for piece in game["board_state"][6][0]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][6][1]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][7][0]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][7][1]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][4][7]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][7][4]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
-            for piece in game["board_state"][7][2]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 5
+            validate_dragon_buffs(game, side, 5, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 4), (7, 2)])
 
             if opposite_side == "black":
                 game = select_and_move_black_piece(game=game, from_row=1, from_col=1, to_row=0, to_col=1)
@@ -1262,27 +981,7 @@ def test_buff_acquired_from_dragon_slain_restack_5_after_expiration(game):
                 game = select_and_move_black_piece(game=game, from_row=7, from_col=4, to_row=7, to_col=3)
 
             # validate that all pieces have dragon buff of 4
-            for piece in game["board_state"][6][0]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 4
-            for piece in game["board_state"][6][1]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 4
-            for piece in game["board_state"][7][0]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 4
-            for piece in game["board_state"][7][1]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 4
-            for piece in game["board_state"][4][7]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 4
-            for piece in game["board_state"][7][3]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 4
-            for piece in game["board_state"][7][2]:
-                if f"{side}" in piece.get("type", ""):
-                    assert piece.get("dragon_buff") == 4
+            validate_dragon_buffs(game, side, 4, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 3), (7, 2)])
             
             # a sword in the stone randomly in the way of the pieces can cause a failure
             if game["sword_in_the_stone_position"] not in [[6, 7], [5, 7]]:
@@ -1362,24 +1061,7 @@ def test_buff_acquired_from_dragon_slain_restack_5_after_expiration(game):
         assert len(game["board_state"][4][7]) == 1 and game["board_state"][4][7][0].get("type") == f"{side}_rook"
         
         # validate that all pieces have dragon buff of 5
-        for piece in game["board_state"][6][0]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][6][1]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][0]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][1]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][4][7]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
-        for piece in game["board_state"][7][2]:
-            if f"{side}" in piece.get("type", ""):
-                assert piece.get("dragon_buff") == 5
+        validate_dragon_buffs(game, side, 5, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 2)])
             
 
 def test_buff_acquired_from_board_herald_slain():

@@ -9,6 +9,7 @@ def prepare_game_update(id, state, retrieve_game_state_func):
     
     # prevent updates to game once game has ended
     if old_game_state["black_defeat"] or old_game_state["white_defeat"]:
+        logger.info(f"Game update terminated early - Game already ended. black_defeat: {old_game_state['black_defeat']}, white_defeat: {old_game_state['white_defeat']}")
         return old_game_state, None, None
     
     # determine moved pieces

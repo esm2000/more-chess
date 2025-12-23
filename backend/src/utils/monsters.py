@@ -46,8 +46,10 @@ def spawn_neutral_monsters(game_state):
                 piece = game_state["board_state"][monster_position_row][monster_position_col][i]
                 if "king" in piece.get("type", ""):
                     if "white" in piece["type"]:
+                        logger.info(f"WHITE DEFEAT set to True: King killed by neutral monster spawn at position [{monster_position_row}][{monster_position_col}]")
                         game_state["white_defeat"] = True
                     else:
+                        logger.info(f"BLACK DEFEAT set to True: King killed by neutral monster spawn at position [{monster_position_row}][{monster_position_col}]")
                         game_state["black_defeat"] = True
                     i += 1
                 else:
@@ -85,6 +87,10 @@ def carry_out_neutral_monster_attacks(game_state):
                                 if neutral_kill_mark == game_state["turn_count"]:
                                     # if a king gets captured that's game over
                                     if "king" in piece["type"]:
+                                        if side == "black":
+                                            logger.info(f"BLACK DEFEAT set to True: King killed by neutral monster attack at position [{i}][{j}]")
+                                        else:
+                                            logger.info(f"WHITE DEFEAT set to True: King killed by neutral monster attack at position [{i}][{j}]")
                                         game_state["black_defeat"] = side == "black"
                                         game_state["white_defeat"] = side == "white"
                                         k += 1

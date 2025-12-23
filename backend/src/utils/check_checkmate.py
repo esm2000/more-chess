@@ -140,6 +140,7 @@ def end_game_on_checkmate(old_game_state, new_game_state):
     if new_game_state["check"][side_that_should_be_moving_next_turn] and \
     not can_king_move(old_game_state, new_game_state) and \
     not can_other_pieces_prevent_check(side_that_should_be_moving_next_turn, old_game_state, new_game_state):
+        logger.info(f"{side_that_should_be_moving_next_turn.upper()} DEFEAT set to True: Checkmate - King in check with no escape moves and no pieces can prevent check")
         new_game_state[f"{side_that_should_be_moving_next_turn}_defeat"] = True
 
 

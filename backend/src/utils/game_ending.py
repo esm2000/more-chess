@@ -1,6 +1,7 @@
 import collections
 
 import src.moves as moves
+from src.log import logger
 from .check_checkmate import can_king_move
 
 
@@ -18,6 +19,7 @@ def handle_draw_conditions(old_game_state, new_game_state):
                     piece_log[piece_type] += 1
 
     if "white_king" in piece_log and "black_king" in piece_log and len(piece_log) == 2:
+        logger.info("BOTH DEFEATS set to True: Only kings remaining on board")
         new_game_state["white_defeat"] = True
         new_game_state["black_defeat"] = True
 
@@ -44,6 +46,7 @@ def handle_draw_conditions(old_game_state, new_game_state):
                         is_king_immobile = True
     
     if only_king_can_move and is_king_immobile:
+        logger.info("BOTH DEFEATS set to True: Only king can move and king is immobile")
         new_game_state["white_defeat"] = True
         new_game_state["black_defeat"] = True
 
@@ -87,6 +90,7 @@ def tie_game_if_no_moves_are_possible_next_turn(old_game_state, new_game_state):
                 break
     
     if tie_game:
+        logger.info("BOTH DEFEATS set to True: No moves possible for next turn (tie game)")
         new_game_state["white_defeat"] = True
         new_game_state["black_defeat"] = True    
         

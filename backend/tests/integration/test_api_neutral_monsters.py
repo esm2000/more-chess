@@ -1126,6 +1126,7 @@ def test_buff_acquired_from_board_herald_slain(game):
         assert game["board_state"][3][0][0].get("board_herald_buff", False)
         assert not game["board_state"][7][0][0].get("board_herald_buff", False)
         assert not game["board_state"][7][1][0].get("board_herald_buff", False)
+        assert not game["board_state"][6][0][0].get("board_herald_buff", False)
         assert not game["board_state"][6][1][0].get("board_herald_buff", False)
 
         assert not game["board_state"][0][7][0].get("board_herald_buff", False)
@@ -1140,15 +1141,98 @@ def test_buff_acquired_from_board_herald_slain(game):
         assert game["board_state"][3][0][0].get("board_herald_buff", False)
         assert not game["board_state"][7][0][0].get("board_herald_buff", False)
         assert not game["board_state"][7][1][0].get("board_herald_buff", False)
+        assert not game["board_state"][6][0][0].get("board_herald_buff", False)
         assert not game["board_state"][6][1][0].get("board_herald_buff", False)
 
         assert not game["board_state"][0][6][0].get("board_herald_buff", False)
         assert not game["board_state"][0][1][0].get("board_herald_buff", False)
 
 
-def test_buff_acquired_from_baron_nashor_slain():
+def test_buff_acquired_from_baron_nashor_slain(game):
     # validate neutral_monster_log update + buffs granted
-    pass
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
+
+        game_on_next_turn["board_state"][3][0] = [{"type": "neutral_baron_nashor", "health": 1}]
+        
+        game_on_next_turn["board_state"][7][0] = [{"type": f"{side}_king"}]
+        game_on_next_turn["board_state"][7][1] = [{"type": f"{side}_rook"}]
+        
+        game_on_next_turn["board_state"][6][0] = [{"type": f"{side}_pawn"}]
+        game_on_next_turn["board_state"][6][1] = [{"type": f"{side}_pawn"}]
+        game_on_next_turn["board_state"][1][0] = [{"type": f"{side}_rook"}]
+
+        game_on_next_turn["board_state"][0][7] = [{"type": f"{opposite_side}_king"}]
+        game_on_next_turn["board_state"][0][1] = [{"type": f"{opposite_side}_rook"}]
+        game_on_next_turn["board_state"][1][6] = [{"type": f"{opposite_side}_pawn"}]
+
+
+        game_on_next_turn["turn_count"] = 52 if side == "white" else 51
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+        assert game["neutral_buff_log"][side]["dragon"]["stacks"] == 0
+        assert game["neutral_buff_log"][side]["dragon"]["turn"] == 0
+        assert not game["neutral_buff_log"][side]["board_herald"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]
+
+        assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
+        assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+
+        if side == "white":
+            game = select_white_piece(game=game, row=1, col=0)
+        else:
+            game = select_black_piece(game=game, row=1, col=0)
+        
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][3][0].append(game_on_next_turn["board_state"][1][0][0])
+        game_on_next_turn["board_state"][1][0] = None
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), side == "white")
+        
+        assert len(game["board_state"][3][0]) == 1 and game["board_state"][3][0][0].get("type") == f"{side}_rook"
+
+        assert game["neutral_buff_log"][side]["baron_nashor"]
+        assert game["neutral_buff_log"][side]["dragon"]["stacks"] == 0
+        assert game["neutral_buff_log"][side]["dragon"]["turn"] == 0
+        assert not game["neutral_buff_log"][side]["board_herald"]
+
+        assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
+        assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
+        assert not game["neutral_buff_log"][opposite_side]["board_herald"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+
+        # only allied pawns should receive buff
+        assert game["board_state"][6][0][0].get("baron_nashor_buff", False)
+        assert game["board_state"][6][1][0].get("baron_nashor_buff", False)
+        assert not game["board_state"][3][0][0].get("baron_nashor_buff", False)
+        assert not game["board_state"][7][0][0].get("baron_nashor_buff", False)
+        assert not game["board_state"][7][1][0].get("baron_nashor_buff", False)
+
+        assert not game["board_state"][0][7][0].get("baron_nashor_buff", False)
+        assert not game["board_state"][0][1][0].get("baron_nashor_buff", False)
+        assert not game["board_state"][1][6][0].get("baron_nashor_buff", False)
+
+        # buffs should remain after enemy turn
+        if opposite_side == "white":
+            game = select_and_move_white_piece(game=game, from_row=0, from_col=7, to_row=0, to_col=6)
+        else:
+            game = select_and_move_black_piece(game=game, from_row=0, from_col=7, to_row=0, to_col=6)
+
+        assert game["board_state"][6][0][0].get("baron_nashor_buff", False)
+        assert game["board_state"][6][1][0].get("baron_nashor_buff", False)
+        assert not game["board_state"][3][0][0].get("baron_nashor_buff", False)
+        assert not game["board_state"][7][0][0].get("baron_nashor_buff", False)
+        assert not game["board_state"][7][1][0].get("baron_nashor_buff", False)
+
+        assert not game["board_state"][0][6][0].get("baron_nashor_buff", False)
+        assert not game["board_state"][0][1][0].get("baron_nashor_buff", False)
+        assert not game["board_state"][1][6][0].get("baron_nashor_buff", False)
 
 
 def test_neutral_monsters_receive_double_damage_when_attacker_has_at_least_two_dragon_buffs():

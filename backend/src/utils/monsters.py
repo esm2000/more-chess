@@ -243,7 +243,7 @@ def handle_neutral_monster_buffs(moved_pieces, capture_positions, new_game_state
     for side in new_game_state["neutral_buff_log"]:
         if new_game_state["neutral_buff_log"][side]["baron_nashor"]:
             for row in range(len(new_game_state["board_state"])):
-                for col in len(new_game_state["board_state"][0]):
+                for col in range(len(new_game_state["board_state"][0])):
                     square = new_game_state["board_state"][row][col] or []
 
                     for piece in square:

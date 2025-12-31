@@ -1015,6 +1015,8 @@ def test_buff_acquired_from_dragon_slain_restack_5_after_expiration(game):
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), side == "white")
         
+        assert game["board_state"][4][7][0].get("health", 0) == 3
+
         # damage dragon from 3 hp to 2 hp
         if opposite_side == "white":
             game = select_and_move_white_piece(game=game, from_row=0, from_col=7, to_row=3, to_col=7)
@@ -1233,14 +1235,3 @@ def test_buff_acquired_from_baron_nashor_slain(game):
         assert not game["board_state"][0][6][0].get("baron_nashor_buff", False)
         assert not game["board_state"][0][1][0].get("baron_nashor_buff", False)
         assert not game["board_state"][1][6][0].get("baron_nashor_buff", False)
-
-
-def test_neutral_monsters_receive_double_damage_when_attacker_has_at_least_two_dragon_buffs():
-    # test with only two dragon buffs and greater than two dragon buffs
-    pass
-
-
-def test_neutral_monsters_die_to_double_damage_when_attacker_has_at_least_two_dragon_buffs():
-    # test with only two dragon buffs and greater than two dragon buffs
-        # test with 1 HP and 2 HP
-    pass

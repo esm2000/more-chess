@@ -119,9 +119,7 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
 
     deltas = [(0, 0), (1, 0), (0, 1), (-1, 0), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
     for delta in deltas:
-        position = curr_position
-        position[0] += delta[0]
-        position[1] += delta[1]
+        position = [curr_position[0] + delta[0], curr_position[1] + delta[1]]
 
         if position[0] > 7 or position[0] < 0 or position[1] > 7 or position[1] < 0:
             continue

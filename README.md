@@ -146,7 +146,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * rename game to League of Chess
 * for consistency add recursion to convertKeysToSnakeCase() and convertKeysToCamelCase()
 * provide button so that player can choose what piece to lose when facing five dragon stacks
-* provide UI to indicate neutral monster buffs (color tint + number for stacked buffs)
+* provide UI to indicate neutral monster buffs (color tint + number for stacked buffs) + (board herld buff spreading to pawn must be handled on frontend)
 * change favicon and website/tab title
 * add castle button
 * make victory and defeat UI transparent

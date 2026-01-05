@@ -426,7 +426,40 @@ def test_king_in_check_from_pawn_with_board_herald_buff(game):
 
 
 def test_king_in_check_from_pawn_with_baron_nashor_buff(game):
-    pass
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
+
+        if side == "white":
+            game_on_next_turn["board_state"][3][0] = [{"type": f"{opposite_side}_king"}]
+            game_on_next_turn["board_state"][1][7] = [{"type": f"{opposite_side}_pawn"}]
+
+            game_on_next_turn["board_state"][4][0] = [{"type": f"{side}_pawn", "baron_nashor_buff": True}]
+            game_on_next_turn["board_state"][7][0] = [{"type": f"{side}_rook"}]
+            game_on_next_turn["board_state"][7][7] = [{"type": f"{side}_king"}]
+
+        else:
+            game_on_next_turn["board_state"][4][0] = [{"type": f"{opposite_side}_king"}]
+            game_on_next_turn["board_state"][6][7] = [{"type": f"{opposite_side}_pawn"}]
+
+            game_on_next_turn["board_state"][3][0] = [{"type": f"{side}_pawn", "baron_nashor_buff": True}]
+            game_on_next_turn["board_state"][0][0] = [{"type": f"{side}_rook"}]
+            game_on_next_turn["board_state"][0][7] = [{"type": f"{side}_king"}]
+
+        game_on_next_turn["turn_count"] = 0 if side == "white" else 1
+        game_on_next_turn["neutral_buff_log"][side]["baron_nashor"] = True
+        
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+        if side == "white":
+            game = select_and_move_white_piece(game=game, from_row=7, from_col=0, to_row=5, to_col=0)
+        else:
+            game = select_and_move_black_piece(game=game, from_row=0, from_col=0, to_row=2, to_col=0)
+
+        assert game["check"][opposite_side] and not game["check"][side]
+        assert not game[f"{side}_defeat"] and not game[f"{opposite_side}_defeat"]
 
 
 def test_that_a_user_can_surrender_a_piece_while_in_check(game):

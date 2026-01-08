@@ -462,5 +462,80 @@ def test_king_in_check_from_pawn_with_baron_nashor_buff(game):
         assert not game[f"{side}_defeat"] and not game[f"{opposite_side}_defeat"]
 
 
-def test_that_a_user_can_surrender_a_piece_while_in_check(game):
-    pass
+def test_that_a_player_can_surrender_a_piece_due_to_five_dragon_buff_stacks_while_in_check(game):
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
+
+        game_on_next_turn["board_state"][4][7] = [{"type": f"{side}_rook", "dragon_buff": 5}]
+        game_on_next_turn["board_state"][0][0] = [{"type": f"{side}_king", "dragon_buff": 5}]
+
+        game_on_next_turn["board_state"][3][5] = [{"type": f"{opposite_side}_king"}]
+        game_on_next_turn["board_state"][5][5] = [{"type": f"{opposite_side}_pawn"}]
+        game_on_next_turn["board_state"][4][4] = [{"type": f"{opposite_side}_pawn"}]
+
+        game_on_next_turn["turn_count"] = 44 if side == "white" else 45
+
+        game_on_next_turn["neutral_buff_log"][side]["dragon"]["stacks"] = 5
+        game_on_next_turn["neutral_buff_log"][side]["dragon"]["stacks"] = 43 if side == "white" else 44
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+        assert not game["neutral_buff_log"][side]["board_herald"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]
+
+        assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
+        assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
+        assert not game["neutral_buff_log"][opposite_side]["board_herald"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+
+        if side == "white":
+            game = select_and_move_white_piece(game, from_row=4, from_col=7, to_row=4, to_col=5)
+        else:
+            game = select_and_move_black_piece(game, from_row=4, from_col=7, to_row=4, to_col=5)
+        
+        assert game["check"][opposite_side] and not game["check"][side]
+        assert not game[f"{side}_defeat"] and not game[f"{opposite_side}_defeat"]
+
+        assert not game["board_state"][3][5][0].get("marked_for_death", False)
+        assert game["board_state"][5][5][0].get("marked_for_death", False)
+        assert game["board_state"][4][4][0].get("marked_for_death", False)
+
+        assert game["turn_count"] == 45 if side == "white" else 46
+
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][4][4].pop()
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), side == "white")
+
+        assert not game["board_state"][3][5][0].get("marked_for_death", False)
+        assert not game["board_state"][5][5][0].get("marked_for_death", False)
+        
+        assert not game["board_state"][4][4]
+        assert game["check"][opposite_side] and not game["check"][side]
+        assert not game[f"{side}_defeat"] and not game[f"{opposite_side}_defeat"]
+
+        assert game["turn_count"] == 45 if side == "white" else 46
+
+        assert game["board_state"][4][5][0].get("dragon_buff", 0) == 5
+        assert game["board_state"][0][0][0].get("dragon_buff", 0) == 5
+
+        if opposite_side == "white":
+            game = select_and_move_white_piece(game, from_row=3, from_col=5, to_row=3, to_col=4)
+        else:
+            game = select_and_move_black_piece(game, from_row=3, from_col=5, to_row=3, to_col=4)
+
+
+        assert not game["board_state"][3][4][0].get("marked_for_death", False)
+        assert not game["board_state"][5][5][0].get("marked_for_death", False)
+
+        assert not game["board_state"][4][4]
+        assert not game["check"][opposite_side] and not game["check"][side]
+        assert not game[f"{side}_defeat"] and not game[f"{opposite_side}_defeat"]
+
+        assert game["turn_count"] == 46 if side == "white" else 47
+
+        assert game["board_state"][4][5][0].get("dragon_buff", 0) == 5
+        assert game["board_state"][0][0][0].get("dragon_buff", 0) == 5

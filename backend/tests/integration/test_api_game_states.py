@@ -198,3 +198,14 @@ def test_that_not_choosing_a_piece_to_die_invalidates_game_state(game):
 def test_that_surrendering_a_marked_for_death_piece_while_all_pieces_are_stunned(game):
     # surrendering should be allowed but turn should be skipped after
     pass
+
+def test_queen_with_five_dragon_stacks_turn_reset_interaction(game):
+    # flow
+        # turn 1 - queen with five dragon stacks fulfills necessary requirements for a turn reset while marking pieces for death
+        # turn 2 - queen goes again while marking more pieces for death
+
+    # should we allow the turn reset to be temporarily suspended to allow for surrendering another piece every additional turn?
+    # should we allow the turn reset to take precedence and only one surrender has to be made?
+
+    # not sure what the curren timplementation leads to... or if it has bugs...
+    pass

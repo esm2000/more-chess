@@ -50,7 +50,7 @@ from .piece_mechanics import (
 
 # Game scoring functions  
 from .game_scoring import (
-    get_piece_value_for_each_side,
+    get_average_piece_value_for_each_side,
     update_gold_count,
     update_capture_point_advantage,
     reassign_pawn_buffs

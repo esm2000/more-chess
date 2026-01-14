@@ -203,37 +203,6 @@ def invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_gam
                     logger.error(f"Captured piece {moved_piece['piece']['type']} has not been recorded as a captured piece")
                     is_valid_game_state = False
     
-    # if a piece that was marked for death has been chosen for capture this turn account for it
-    if len(captured_pieces_array) == 1:
-        old_marked_for_death_pieces = {}
-        new_marked_for_death_pieces = {}
-
-        for row in range(len(old_game_state["board_state"])):
-            for col in range(len(old_game_state["board_state"][row])):
-                square = old_game_state["board_state"][row][col] or []
-
-                for piece in square:
-                    if piece.get("marked_for_death", False):
-                        old_marked_for_death_pieces[(row, col)] = piece.get('type')
-
-        for row in range(len(new_game_state["board_state"])):
-            for col in range(len(new_game_state["board_state"][row])):
-                square = new_game_state["board_state"][row][col] or []
-
-                for piece in square:
-                    if piece.get("marked_for_death", False):
-                        new_marked_for_death_pieces[(row, col)] = piece.get('type')
-
-        all_old_marked_for_death_pieces_accounted_for = False
-        for (row, col) in old_marked_for_death_pieces:
-            if (row, col) not in new_marked_for_death_pieces or old_marked_for_death_pieces[(row, col)] != new_marked_for_death_pieces[(row, col)]:
-                all_old_marked_for_death_pieces_accounted_for = True
-            else:
-                del new_marked_for_death_pieces[(row, col)]
-        
-        if all_old_marked_for_death_pieces_accounted_for and len(new_marked_for_death_pieces) == 1 and captured_pieces_array[0] == list(new_marked_for_death_pieces.values())[0]:
-            captured_pieces_array.pop()
-    
     if len(captured_pieces_array) > 0:
         logger.error(f"There are extra captured pieces not accounted for: {captured_pieces_array}")
         is_valid_game_state = False

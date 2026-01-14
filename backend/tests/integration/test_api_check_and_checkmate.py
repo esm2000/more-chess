@@ -507,6 +507,7 @@ def test_that_a_player_can_surrender_a_piece_due_to_five_dragon_buff_stacks_whil
 
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][4][4].pop()
+        game_on_next_turn["captured_pieces"][side].append(f"{opposite_side}_pawn")
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), side == "white")
 

@@ -199,7 +199,7 @@ def test_five_dragon_stacks_and_death_mark_capture_flow_with_multiple_pieces_mar
         game_on_next_turn["board_state"][4][7] = [{"type": f"{side}_rook", "dragon_buff": 5}]
         game_on_next_turn["board_state"][0][0] = [{"type": f"{side}_king", "dragon_buff": 5}]
 
-        game_on_next_turn["board_state"][7][7] = [{"type": f"{opposite_side}_king"}]
+        game_on_next_turn["board_state"][7][0] = [{"type": f"{opposite_side}_king"}]
         game_on_next_turn["board_state"][5][5] = [{"type": f"{opposite_side}_pawn"}]
         game_on_next_turn["board_state"][4][4] = [{"type": f"{opposite_side}_pawn"}]
 
@@ -224,7 +224,7 @@ def test_five_dragon_stacks_and_death_mark_capture_flow_with_multiple_pieces_mar
         else:
             game = select_and_move_black_piece(game, from_row=4, from_col=7, to_row=4, to_col=5)
             
-        assert not game["board_state"][7][7][0].get("marked_for_death", False)
+        assert not game["board_state"][7][0][0].get("marked_for_death", False)
         assert game["board_state"][5][5][0].get("marked_for_death", False)
         assert game["board_state"][4][4][0].get("marked_for_death", False)
 
@@ -236,7 +236,7 @@ def test_five_dragon_stacks_and_death_mark_capture_flow_with_multiple_pieces_mar
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), side == "white")
 
-        assert not game["board_state"][7][7][0].get("marked_for_death", False)
+        assert not game["board_state"][7][0][0].get("marked_for_death", False)
         assert not game["board_state"][5][5][0].get("marked_for_death", False)
         
         assert game["turn_count"] == 45 if side == "white" else 46
@@ -246,12 +246,68 @@ def test_five_dragon_stacks_and_death_mark_capture_flow_with_multiple_pieces_mar
         if side == "white":
             game=select_and_move_black_piece(game, from_row=5, from_col=5, to_row=6, to_col=5)
         else:
-            game=select_and_move_white_piece(game, from_row=7, from_col=7, to_row=7, to_col=6)
+            game=select_and_move_white_piece(game, from_row=7, from_col=0, to_row=7, to_col=1)
         
         assert game["turn_count"] == 46 if side == "white" else 47
 
+
 def test_five_dragon_stacks_and_death_mark_capture_flow_with_single_piece_marked(game):
-    pass
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
+
+        game_on_next_turn["board_state"][4][7] = [{"type": f"{side}_rook", "dragon_buff": 5}]
+        game_on_next_turn["board_state"][0][0] = [{"type": f"{side}_king", "dragon_buff": 5}]
+
+        game_on_next_turn["board_state"][7][0] = [{"type": f"{opposite_side}_king"}]
+        game_on_next_turn["board_state"][5][5] = [{"type": f"{opposite_side}_pawn"}]
+
+        game_on_next_turn["turn_count"] = 44 if side == "white" else 45
+
+        game_on_next_turn["neutral_buff_log"][side]["dragon"]["stacks"] = 5
+        game_on_next_turn["neutral_buff_log"][side]["dragon"]["stacks"] = 43 if side == "white" else 44
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+        assert not game["neutral_buff_log"][side]["board_herald"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]
+
+        assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
+        assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
+        assert not game["neutral_buff_log"][opposite_side]["board_herald"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+
+        if side == "white":
+            game = select_and_move_white_piece(game, from_row=4, from_col=7, to_row=4, to_col=5)
+        else:
+            game = select_and_move_black_piece(game, from_row=4, from_col=7, to_row=4, to_col=5)
+            
+        assert not game["board_state"][7][0][0].get("marked_for_death", False)
+        assert game["board_state"][5][5][0].get("marked_for_death", False)
+
+        assert game["turn_count"] == 45 if side == "white" else 46
+
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][5][5].pop()
+        game_on_next_turn["captured_pieces"][side].append(f"{opposite_side}_pawn")
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), side == "white")
+
+        assert not game["board_state"][7][0][0].get("marked_for_death", False)
+        
+        assert game["turn_count"] == 45 if side == "white" else 46
+
+        assert game["captured_pieces"][side] == [f"{opposite_side}_pawn"]
+
+        if side == "white":
+            game=select_and_move_black_piece(game, from_row=7, from_col=0, to_row=7, to_col=1)
+        else:
+            game=select_and_move_white_piece(game, from_row=7, from_col=0, to_row=7, to_col=1)
+        
+        assert game["turn_count"] == 46 if side == "white" else 47
+
 
 def test_that_not_choosing_a_piece_to_die_invalidates_game_state(game):
     pass

@@ -63,9 +63,10 @@ def manage_turn_progression(old_game_state, new_game_state, moved_pieces, is_val
         )
     
     # if there are any pieces marked for death on the board, don't increment turn count
-    for row in range(len(new_game_state["board_state"])):
-        for col in range(len(new_game_state["board_state"][row])):
-            square = new_game_state["board_state"][row][col] or []
+    # (board from previous turn is scanned, since it's possible that only one piece is marked for death and that piece could be surrendered this turn)
+    for row in range(len(old_game_state["board_state"])):
+        for col in range(len(old_game_state["board_state"][row])):
+            square = old_game_state["board_state"][row][col] or []
 
             for piece in square:
                 if piece.get("marked_for_death", False):

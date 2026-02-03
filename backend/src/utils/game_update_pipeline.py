@@ -52,6 +52,7 @@ def manage_turn_progression(old_game_state, new_game_state, moved_pieces, is_val
     # Position in play selection logic
     if utils.was_a_new_position_in_play_selected(moved_pieces, old_game_state, new_game_state) and new_game_state["position_in_play"][0] is not None and new_game_state["position_in_play"][1] is not None:
         should_increment_turn_count = False
+        logger.debug("Not incrementing turn count: new position in play selected")
         is_valid_game_state = utils.does_position_in_play_match_turn(old_game_state, new_game_state) and is_valid_game_state
     
     # Queen turn logic
@@ -71,10 +72,12 @@ def manage_turn_progression(old_game_state, new_game_state, moved_pieces, is_val
             for piece in square:
                 if piece.get("marked_for_death", False):
                     should_increment_turn_count = False
+                    logger.debug("Not incrementing turn count: piece marked for death found on board")
     
     # Clean and increment
     utils.clean_possible_moves_and_possible_captures(new_game_state)
     if should_increment_turn_count:
+        logger.debug(f"{should_increment_turn_count=}")
         utils.increment_turn_count(old_game_state, new_game_state, moved_pieces, 1)
     utils.prevent_client_side_updates_to_graveyard(old_game_state, new_game_state)
     

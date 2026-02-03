@@ -25,7 +25,6 @@ def increment_turn_count(old_game_state, new_game_state, moved_pieces, number_of
     if len(moved_pieces) > 0:
         new_game_state["turn_count"] = old_game_state["turn_count"] + number_of_turns
 
-
 def reset_turn_count(old_game_state, new_game_state):
     new_game_state["turn_count"] = old_game_state["turn_count"] 
 

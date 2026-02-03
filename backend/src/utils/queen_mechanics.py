@@ -27,6 +27,7 @@ def reset_queen_turn_on_kill_or_assist(old_game_state, new_game_state, moved_pie
                         ):
                             new_game_state["queen_reset"] = True
                             should_increment_turn_count = False
+                            logger.debug("Not incrementing turn count: queen reset triggered on kill or assist")
     return should_increment_turn_count
 
 # conditionally mutates new_game_state

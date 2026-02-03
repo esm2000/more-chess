@@ -152,7 +152,6 @@ def can_king_move(old_game_state, new_game_state, turn_incremented=False):
         side_that_should_be_moving_next_turn = "white" if new_game_turn_count % 2 else "black"
 
     output = False
-    unsafe_positions = get_unsafe_positions_for_kings(old_game_state, new_game_state)
     for i in range(len(new_game_state["board_state"])):
         for j in range(len(new_game_state["board_state"][0])):
             square = new_game_state["board_state"][i][j]
@@ -160,15 +159,13 @@ def can_king_move(old_game_state, new_game_state, turn_incremented=False):
             if square:
                 for piece in square:
                     if piece.get("type", "") == f"{side_that_should_be_moving_next_turn}_king":
-                        output = len(
-                            [
-                                move for move in moves.get_moves_for_king(
-                                    new_game_state,
-                                    old_game_state,
-                                    [i, j]
-                                )["possible_moves"] if move not in unsafe_positions[side_that_should_be_moving_next_turn]
-                            ]
-                        ) > 0
+                        moves_info = moves.get_moves_for_king(
+                            new_game_state,
+                            old_game_state,
+                            [i, j]
+                        )
+                        moves_info = trim_king_moves(moves_info, old_game_state, new_game_state, side_that_should_be_moving_next_turn)
+                        output = len(moves_info["possible_moves"]) > 0
     return output
 
 

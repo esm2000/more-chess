@@ -60,8 +60,12 @@ def handle_draw_conditions(old_game_state, new_game_state):
 def tie_game_if_no_moves_are_possible_next_turn(old_game_state, new_game_state):
     # if one or both sides have already lost no reason to continue
     if new_game_state["white_defeat"] or new_game_state["black_defeat"]:
-        return 
-    
+        return
+
+    # if all non-king pieces are stunned, skip the turn instead of tying
+    if are_all_non_king_pieces_stunned(new_game_state, reverse=True):
+        return
+
     old_game_turn_count = old_game_state["turn_count"]
     new_game_turn_count = new_game_state["turn_count"]
     side_that_should_be_moving_next_turn = "white" if old_game_turn_count % 2 else "black"

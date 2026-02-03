@@ -355,9 +355,11 @@ def test_that_not_choosing_a_piece_to_die_invalidates_game_state(game):
             else:
                 game = select_and_move_white_piece(game, from_row=4, from_col=4, to_row=5, to_col=4)
 
-def test_that_surrendering_a_marked_for_death_piece_while_all_pieces_are_stunned(game):
+
+def test_surrendering_a_marked_for_death_piece_while_all_pieces_are_stunned(game):
     # surrendering should be allowed but turn should be skipped after
     pass
+
 
 def test_queen_with_five_dragon_stacks_turn_reset_interaction(game):
     # flow

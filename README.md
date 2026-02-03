@@ -34,7 +34,7 @@ To run unit tests navigate to root directory of folder and run the following in 
 % PYTHONPATH="$PWD/backend" pytest
 ```
 
-Use `PYTHONPATH="$PWD/backend" pytest -o log_cli=true` if you need to debug.
+Use `PYTHONPATH="$PWD/backend" pytest -o log_cli=true --log-cli-level=DEBUG` if you need to debug.
 
 ## Patch Notes
 There are quite a few changes here that will dramatically alter gameplay, especially large buffs to Bishops and Queens as well as some nerf for Knights and Rooks.
@@ -156,7 +156,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * shop rework 
 * pawn exchange
 * visual cue for a player being able to go again
-* visual cue for turn being skipped
+* visual cue for turn being skipped (this might be optional since pieces themselves are stunned and user should be able to parse that all their pieces are stunned and king can't move while CPU goes)
 * redo assets for rules
 * give player option to switch between chess sprites and league sprites (make league sprites default (with button [chess piece] <-> [league character]))
 * settle all TODOs

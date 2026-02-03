@@ -254,11 +254,13 @@ def handle_pieces_with_full_bishop_debuff_stacks(
         logger.error("More than one side has full bishop debuff stacks")
         is_valid_game_state = False
         should_increment_turn_count = False
+        logger.debug("Not incrementing turn count: more than one side has full bishop debuff stacks")
         # scenario 1 - (can be any) pieces on the board have third bishop debuff and did not have all three last turn 
         #            - or they had all three last turn but another piece with a third bishop debuff was dealt with instead
         #            - turn count is not being incremented
     elif any([did_piece_get_full_bishop_debuffs_this_turn(old_game_state, piece_info) for piece_info in pieces_with_three_bishop_stacks_this_turn]):
         should_increment_turn_count = False
+        logger.debug("Not incrementing turn count: piece got full bishop debuffs this turn")
         # scenario 2 - illegal move is attempted instead of dealing with bishop debuffs
         #            - search through moved pieces and invalidate game state if any pieces moved (valid old position and new position) if there's any third bishop buff active in old_game_state
     elif pieces_with_three_bishop_stacks_last_turn and \
@@ -266,6 +268,7 @@ def handle_pieces_with_full_bishop_debuff_stacks(
         logger.error("Illegal move was attempted instead of dealing with full bishop debuff stacks")
         is_valid_game_state = False
         should_increment_turn_count = False
+        logger.debug("Not incrementing turn count: illegal move instead of dealing with bishop debuffs")
         # scenario 3 - a piece that had third bishop debuff in the previous game state has no debuffs present in the current game state
         #            - player spared piece
         #            - turn count is being incremented
@@ -278,6 +281,7 @@ def handle_pieces_with_full_bishop_debuff_stacks(
         logger.error("More than one side has pieces captured after dealing with full bishop debuff stacks")
         is_valid_game_state = False
         should_increment_turn_count = False
+        logger.debug("Not incrementing turn count: more than one side has pieces captured after bishop debuffs")
         # scenario 5 - there is a piece in the moved_pieces array that shows that a piece was captured (via bishop debuffs)
         #            - player captured piece and game has to ensure that state is not invalidated later on 
         #              by appending captured piece's position to capture_positions
@@ -288,6 +292,7 @@ def handle_pieces_with_full_bishop_debuff_stacks(
             logger.error("Bishop special capture positions not properly marked even though piece has been captured")
             is_valid_game_state = False
             should_increment_turn_count = False
+            logger.debug("Not incrementing turn count: bishop special captures not properly marked")
         else:
             captured_side = new_game_state["bishop_special_captures"][0]["type"].split("_")[0]
             opposite_side = "white" if captured_side == "black" else "black"

@@ -5,7 +5,8 @@ import pytest
 import src.api as api
 from src.utils.game_state import clear_game
 from tests.test_utils import (
-    select_white_piece, select_black_piece, 
+    select_white_piece, select_black_piece,
+    move_white_piece, move_black_piece,
     select_and_move_white_piece, select_and_move_black_piece
 )
 
@@ -358,7 +359,91 @@ def test_that_not_choosing_a_piece_to_die_invalidates_game_state(game):
 
 def test_surrendering_a_marked_for_death_piece_while_all_pieces_are_stunned(game):
     # surrendering should be allowed but turn should be skipped after
-    pass
+    for side in ["white"]:
+        opposite_side = "white" if side == "black" else "black"
+        
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
+
+        game_on_next_turn["board_state"][1][0] = [{"type": f"{side}_bishop", "dragon_buff": 5}]
+        game_on_next_turn["board_state"][2][0] = [{"type": f"{side}_rook", "dragon_buff": 5}]
+        game_on_next_turn["board_state"][6][7] = [{"type": f"{side}_queen", "dragon_buff": 5}]
+        game_on_next_turn["board_state"][7][0] = [{"type": f"{side}_king", "dragon_buff": 5}]
+
+        game_on_next_turn["board_state"][0][0] = [{"type": f"{opposite_side}_king"}]
+        game_on_next_turn["board_state"][0][1] = [{"type": f"{opposite_side}_pawn"}]
+        game_on_next_turn["board_state"][1][1] = [{"type": f"{opposite_side}_pawn"}]
+
+        game_on_next_turn["turn_count"] = 44 if side == "white" else 45
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+        if side == "white":
+            assert game["turn_count"] == 44
+            game = select_and_move_white_piece(game=game, from_row=6, from_col=7, to_row=1, to_col=2)
+            assert game["turn_count"] == 45
+        else:
+            assert game["turn_count"] == 45
+            game = select_and_move_black_piece(game=game, from_row=6, from_col=7, to_row=1, to_col=2)
+            assert game["turn_count"] == 46
+        
+        assert not game["board_state"][0][0][0].get("is_stunned", False)
+        assert game["board_state"][0][1][0].get("is_stunned", False)
+        assert game["board_state"][1][1][0].get("is_stunned", False)
+
+        assert not game["white_defeat"]
+        assert not game["black_defeat"]
+
+        assert game["board_state"][0][1][0].get("marked_for_death", False)
+        assert game["board_state"][1][1][0].get("marked_for_death", False)
+
+        if side == "white":
+            # enemy side moving normally should not be allowed
+            with pytest.raises(HTTPException):
+                game = select_black_piece(game=game, row=1, col=1)
+
+            with pytest.raises(HTTPException):
+                game = move_black_piece(game=game, from_row=1, from_col=1, to_row=2, to_col=1)
+
+            # current side moving normally should not be allowed until an enemy piece is sacrificed
+            with pytest.raises(HTTPException):
+                game = select_white_piece(game=game, row=7, col=0)
+            
+            with pytest.raises(HTTPException):
+                game = move_white_piece(game=game, from_row=7, from_col=0, to_row=6, to_col=0)
+
+        else:
+            # enemy side moving normally should not be allowed
+            with pytest.raises(HTTPException):
+                game = select_white_piece(game=game, row=1, col=1)
+
+            with pytest.raises(HTTPException):
+                game = move_white_piece(game=game, from_row=1, from_col=1, to_row=2, to_col=1)
+
+            # current side moving normally should not be allowed until an enemy piece is sacrificed
+            with pytest.raises(HTTPException):
+                game = select_black_piece(game=game, row=7, col=0)
+            
+            with pytest.raises(HTTPException):
+                game = move_black_piece(game=game, from_row=7, from_col=0, to_row=6, to_col=0)
+        
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][1][1].pop()
+        game_on_next_turn["captured_pieces"][side].append(f"{opposite_side}_pawn")
+        game_state = api.GameState(**game_on_next_turn)
+
+        game = api.update_game_state(game["id"], game_state, Response(), side == "white")
+
+        assert game["turn_count"] == 46 if side == "white" else 47
+
+        assert not game["board_state"][0][0][0].get("is_stunned", False)
+        assert not game["board_state"][0][1][0].get("is_stunned", False)
+        assert not game["board_state"][1][1]
+
+        assert not game["white_defeat"]
+        assert not game["black_defeat"]
+
 
 
 def test_queen_with_five_dragon_stacks_turn_reset_interaction(game):

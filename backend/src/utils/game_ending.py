@@ -63,14 +63,15 @@ def tie_game_if_no_moves_are_possible_next_turn(old_game_state, new_game_state):
         return
 
     # if all non-king pieces are stunned, skip the turn instead of tying
-    if are_all_non_king_pieces_stunned(new_game_state, reverse=True):
+    all_stunned = are_all_non_king_pieces_stunned(new_game_state, reverse=True)
+    if all_stunned:
         return
 
     old_game_turn_count = old_game_state["turn_count"]
     new_game_turn_count = new_game_state["turn_count"]
-    side_that_should_be_moving_next_turn = "white" if old_game_turn_count % 2 else "black"
+    side_that_should_be_moving_next_turn = "white" if not new_game_turn_count % 2 else "black"
 
-    if can_king_move(old_game_state, new_game_state, turn_incremented=old_game_turn_count != new_game_turn_count):
+    if can_king_move(old_game_state, new_game_state, turn_incremented=old_game_turn_count == new_game_turn_count):
         return
     
     tie_game = True
@@ -82,16 +83,18 @@ def tie_game_if_no_moves_are_possible_next_turn(old_game_state, new_game_state):
                 for piece in square:
                     if side_that_should_be_moving_next_turn in piece.get("type", "") and \
                         "king" not in piece.get("type", ""):
-                        tie_game = len(
-                                moves.get_moves(
-                                    old_game_state,
-                                    new_game_state,
-                                    [i, j],
-                                    piece
-                                )["possible_moves"]
-                        ) == 0
+                        if len(moves.get_moves(
+                                old_game_state,
+                                new_game_state,
+                                [i, j],
+                                piece
+                            )["possible_moves"]) > 0:
+                            tie_game = False
+                            break
             if not tie_game:
                 break
+        if not tie_game:
+            break
     
     if tie_game:
         logger.info("BOTH DEFEATS set to True: No moves possible for next turn (tie game)")
@@ -105,14 +108,20 @@ def are_all_non_king_pieces_stunned(new_game_state, reverse=False):
     side_that_should_be_moving_next_turn = "white" if not new_game_turn_count % 2 else "black"
     if reverse:
         side_that_should_be_moving_next_turn = "white" if side_that_should_be_moving_next_turn == "black" else "black"
-    output = True
+
+    has_non_king_pieces = False
+    all_stunned = True
+
     for i in range(len(new_game_state["board_state"])):
         for j in range(len(new_game_state["board_state"][0])):
             square = new_game_state["board_state"][i][j]
             if square:
                 for piece in square:
                     if piece.get("type", "").split("_")[0] == side_that_should_be_moving_next_turn and \
-                    "king" not in piece.get("type", "") and \
-                    not piece.get("is_stunned", False):
-                        output = False
-    return output
+                    "king" not in piece.get("type", ""):
+                        has_non_king_pieces = True
+                        if not piece.get("is_stunned", False):
+                            all_stunned = False
+
+    # Only return True if there are actually non-king pieces AND they're all stunned
+    return has_non_king_pieces and all_stunned

@@ -49,19 +49,11 @@ def manage_turn_progression(old_game_state, new_game_state, moved_pieces, is_val
         old_game_state, new_game_state, moved_pieces, is_valid_game_state, capture_positions
     )
     
-    # Position in play selection logic
+    # position in play selection logic
     if utils.was_a_new_position_in_play_selected(moved_pieces, old_game_state, new_game_state) and new_game_state["position_in_play"][0] is not None and new_game_state["position_in_play"][1] is not None:
         should_increment_turn_count = False
         logger.debug("Not incrementing turn count: new position in play selected")
         is_valid_game_state = utils.does_position_in_play_match_turn(old_game_state, new_game_state) and is_valid_game_state
-    
-    # Queen turn logic
-    if new_game_state["queen_reset"] and should_increment_turn_count:
-        new_game_state["queen_reset"] = False
-    else:
-        should_increment_turn_count = utils.reset_queen_turn_on_kill_or_assist(
-            old_game_state, new_game_state, moved_pieces, should_increment_turn_count
-        )
     
     # if there are any pieces marked for death on the board and not all pieces are stunned, don't increment turn count
     # (board from previous turn is scanned, since it's possible that only one piece is marked for death and that piece could be surrendered this turn)
@@ -86,8 +78,16 @@ def manage_turn_progression(old_game_state, new_game_state, moved_pieces, is_val
                     if not are_all_pieces_stunned:
                         should_increment_turn_count = False
                         logger.debug("Not incrementing turn count: piece marked for death found on board")
+
+    # queen turn logic
+    if new_game_state["queen_reset"] and should_increment_turn_count:
+        new_game_state["queen_reset"] = False
+    else:
+        should_increment_turn_count = utils.reset_queen_turn_on_kill_or_assist(
+            old_game_state, new_game_state, moved_pieces, should_increment_turn_count
+        )
     
-    # Clean and increment
+    # clean and increment
     utils.clean_possible_moves_and_possible_captures(new_game_state)
     if should_increment_turn_count:
         logger.debug(f"{should_increment_turn_count=}")
@@ -220,9 +220,9 @@ def handle_endgame_conditions(old_game_state, new_game_state, moved_pieces, is_v
         raise HTTPException(status_code=400, detail=utils.INVALID_GAME_STATE_ERROR_MESSAGE)
     
     # if any of the piece(s) that moved this turn have five dragon buff stacks mark all non-king adjacent pieces for death
-    # but only do this is new_game_state's turn count is greater than old_game_state's turn count
+    # but only do this is new_game_state's turn count is greater than old_game_state's turn count or when queen_reset is True for new_game_state but False for old_game_state
     have_any_pieces_been_marked_for_death = False
-    if new_game_state["turn_count"] > old_game_state["turn_count"]:
+    if new_game_state["turn_count"] > old_game_state["turn_count"] or (new_game_state["queen_reset"] and not old_game_state["queen_reset"]):
         for moved_piece in [mp for mp in moved_pieces if mp["previous_position"][0] is not None and mp["current_position"][0] is not None]:
             if moved_piece["piece"].get("dragon_buff", 0) < 5:
                 continue

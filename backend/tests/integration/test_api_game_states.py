@@ -447,12 +447,79 @@ def test_surrendering_a_marked_for_death_piece_while_all_pieces_are_stunned(game
 
 
 def test_queen_with_five_dragon_stacks_turn_reset_interaction(game):
-    # flow
-        # turn 1 - queen with five dragon stacks fulfills necessary requirements for a turn reset while marking pieces for death
-        # turn 2 - queen goes again while marking more pieces for death
+    # test that when a queen with 5 dragon stacks gets a kill (triggering turn reset),
+    # the death mark surrender happens first, then the queen can move again
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
 
-    # should we allow the turn reset to be temporarily suspended to allow for surrendering another piece every additional turn?
-    # should we allow the turn reset to take precedence and only one surrender has to be made?
+        # setup: queen with 5 dragon stacks, enemy pieces to capture and mark
+        game_on_next_turn["board_state"][4][7] = [{"type": f"{side}_queen", "dragon_buff": 5}]
+        game_on_next_turn["board_state"][0][0] = [{"type": f"{side}_king", "dragon_buff": 5}]
 
-    # not sure what the curren timplementation leads to... or if it has bugs...
-    pass
+        game_on_next_turn["board_state"][7][0] = [{"type": f"{opposite_side}_king"}]
+        game_on_next_turn["board_state"][4][5] = [{"type": f"{opposite_side}_pawn"}]  # piece to capture
+        game_on_next_turn["board_state"][5][5] = [{"type": f"{opposite_side}_pawn"}]  # will be marked for death
+        game_on_next_turn["board_state"][3][4] = [{"type": f"{opposite_side}_pawn"}]  # will be marked for death
+
+        game_on_next_turn["turn_count"] = 44 if side == "white" else 45
+
+        game_on_next_turn["neutral_buff_log"][side]["dragon"]["stacks"] = 5
+        game_on_next_turn["neutral_buff_log"][side]["dragon"]["turn"] = 43 if side == "white" else 44
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+        # turn 1: queen captures a piece (triggering both death marks and turn reset)
+        if side == "white":
+            game = select_white_piece(game, row=4, col=7)
+        else:
+            game = select_black_piece(game, row=4, col=7)
+
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][4][5] = game_on_next_turn["board_state"][4][7]
+        game_on_next_turn["board_state"][4][7] = None
+        game_on_next_turn["captured_pieces"][side].append(f"{opposite_side}_pawn")
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
+
+        # verify pieces are marked for death
+        assert game["board_state"][5][5][0].get("marked_for_death", False)
+        assert game["board_state"][3][4][0].get("marked_for_death", False)
+
+        # verify queen reset is active
+        assert game["queen_reset"]
+        assert game["position_in_play"] == [4, 5]
+
+        # turn should not advance yet because pieces are marked for death
+        assert game["turn_count"] == 44 if side == "white" else 45
+
+        # surrender one of the marked pieces
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][5][5].pop()
+        game_on_next_turn["captured_pieces"][side].append(f"{opposite_side}_pawn")
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), side == "white")
+
+        # after surrender, remaining marked pieces should be unmarked
+        assert not game["board_state"][3][4][0].get("marked_for_death", False)
+
+        # queen should still have reset available
+        assert game["queen_reset"]
+        assert game["position_in_play"] == [4, 5]
+
+        # turn should still not advance
+        assert game["turn_count"] == 44 if side == "white" else 45
+
+        # now queen can move again (using the turn reset)
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][3][4] = game_on_next_turn["board_state"][4][5]
+        game_on_next_turn["board_state"][4][5] = None
+        game_on_next_turn["captured_pieces"][side].append(f"{opposite_side}_pawn")
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
+
+        # after queen moves, reset should be cleared and turn should advance
+        assert not game["queen_reset"]
+        assert game["turn_count"] == 45 if side == "white" else 46

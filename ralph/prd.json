@@ -1,0 +1,177 @@
+{
+  "project": "League of Chess",
+  "branchName": "ralph/claude-md-documentation",
+  "description": "Create comprehensive Claude.md documentation for project context",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Create Claude.md with table of contents and project overview",
+      "description": "As a developer, I need a Claude.md file with initial structure including table of contents and project overview section so Claude Code has immediate context about the project.",
+      "acceptanceCriteria": [
+        "Claude.md exists at project root (/Users/emekambazor/personal/more-chess/Claude.md)",
+        "File includes table of contents linking to all 9 sections",
+        "Project overview section includes: project name, description, inspiration source (Reddit /u/Zaaptastic), purpose, current development status",
+        "Overview references README.md for detailed patch notes",
+        "Section is well-formatted with clear markdown headers",
+        "Typecheck passes"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Add technology stack section",
+      "description": "As a developer, I need a comprehensive technology stack section so Claude understands all frameworks, languages, and tools used in the project.",
+      "acceptanceCriteria": [
+        "Section includes backend stack: Python 3.12, FastAPI 0.89.1, MongoDB 4.3.3, Uvicorn 0.20.0, Pytest 7.2.1",
+        "Section includes frontend stack: React 18.2.0, React Scripts 5.0.1, Create React App",
+        "Section includes deployment: Docker, Nginx, python-dotenv",
+        "Version numbers are accurate based on requirements.txt and package.json",
+        "Formatted as markdown table or bullet list",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Add codebase architecture section",
+      "description": "As a developer, I need a detailed codebase architecture section so Claude can navigate the directory structure and understand file organization.",
+      "acceptanceCriteria": [
+        "Section includes directory tree showing backend/, frontend/, tests/, mocks/",
+        "Each directory has description of purpose",
+        "Frontend organization documented: components/, context/, assets/, fonts/",
+        "Backend organization documented: api.py, moves.py, utils/, database.py",
+        "Test organization explained: unit/ vs integration/ tests",
+        "Entry points identified: backend/server.py, frontend/src/index.js",
+        "Uses code blocks for directory structure visualization",
+        "Typecheck passes"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Add game mechanics documentation",
+      "description": "As a developer, I need comprehensive game mechanics documentation so Claude understands the unique chess variant rules and can work on game logic correctly.",
+      "acceptanceCriteria": [
+        "Documents standard chess deviations clearly",
+        "Piece-specific mechanics documented: Pawns (conditional movement), Knights (no jump), Bishops (energize stacks), Rooks (scaling range), Queens (stun + turn reset), Kings (Divine Right + gold)",
+        "Neutral monsters documented: Dragon (5 stacks with effects), Board Herald (individual buffs), Baron Nashor (team buffs)",
+        "Special systems documented: file control, check/checkmate, stalemate, castling",
+        "Each mechanic includes brief description of implementation",
+        "Section is ~200-300 lines for comprehensive coverage",
+        "Typecheck passes"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-005",
+      "title": "Add core code modules section",
+      "description": "As a developer, I need detailed descriptions of key code modules so Claude knows where to find specific functionality and can make informed changes.",
+      "acceptanceCriteria": [
+        "Backend key files documented: src/moves.py (~2000 lines move generation), src/utils/game_update_pipeline.py (turn orchestration), src/utils/piece_mechanics.py, src/utils/monsters.py, src/utils/validation.py, src/utils/check_checkmate.py (~400 lines), src/utils/queen_mechanics.py",
+        "Each file includes: path, line count (if significant), primary responsibility",
+        "Frontend key components documented: Board.js, GameStateContext.js, piece components",
+        "File paths are absolute and accurate",
+        "Descriptions explain what each module does at high level",
+        "Typecheck passes"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-006",
+      "title": "Add development workflow section",
+      "description": "As a developer, I need clear development workflow documentation so Claude can run builds, tests, and understand the development process.",
+      "acceptanceCriteria": [
+        "Local setup instructions included",
+        "Frontend commands documented: npm start, port 3000",
+        "Backend commands documented: uvicorn server:app, port 8080",
+        "Test commands documented: pytest with examples",
+        "Environment variable configuration explained",
+        "Docker build process documented",
+        "API endpoint structure overview included",
+        "Commands use proper code formatting",
+        "Typecheck passes"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-007",
+      "title": "Add testing strategy section",
+      "description": "As a developer, I need testing strategy documentation so Claude understands test coverage, approach, and how to run tests.",
+      "acceptanceCriteria": [
+        "Unit test coverage documented: 6 test files covering piece-specific mechanics",
+        "Integration test approach documented: 12 test files covering full gameplay scenarios",
+        "Mock game states location documented: backend/mocks/",
+        "Current test focus documented: neutral monster buffs, dragon mechanics",
+        "Commands for running specific test suites included",
+        "Total test count mentioned (~200+ tests)",
+        "Typecheck passes"
+      ],
+      "priority": 7,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-008",
+      "title": "Add current development focus section",
+      "description": "As a developer, I need current development focus documentation so Claude understands active work and priorities.",
+      "acceptanceCriteria": [
+        "Active branch documented: backend/neutral_monster_buffs",
+        "Recent work documented: dragon buff mechanics, piece marked-for-death validation, stalemate detection fixes",
+        "Roadmap status included: Frontend 75%, Backend 80%, Production 30%",
+        "Specific recent commits or focus areas mentioned",
+        "Section includes context from recent git history",
+        "Typecheck passes"
+      ],
+      "priority": 8,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-009",
+      "title": "Add common patterns and conventions section",
+      "description": "As a developer, I need common patterns documentation so Claude can write code that follows project conventions.",
+      "acceptanceCriteria": [
+        "Game state structure documented with example",
+        "MongoDB document format explained",
+        "API request/response cycle pattern documented",
+        "Error handling and logging patterns explained",
+        "Frontend-backend communication patterns documented",
+        "Code examples included for key patterns",
+        "Section provides actionable guidance for new code",
+        "Typecheck passes"
+      ],
+      "priority": 9,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-010",
+      "title": "Add metadata and finalize Claude.md",
+      "description": "As a developer, I need final metadata and polish on Claude.md so it's complete and maintainable.",
+      "acceptanceCriteria": [
+        "Last updated timestamp added at top of file",
+        "Total file length is 500-800 lines for comprehensive coverage",
+        "All internal links in table of contents work correctly",
+        "Consistent markdown formatting throughout",
+        "Proper heading hierarchy (# for title, ## for main sections, ### for subsections)",
+        "File is readable and scannable with clear structure",
+        "Typecheck passes"
+      ],
+      "priority": 10,
+      "passes": true,
+      "notes": ""
+    }
+  ]
+}

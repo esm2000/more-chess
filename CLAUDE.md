@@ -165,7 +165,7 @@ more-chess/
 - Energize stacks: +5 per diagonal square moved, +10 per capture; max 100
 - At 100 stacks: can capture by landing on any diagonally adjacent square
 - Vulnerable: can be captured by landing on any of the 8 adjacent squares
-- Marked-for-death: 3 stacks of being threatened by a bishop = instant kill
+- Bishop debuff (`bishop_debuff`): piece threatened by a bishop at turn end gains 1 stack; at 3 stacks the bishop can instantly capture it regardless of position
 
 #### Rooks
 - Starting range: 3 squares; formula: `range = 3 + floor((turn_count - 10) / 5)` for turns > 10
@@ -190,7 +190,7 @@ Universal mechanics: moving adjacent/onto a monster deals 1 damage; pieces stayi
   2. All pieces deal 2 damage to monsters
   3. Ignore collision with ally pawns
   4. Ignore collision with all allies
-  5. (Elder Dragon, 3 turns) Capture by adjacency; opponent chooses which piece dies
+  5. (Elder Dragon, 3 turns) Marked-for-death: pieces can be captured by occupying an adjacent square; opponent chooses which threatened piece dies
 
 #### Board Herald
 - Spawns turns 10 and 20 on a5; individual buff to capturing piece (permanent until captured)

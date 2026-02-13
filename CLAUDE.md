@@ -50,8 +50,8 @@ Last Updated: 2026-02-13
 
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| React | 18.2.0 | UI framework |
-| React DOM | 18.2.0 | React rendering |
+| React | ^18.2.0 | UI framework |
+| React DOM | ^18.2.0 | React rendering |
 | React Scripts | 5.0.1 | Build tooling (CRA) |
 | Testing Library | ^13.4.0 | Component testing |
 

@@ -284,187 +284,39 @@ Ports: `80` = frontend (Nginx), `8080` = backend (FastAPI). Requires `.env` at p
 
 ## Testing Strategy
 
-The project maintains comprehensive test coverage using Pytest 7.2.1 as the testing framework. The test suite is organized into unit tests for isolated piece mechanics and integration tests for full API workflows, with a total of **121 test functions** across 18 test files.
+121 test functions across 18 files. Unit tests use `mocks/empty_game.py` (isolated, no DB); integration tests use `mocks/starting_game.py` + FastAPI test client. `test_utils.py` provides `select_and_move_white/black_piece()` helpers.
 
-### Test Organization
+### Test Coverage
 
-**Directory Structure:**
-```
-backend/tests/
-├── unit/                    # Unit tests for move generation logic
-│   ├── test_moves_pawn.py      # Pawn conditional movement and capture tests
-│   ├── test_moves_knight.py    # Knight unit collision tests
-│   ├── test_moves_bishop.py    # Bishop energize stacks and marked-for-death tests
-│   ├── test_moves_rook.py      # Rook scaling range tests
-│   ├── test_moves_queen.py     # Queen stun and turn reset tests
-│   └── test_moves_king.py      # King movement and Divine Right tests
-├── integration/             # Integration tests for full game flows
-│   ├── conftest.py            # Pytest fixtures (game setup, teardown)
-│   ├── test_database.py       # MongoDB CRUD operations
-│   ├── test_api_game_states.py       # Game creation and state retrieval
-│   ├── test_api_basic_gameplay.py    # Basic piece movement and capture
-│   ├── test_api_pawn_mechanics.py    # Pawn advantage mechanics
-│   ├── test_api_bishop_mechanics.py  # Bishop energize and vulnerability
-│   ├── test_api_queen_mechanics.py   # Queen stun and reset mechanics
-│   ├── test_api_castling.py          # Castling validation
-│   ├── test_api_check_and_checkmate.py # Check, checkmate, stalemate
-│   ├── test_api_neutral_monsters.py  # Monster spawning and buff application
-│   ├── test_api_piece_buying.py      # Gold economy and piece purchases
-│   └── test_api_special_items.py     # Special items (Sword in the Stone)
-└── test_utils.py            # Shared test utilities (move helpers, assertions)
-```
-
-### Unit Tests - Piece Mechanics
-
-**Purpose:** Test individual piece move generation in isolation without API overhead.
-
-**Approach:**
-- Uses `mocks/empty_game.py` for clean board state initialization
-- Tests move generation functions directly from `src/moves.py`
-- Focuses on edge cases and piece-specific mechanics
-- No database or API layer involved
-
-**Coverage (6 test files):**
-1. **test_moves_pawn.py** - Pawn movement, diagonal captures, conditional movement (+2/+3 advantage), immunity to enemy pawns
-2. **test_moves_knight.py** - L-shaped movement, unit collision (no jumping), path blocking
-3. **test_moves_bishop.py** - Diagonal movement, energize stack accumulation (5/square, 10/capture), marked-for-death debuff (3 stacks), vulnerability (adjacent captures), 100-stack range extension
-4. **test_moves_rook.py** - Straight-line movement, scaling range by turn count (3 base, +1 every 5 turns after turn 10)
-5. **test_moves_queen.py** - Omnidirectional movement, stun ability (adjacent enemies after non-capture moves), turn reset on kill/assist
-6. **test_moves_king.py** - Single-square movement, castle detection, Divine Right buff pickup, gold economy
-
-**Example Test Pattern:**
-```python
-import copy
-import src.moves as moves
-from mocks.empty_game import empty_game
-
-def test_pawn_movement():
-    curr_game_state = copy.deepcopy(empty_game)
-    curr_game_state["board_state"][3][3] = [{"type": "white_pawn"}]
-
-    prev_game_state = copy.deepcopy(curr_game_state)
-    result = moves.get_moves(curr_game_state, prev_game_state, 3, 3)
-
-    assert [4, 3] in result["possible_moves"]
-```
-
-### Integration Tests - Full API Flows
-
-**Purpose:** Validate end-to-end gameplay scenarios through the API layer.
-
-**Approach:**
-- Uses `mocks/starting_game.py` for standard chess starting position
-- Tests API endpoints from `src/api.py` via FastAPI test client
-- Validates game state updates, database persistence, and multi-turn interactions
-- Uses helper functions from `test_utils.py` for common operations
-
-**Coverage (12 test files):**
-1. **test_database.py** - MongoDB connection, game creation, state retrieval, update operations
-2. **test_api_game_states.py** - Game initialization, state persistence, turn progression
-3. **test_api_basic_gameplay.py** - Standard piece movement, captures, turn order
-4. **test_api_pawn_mechanics.py** - Average piece value calculation, +2 advantage (forward capture), +3 advantage (immunity)
-5. **test_api_bishop_mechanics.py** - Energize stack accumulation across turns, marked-for-death progression (1→2→3 stacks), adjacent vulnerability, 100-stack instant capture
-6. **test_api_queen_mechanics.py** - Stun application (adjacent enemies), turn reset on kill (safety check), turn reset on assist
-7. **test_api_castling.py** - Kingside castle, queenside castle, castle prevention (check, path blocked, pieces moved)
-8. **test_api_check_and_checkmate.py** - Check detection, checkmate validation, stalemate detection, Divine Right interaction
-9. **test_api_neutral_monsters.py** - Dragon spawn (every 10 turns on h4), Board Herald spawn (turns 10, 20 on a5), Baron Nashor spawn (every 15 turns after turn 20), health tracking, damage mechanics, buff application (dragon stacks 1-5, herald individual buff, baron team buff)
-10. **test_api_piece_buying.py** - Gold accumulation (King +1 per ally kill), piece purchase validation (cost, spawning), shop mechanics (King on starting square)
-11. **test_api_special_items.py** - Sword in the Stone spawn (every 10 turns), Divine Right pickup (King only), buff consumption (prevents 1 check/checkmate)
-12. **conftest.py** - Pytest fixtures for game setup, teardown, and common test data
-
-**Example Integration Test Pattern:**
-```python
-import copy
-from fastapi import Response
-import pytest
-from mocks.starting_game import starting_game
-import src.api as api
-from tests.test_utils import select_and_move_white_piece
-
-def test_spawn_monsters(game):
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["turn_count"] = 9
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
-
-    game = select_and_move_white_piece(game=game, from_row=6, from_col=0, to_row=5, to_col=0)
-
-    assert game["board_state"][4][7][0]["type"] == "neutral_dragon"
-    assert game["board_state"][3][0][0]["type"] == "neutral_board_herald"
-```
-
-### Mock Game States
-
-**Location:** `backend/mocks/`
-
-**Purpose:** Provide consistent, predefined game states for reproducible testing.
-
-**Available Mocks:**
-1. **empty_game.py** - Clean 8x8 board with no pieces, default game state values. Used for unit tests to isolate piece mechanics.
-2. **starting_game.py** - Standard chess starting position with League of Chess modifications (black pawn on d6). Used for integration tests to simulate real gameplay.
-
-**Mock Structure:** Each mock exports a Python dictionary matching the `GameState` Pydantic model schema:
-- `board_state` - 8x8 array (empty arrays or piece objects)
-- `turn_count` - Turn number (0 for starting games)
-- `gold_count`, `captured_pieces`, `check`, `defeat` flags - All initialized
-- Neutral monster states, buff tracking, castle log - All default values
-
-### Test Utilities
-
-**Location:** `backend/tests/test_utils.py`
-
-**Purpose:** Shared helper functions to reduce test boilerplate and improve readability.
-
-**Key Utilities:**
-- `select_white_piece()`, `select_black_piece()` - Piece selection API calls
-- `move_white_piece()`, `move_black_piece()` - Piece movement API calls
-- `select_and_move_white_piece()`, `select_and_move_black_piece()` - Combined select + move operations
-- Custom assertions for game state validation
-
-**Example Usage:**
-```python
-from tests.test_utils import select_and_move_white_piece
-
-game = select_and_move_white_piece(
-    game=game,
-    from_row=6, from_col=4,  # e2
-    to_row=4, to_col=4       # e4
-)
-```
-
-### Current Test Focus
-
-The test suite currently emphasizes:
-
-**Well-Covered Areas:**
-- ✅ Piece move generation (all 6 piece types with special mechanics)
-- ✅ Neutral monster mechanics (Dragon, Board Herald, Baron Nashor)
-- ✅ Buff systems (energize stacks, marked-for-death, dragon stacks, baron/herald buffs)
-- ✅ Check, checkmate, and stalemate detection
-- ✅ Castling validation (kingside, queenside, prevention cases)
-- ✅ Gold economy and piece buying
-- ✅ Queen stun and turn reset mechanics
-- ✅ Pawn advantage mechanics (+2/+3 value differences)
-
-**Active Development (Recent Focus):**
-- Dragon buff implementation and validation (5 stacking buffs)
-- Marked-for-death mechanics (bishop 3-stack system, 5-dragon-stack team system)
-- Baron Nashor buff application (team-wide pawn enhancements)
-- Stalemate detection edge cases
-
-**Areas for Expansion:**
-- Frontend component testing (currently minimal React Testing Library usage)
-- End-to-end browser testing (no Selenium/Playwright tests yet)
-- Performance testing (no load tests for concurrent games)
-- Visual regression testing (no screenshot comparison)
+| Test File | What It Covers |
+|-----------|---------------|
+| `unit/test_moves_pawn.py` | Pawn movement, +2/+3 advantage mechanics, immunity |
+| `unit/test_moves_knight.py` | L-shape movement, unit collision (no jumping) |
+| `unit/test_moves_bishop.py` | Energize stacks, marked-for-death, vulnerability |
+| `unit/test_moves_rook.py` | Scaling range by turn count |
+| `unit/test_moves_queen.py` | Stun ability, turn reset on kill/assist |
+| `unit/test_moves_king.py` | Movement, castle detection, Divine Right, gold |
+| `integration/test_database.py` | MongoDB CRUD operations |
+| `integration/test_api_game_states.py` | Game creation, state persistence |
+| `integration/test_api_basic_gameplay.py` | Standard movement, captures, turn order |
+| `integration/test_api_pawn_mechanics.py` | Pawn advantage (+2/+3) via API |
+| `integration/test_api_bishop_mechanics.py` | Energize stacks, marked-for-death, adjacency |
+| `integration/test_api_queen_mechanics.py` | Stun and turn reset via API |
+| `integration/test_api_castling.py` | Kingside/queenside castle, prevention cases |
+| `integration/test_api_check_and_checkmate.py` | Check, checkmate, stalemate, Divine Right |
+| `integration/test_api_neutral_monsters.py` | Dragon/Herald/Baron spawn, damage, buffs |
+| `integration/test_api_piece_buying.py` | Gold economy, purchase validation |
+| `integration/test_api_special_items.py` | Sword in the Stone, Divine Right buff |
+| `integration/conftest.py` | Pytest fixtures for game setup/teardown |
 
 ### Running Tests
 
-See [Development Workflow - Testing](#testing) section for detailed commands on running tests, including:
-- Running all tests: `pytest`
-- Running specific suites: `pytest backend/tests/unit/` or `pytest backend/tests/integration/`
-- Running specific files or functions
-- Test output options (`-v`, `-s`, `-x`, `-k`)
+```bash
+pytest                              # all tests
+pytest backend/tests/unit/          # unit only
+pytest backend/tests/integration/   # integration only
+pytest -v -s -x -k "dragon"        # verbose, print, stop-on-fail, filter
+```
 
 ### Test Quality Metrics
 

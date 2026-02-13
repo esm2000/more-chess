@@ -118,228 +118,65 @@ more-chess/
 
 ## Game Mechanics
 
-League of Chess reimagines traditional chess with MOBA-inspired mechanics. This section documents the unique rules and gameplay deviations from standard chess.
+> Full rules and examples are in README.md. This section summarizes mechanics for quick developer reference.
 
 ### Core Differences from Standard Chess
 
-**Starting Position:** Black players start with a pawn on d6 instead of d7 (to balance white's first-move advantage).
-
-**File Control Limitation:** Pieces moving down a file cannot move past the center (c3-c6-f6-f3 square) unless they are already in the center. This prevents early file monopolization.
-
-**Multi-Piece Squares:** Multiple pieces can occupy the same square when neutral monsters are present (piece + monster on same square).
-
-**Win Conditions:** Standard checkmate, stalemate rules apply, with additions:
+- Black starts with pawn on d6 (not d7) to balance white's first-move advantage
+- Pieces cannot move past center file boundary (c3-c6-f6-f3) unless already in center
+- Multiple pieces can occupy same square when a neutral monster is present
+- If a neutral monster spawns on a King's square, that side loses immediately
 - King can have Divine Right buff (prevents 1 check/checkmate instance)
-- If a neutral monster spawns on a King's square, that King's side loses immediately
 
 ### Piece-Specific Mechanics
 
-#### Pawns - Conditional Movement & Capture
+#### Pawns
+- Average piece value compared per team (excl. pawns): Knight/Bishop=3, Rook=5, Queen=9
+- +2 avg point advantage: pawns can capture enemy pawns directly in front (not just diagonal)
+- +3 avg point advantage: your pawns are immune to capture by enemy pawns
 
-Pawns gain dynamic abilities based on team advantage:
+#### Knights
+- Cannot jump over pieces; need clear L-shaped path to destination
 
-**Average Piece Value Calculation:** Compares the average value of all pieces (excluding pawns) between teams. Standard values: Pawn=1, Knight=3, Bishop=3, Rook=5, Queen=9.
+#### Bishops
+- Energize stacks: +5 per diagonal square moved, +10 per capture; max 100
+- At 100 stacks: can capture by landing on any diagonally adjacent square
+- Vulnerable: can be captured by landing on any of the 8 adjacent squares
+- Marked-for-death: 3 stacks of being threatened by a bishop = instant kill
 
-**Advantage Mechanics:**
-- **+2 Point Advantage:** Your pawns can capture enemy pawns directly in front of them (not just diagonally)
-- **+3 Point Advantage:** Your pawns become immune to capture by enemy pawns
+#### Rooks
+- Starting range: 3 squares; formula: `range = 3 + floor((turn_count - 10) / 5)` for turns > 10
 
-**Implementation:** Calculated in `src/moves.py` via `get_moves_for_pawn()`, which checks piece value differences before generating legal moves. Tests in `tests/unit/test_moves_pawn.py` and `tests/integration/test_api_pawn_mechanics.py`.
+#### Queens
+- Non-capture move: all adjacent enemy pieces are stunned for 1 turn
+- On kill (when safe): queen gets another move immediately
+- On assist (ally takes kill queen set up): queen gets another move
 
-#### Knights - Unit Collision
-
-Knights lose their traditional "jump" ability:
-
-**Standard Chess Deviation:** Knights cannot jump over other pieces. They must have a clear L-shaped path to their destination.
-
-**Implementation:** `src/moves.py` function `get_moves_for_knight()` checks all squares along the L-shaped path for blocking pieces. Tests in `tests/unit/test_moves_knight.py`.
-
-#### Bishops - Energize Stacks & Marked-for-Death
-
-Bishops excel at range but are vulnerable up close:
-
-**Energize Stacks (Range Buff):**
-- Bishops gain energize stacks from movement and captures:
-  - +5 stacks per diagonal square moved
-  - +10 stacks for capturing a piece
-- At 100 stacks: Next capture can occur by landing on any square diagonally adjacent to target (not just the target's square)
-- Stacks persist across turns and max out at 100
-
-**Vulnerability (Proximity Weakness):**
-- Bishops can be captured by landing on any adjacent square (all 8 directions), not just diagonal squares
-
-**Marked-for-Death Debuff:**
-- If a Bishop threatens to capture a piece at turn end, that piece gains 1 stack of "marked_for_death"
-- At 3 stacks: Bishop can immediately capture the piece (instant kill)
-- Stacks persist until piece moves or Bishop loses line of sight
-
-**Implementation:** Core logic in `src/utils/piece_mechanics.py` via `apply_bishop_energize_stacks_and_bishop_debuffs()`. Move generation in `src/moves.py` function `get_moves_for_bishop()`. Tests in `tests/unit/test_moves_bishop.py` and `tests/integration/test_api_bishop_mechanics.py`.
-
-#### Rooks - Scaling Range
-
-Rooks start weak but scale into late game:
-
-**Dynamic Range:**
-- Starting range: 3 squares (rows 0-10)
-- +1 range every 5 turns after turn 10
-- Formula: `range = 3 + floor((turn_count - 10) / 5)` for turns > 10
-
-**Example Scaling:**
-- Turns 0-10: 3 square range
-- Turns 11-15: 4 square range
-- Turns 16-20: 5 square range
-- Turns 21-25: 6 square range
-- Continues indefinitely
-
-**Implementation:** `src/moves.py` function `get_moves_for_rook()` calculates range based on `game_state["turn_count"]`. Tests in `tests/unit/test_moves_rook.py`.
-
-#### Queens - Stun & Turn Reset
-
-Queens offer dynamic, high-risk gameplay:
-
-**Stun Ability:**
-- If Queen moves without capturing, all enemy pieces adjacent to her final position are stunned for 1 turn
-- Stunned pieces skip their next move opportunity
-- Stun status tracked in piece object as `{"stunned_until": turn_number}`
-
-**Turn Reset Mechanic (Reset on Kill/Assist):**
-- **On Kill:** If Queen captures a piece AND is not in danger of being captured afterward, she can move/capture again immediately
-- **On Assist:** If Queen can capture a piece but allows another ally to capture it instead, she can move again (assist credit)
-- **Safety Check:** Reset only occurs if Queen is not under threat after the capture
-
-**Implementation:** Core logic in `src/utils/queen_mechanics.py` via `apply_queen_turn_reset()` and `apply_queen_stun()`. Move generation in `src/moves.py` function `get_moves_for_queen()`. Stun mechanics in `src/utils/stun_mechanics.py`. Tests in `tests/unit/test_moves_queen.py` and `tests/integration/test_api_queen_mechanics.py`.
-
-#### Kings - Divine Right & Gold Economy
-
-Kings gain strategic minigame mechanics:
-
-**Divine Right Buff (Sword in the Stone):**
-- Every 10 turns, a "Sword in the Stone" spawns on a random board square
-- King can pick it up by moving to that square
-- Grants "Divine Right" buff: prevents 1 instance of check or checkmate
-- Buff is consumed when it blocks a check/checkmate attempt
-- Only Kings can pick up swords
-
-**Gold Economy & Piece Buying:**
-- King earns +1 gold for every enemy piece captured by allies (not by King himself)
-- King can spend gold at his starting square (base) to buy pieces:
-  - Exchange rate: 2 gold per 1 point value of piece
-  - Pawns (1 point) = 2 gold
-  - Knights/Bishops (3 points) = 6 gold
-  - Rooks (5 points) = 10 gold
-  - Queens cannot be purchased
-- Bought pieces spawn on King's current square
-
-**Implementation:** Divine Right in `src/utils/piece_mechanics.py` function `apply_divine_right_to_kings()`. Gold economy in `src/utils/game_scoring.py`. Piece buying API endpoint and validation in `src/api.py` and `src/utils/validation.py`. Tests in `tests/unit/test_moves_king.py` and `tests/integration/test_api_piece_buying.py`.
+#### Kings
+- Every 10 turns: Sword in the Stone spawns; King picks it up for Divine Right buff (prevents 1 check/checkmate)
+- King earns +1 gold per enemy piece captured by allies
+- King can buy pieces at starting square: Pawn=2g, Knight/Bishop=6g, Rook=10g (no Queens)
 
 ### Neutral Monsters
 
-Neutral objectives that both players can capture for powerful buffs. They spawn at specific turn intervals and must be "damaged" to defeat.
+Universal mechanics: moving adjacent/onto a monster deals 1 damage; pieces staying adjacent >1 turn are destroyed; respawns if no damage for 3 turns.
 
-#### Monster Mechanics (Universal)
+#### Dragon
+- Spawns every 10 turns on h4; permanent stacking buffs:
+  1. Pawns +1 movement range
+  2. All pieces deal 2 damage to monsters
+  3. Ignore collision with ally pawns
+  4. Ignore collision with all allies
+  5. (Elder Dragon, 3 turns) Capture by adjacency; opponent chooses which piece dies
 
-**Health System:**
-- Monsters have health points (HP)
-- Moving adjacent to or onto a monster deals 1 damage
-- Pieces that stay adjacent/on a monster for more than 1 turn are immediately destroyed
-- Monster respawns to full HP if it goes 3 turns without taking damage
+#### Board Herald
+- Spawns turns 10 and 20 on a5; individual buff to capturing piece (permanent until captured)
+- Adjacent ally pawns can capture 1 square directly forward
 
-**Capture:**
-- Player who reduces monster HP to 0 receives the buff
-- Multiple pieces can cooperate to damage a monster
-- Pieces can occupy same square as monster (unique to neutral objectives)
-
-**Implementation:** Core monster logic in `src/utils/monsters.py` including `spawn_neutral_monsters()`, `damage_neutral_monsters()`, `apply_neutral_monster_buffs()`. Tests in `tests/integration/test_api_neutral_monsters.py`.
-
-#### Dragon (5 HP)
-
-**Spawn:** Every 10 turns on h4 square (starting turn 10)
-
-**Stacking Buff System:** Grants permanent stacking buffs (persists across captures):
-
-1. **1 Dragon Stack:** Pawns gain +1 movement range
-2. **2 Dragon Stacks:** All pieces deal +1 bonus damage to neutral monsters (2 damage per attack)
-3. **3 Dragon Stacks:** Pieces ignore unit collision with ally pawns
-4. **4 Dragon Stacks:** Pieces ignore unit collision with all ally units
-5. **5 Dragon Stacks (Elder Dragon):** Pieces can capture enemy units by occupying an adjacent square (not just landing on target square). Only 1 piece can be captured per turn; opponent chooses which piece dies if multiple are threatened. **Lasts 3 turns only.**
-
-**Implementation:** Dragon spawn in `src/utils/monsters.py`. Stack tracking in game state under `dragon_stacks_white` and `dragon_stacks_black`. 5-stack "marked_for_death" system in `src/utils/piece_mechanics.py` function `apply_marked_for_death_from_five_dragon_stacks()`.
-
-#### Board Herald (5 HP)
-
-**Spawn:** Turns 10 and 20 only, on a5 square
-
-**Individual Buff:** Granted only to the piece that captured it (not team-wide).
-
-**Buff Effect:** Ally pawns adjacent to the buffed piece can capture enemy pawns and pieces 1 square directly in front of them (in addition to normal diagonal captures).
-
-**Duration:** Permanent until the buffed piece is captured
-
-**Implementation:** Buff tracking stored in piece object as `{"board_herald_buff": true}`. Logic in `src/utils/monsters.py` via `apply_neutral_monster_buffs()`.
-
-#### Baron Nashor (10 HP)
-
-**Spawn:** Every 15 turns after turn 20 (turns 35, 50, 65, ...), on a5 square
-
-**Team-Wide Buff:** Granted to all ally pawns.
-
-**Buff Effects:**
-- All ally pawns can capture enemy pawns and pieces 1 square directly in front of them
-- All ally pawns become immune to capture by enemy pawns
-- **Negates enemy pawn immunity:** If enemy has +3 average piece value advantage (making their pawns immune), Baron buff cancels this immunity for the buff duration
-
-**Duration:** 5 turns
-
-**Implementation:** Buff tracking in game state as `{"baron_buff_white": {"active": true, "expires_turn": X}}`. Logic in `src/utils/monsters.py` and affects pawn move generation in `src/moves.py`.
-
-### Special Systems
-
-#### Check, Checkmate, and Stalemate
-
-**Check:** King is under threat of capture on opponent's next turn.
-
-**Checkmate:** King is in check and has no legal moves to escape. Game ends.
-
-**Stalemate:** Player has no legal moves but King is not in check. Game ends in draw.
-
-**Divine Right Interaction:** If King has Divine Right buff, one instance of check/checkmate is prevented (buff consumed).
-
-**Implementation:** Core detection logic in `src/utils/check_checkmate.py` (~400 lines). Functions include `is_in_check()`, `is_checkmate()`, `is_stalemate()`, and `trim_king_moves()` which filters illegal King moves. Game ending conditions in `src/utils/game_ending.py`.
-
-#### Castling
-
-Castling follows modified traditional chess rules with League of Chess constraints:
-
-**Requirements:**
-- King and Rook must not have moved previously
-- No pieces between King and Rook
-- King not currently in check
-- King does not pass through or land on a square under attack
-- Respects file control rules (center boundary restrictions)
-
-**Types:**
-- **Kingside Castle:** King moves 2 squares toward h-file Rook
-- **Queenside Castle:** King moves 2 squares toward a-file Rook
-
-**Implementation:** Logic in `src/utils/castle_mechanics.py` with functions `can_castle_kingside()` and `can_castle_queenside()`. Tests in `tests/integration/test_api_castling.py`.
-
-#### Special Items (Shop System)
-
-**Shop Location:** King's starting square acts as shop.
-
-**Available Purchases:**
-- Pawns (2 gold)
-- Knights (6 gold)
-- Bishops (6 gold)
-- Rooks (10 gold)
-- Queens cannot be bought
-
-**Purchase Mechanics:**
-- King must be on starting square
-- Piece spawns on King's current square
-- Gold deducted from King's balance
-
-**Implementation:** API endpoint `/buy_piece` in `src/api.py`. Validation in `src/utils/validation.py`. Shop effects in `src/utils/special_items.py`. Tests in `tests/integration/test_api_piece_buying.py` and `test_api_special_items.py`.
+#### Baron Nashor
+- Spawns every 15 turns after turn 20 on a5; 5-turn team-wide pawn buff:
+  - Pawns can capture 1 square forward; pawns immune to enemy pawn capture
+  - Negates enemy +3 advantage pawn immunity
 
 ---
 

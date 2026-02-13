@@ -358,9 +358,9 @@ pytest -v -s -x -k "dragon"        # verbose, print, stop-on-fail, filter
 
 ## Current Development Focus
 
-### Active Development Branch
+### Active Development Area
 
-**Primary branch:** `backend/neutral_monster_buffs` — neutral monster buff implementation, marked-for-death mechanics validation, and stalemate detection fixes.
+Current focus: neutral monster buff implementation, marked-for-death mechanics validation, and stalemate detection edge cases. Check `git branch` for the current working branch.
 
 ### Recent Development Work
 

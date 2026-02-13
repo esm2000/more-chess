@@ -43,134 +43,76 @@ Last Updated: 2026-02-10
 
 ## Codebase Architecture
 
-The project follows a clear separation between frontend (React SPA) and backend (FastAPI server), with a well-organized test suite and mock data for development.
-
 ### Directory Structure
 
 ```
 more-chess/
-├── backend/                 # Python FastAPI server
-│   ├── src/                # Source code
-│   │   ├── api.py         # FastAPI route definitions
-│   │   ├── moves.py       # Core move generation logic (~1,900 lines)
-│   │   ├── database.py    # MongoDB connection and queries
-│   │   ├── log.py         # Logging configuration
-│   │   └── utils/         # Game logic utilities
-│   │       ├── __init__.py
-│   │       ├── board_analysis.py      # Board state analysis
-│   │       ├── castle_mechanics.py    # Castling logic
-│   │       ├── check_checkmate.py     # Check/checkmate detection (~400 lines)
-│   │       ├── game_ending.py         # Win/loss/stalemate conditions
-│   │       ├── game_scoring.py        # Gold and scoring mechanics
-│   │       ├── game_state.py          # Game state management
-│   │       ├── game_update_pipeline.py # Turn orchestration (~300 lines)
-│   │       ├── monsters.py            # Neutral monster mechanics
-│   │       ├── moves_and_positions.py # Move validation helpers
-│   │       ├── piece_mechanics.py     # Piece-specific rules (~600 lines)
-│   │       ├── queen_mechanics.py     # Queen stun mechanics
-│   │       ├── special_items.py       # Special item effects
-│   │       ├── stun_mechanics.py      # Stun/turn-skip logic
-│   │       └── validation.py          # Input validation (~500 lines)
-│   ├── tests/              # Test suite
-│   │   ├── unit/          # Unit tests for piece mechanics
-│   │   │   ├── test_moves_pawn.py
-│   │   │   ├── test_moves_knight.py
-│   │   │   ├── test_moves_bishop.py
-│   │   │   ├── test_moves_rook.py
-│   │   │   ├── test_moves_queen.py
-│   │   │   └── test_moves_king.py
-│   │   ├── integration/   # Integration tests for full game flows
-│   │   │   ├── conftest.py
-│   │   │   ├── test_database.py
-│   │   │   ├── test_api_game_states.py
-│   │   │   ├── test_api_pawn_mechanics.py
-│   │   │   ├── test_api_bishop_mechanics.py
-│   │   │   ├── test_api_queen_mechanics.py
-│   │   │   ├── test_api_castling.py
-│   │   │   ├── test_api_special_items.py
-│   │   │   ├── test_api_neutral_monsters.py
-│   │   │   └── test_api_piece_buying.py
-│   │   └── test_utils.py  # Shared test utilities
-│   ├── mocks/             # Mock game states for testing
-│   │   ├── starting_game.py
-│   │   └── empty_game.py
-│   ├── server.py          # FastAPI application entry point
-│   └── requirements.txt   # Python dependencies
-│
-├── frontend/              # React application
+├── backend/
 │   ├── src/
-│   │   ├── components/   # React components
-│   │   │   ├── Board.js             # Main game board
-│   │   │   ├── Piece.js             # Chess piece rendering (~500 lines)
-│   │   │   ├── PossibleMove.js      # Move highlight indicators
-│   │   │   ├── Background.js        # Game background
-│   │   │   ├── Title.js             # Game title
-│   │   │   ├── Shop.js              # Item shop UI
-│   │   │   ├── PieceShopModal.js    # Piece purchase modal
-│   │   │   ├── HUD.js               # Game HUD (gold, turn info)
-│   │   │   ├── CapturedPieces.js    # Captured piece display
-│   │   │   ├── Buff.js              # Buff/debuff indicators
-│   │   │   ├── Victory.js           # Victory screen
-│   │   │   ├── Defeat.js            # Defeat screen
-│   │   │   ├── Rules.js             # Rules modal container
-│   │   │   ├── GeneralRules.js      # General game rules
-│   │   │   ├── PawnRules.js         # Pawn-specific rules
-│   │   │   ├── KnightRules.js       # Knight-specific rules
-│   │   │   ├── BishopRules.js       # Bishop-specific rules
-│   │   │   ├── RookRules.js         # Rook-specific rules
-│   │   │   ├── QueenRules.js        # Queen-specific rules
-│   │   │   └── KingRules.js         # King-specific rules
-│   │   ├── context/      # React Context for state management
-│   │   │   └── GameStateContext.js  # Global game state
-│   │   ├── assets/       # Static assets
-│   │   │   ├── pieces/  # Chess piece images
-│   │   │   ├── rules/   # Rule diagram images
-│   │   │   └── statuses/ # Status effect icons
-│   │   ├── fonts/        # Custom fonts
-│   │   ├── index.js      # React app entry point
-│   │   └── utility.js    # Helper functions
-│   ├── public/           # Static public assets
-│   └── package.json      # Node dependencies
+│   │   ├── api.py               # FastAPI route definitions
+│   │   ├── moves.py             # Core move generation
+│   │   ├── database.py          # MongoDB connection
+│   │   ├── log.py               # Logging
+│   │   └── utils/               # Game logic utilities
+│   │       ├── board_analysis.py
+│   │       ├── castle_mechanics.py
+│   │       ├── check_checkmate.py
+│   │       ├── game_ending.py
+│   │       ├── game_scoring.py
+│   │       ├── game_state.py
+│   │       ├── game_update_pipeline.py
+│   │       ├── monsters.py
+│   │       ├── moves_and_positions.py
+│   │       ├── piece_mechanics.py
+│   │       ├── queen_mechanics.py
+│   │       ├── special_items.py
+│   │       ├── stun_mechanics.py
+│   │       └── validation.py
+│   ├── tests/
+│   │   ├── unit/                # Unit tests (piece move generation)
+│   │   ├── integration/         # Integration tests (full API flows)
+│   │   └── test_utils.py
+│   ├── mocks/                   # Test mock game states
+│   ├── server.py                # Entry point
+│   └── requirements.txt
 │
-├── Dockerfile            # Multi-stage Docker build
-├── nginx.conf           # Nginx configuration
-├── run.sh               # Local development script
-├── .env                 # Environment variables
-├── README.md            # Project documentation and roadmap
-└── CLAUDE.md            # This file
+├── frontend/
+│   ├── src/
+│   │   ├── components/          # React UI components
+│   │   ├── context/GameStateContext.js  # Global state + API sync
+│   │   ├── assets/              # Images (pieces, rules, statuses)
+│   │   ├── index.js             # Entry point
+│   │   └── utility.js           # Helper functions
+│   └── package.json
+│
+├── Dockerfile
+├── nginx.conf
+├── run.sh
+├── .env
+└── README.md
 ```
 
-### Directory Purpose Descriptions
+### Key Modules
 
-**Backend (`backend/`):**
-- **`server.py`**: Entry point that initializes the FastAPI application
-- **`src/api.py`**: Defines all REST API endpoints for game operations
-- **`src/moves.py`**: Core move generation engine - computes all legal moves for each piece type
-- **`src/database.py`**: MongoDB connection and CRUD operations for game state persistence
-- **`src/utils/`**: Modular game logic split by responsibility:
-  - **`game_update_pipeline.py`**: Orchestrates turn processing, move validation, and state updates
-  - **`check_checkmate.py`**: Detects check, checkmate, and stalemate conditions
-  - **`piece_mechanics.py`**: Implements piece-specific rules (energize, scaling, Divine Right, etc.)
-  - **`monsters.py`**: Neutral monster spawning, capture, and buff application
-  - **`queen_mechanics.py`**: Queen stun ability and turn reset logic
-  - **`validation.py`**: Input validation for API requests
-
-**Frontend (`frontend/src/`):**
-- **`index.js`**: React application entry point, mounts the app to the DOM
-- **`components/Board.js`**: Main game board component, handles piece interactions
-- **`components/Piece.js`**: Renders individual chess pieces with drag-and-drop
-- **`context/GameStateContext.js`**: Provides global game state via React Context API
-- **`assets/`**: All image assets organized by type (pieces, rules, status effects)
-- **`fonts/`**: Custom font files for game UI
-
-**Tests (`backend/tests/`):**
-- **`unit/`**: Unit tests focused on individual piece move generation in isolation
-- **`integration/`**: End-to-end API tests that validate full game flows
-- **`mocks/`**: Predefined game states for consistent test scenarios
-
-**Entry Points:**
-- **Backend**: `backend/server.py` - Run with `uvicorn server:app --reload` from backend directory
-- **Frontend**: `frontend/src/index.js` - Run with `npm start` from frontend directory
+| Path | Purpose |
+|------|---------|
+| `backend/server.py` | FastAPI entry point |
+| `backend/src/api.py` | REST API route definitions |
+| `backend/src/moves.py` | Core move generation engine for all piece types |
+| `backend/src/database.py` | MongoDB connection and CRUD operations |
+| `backend/src/utils/game_update_pipeline.py` | Turn orchestration pipeline |
+| `backend/src/utils/check_checkmate.py` | Check/checkmate/stalemate detection |
+| `backend/src/utils/piece_mechanics.py` | Piece-specific rules (energize, Divine Right, etc.) |
+| `backend/src/utils/monsters.py` | Neutral monster spawning, damage, buff application |
+| `backend/src/utils/queen_mechanics.py` | Queen stun and turn reset logic |
+| `backend/src/utils/validation.py` | API input validation |
+| `frontend/src/index.js` | React entry point |
+| `frontend/src/components/Board.js` | Main game board, piece interactions |
+| `frontend/src/components/Piece.js` | Piece rendering, drag-and-drop, status effects |
+| `frontend/src/context/GameStateContext.js` | Global state via React Context; handles API sync |
+| `backend/tests/unit/` | Unit tests for move generation (isolated) |
+| `backend/tests/integration/` | End-to-end API flow tests |
+| `backend/mocks/` | Predefined game states for tests |
 
 ---
 

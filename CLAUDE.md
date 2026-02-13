@@ -182,7 +182,7 @@ more-chess/
 
 ### Neutral Monsters
 
-Universal mechanics: moving adjacent/onto a monster deals 1 damage; pieces staying adjacent >1 turn are destroyed; respawns if no damage for 3 turns.
+Universal mechanics: moving adjacent/onto a monster deals 1 damage; pieces staying adjacent >1 turn are destroyed; regenerates to full HP if no damage taken for 3 turns.
 
 #### Dragon
 - Spawns every 10 turns on h4; permanent stacking buffs:

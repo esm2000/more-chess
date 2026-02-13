@@ -1,6 +1,6 @@
 # League of Chess - Developer Documentation
 
-Last Updated: 2026-02-10
+Last Updated: 2026-02-12
 
 ## Table of Contents
 
@@ -33,11 +33,32 @@ Last Updated: 2026-02-10
 
 ## Technology Stack
 
-**Backend:** Python 3.12, FastAPI 0.89.1, MongoDB/PyMongo 4.3.3, Uvicorn 0.20.0, Pytest 7.2.1, python-dotenv 0.21.1
+### Backend
 
-**Frontend:** React 18.2.0, React DOM 18.2.0, React Scripts 5.0.1, Testing Library ^13.4.0
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Python | 3.12 | Primary backend language |
+| FastAPI | 0.89.1 | Web framework for REST API |
+| MongoDB | 4.3.3 | NoSQL database (via PyMongo) |
+| Uvicorn | 0.20.0 | ASGI server |
+| Pytest | 7.2.1 | Testing framework |
+| python-dotenv | 0.21.1 | Environment variable management |
 
-**Deployment:** Docker (multi-stage: node:current-alpine → nginx:alpine + Python venv), Nginx
+### Frontend
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| React | 18.2.0 | UI framework |
+| React DOM | 18.2.0 | React rendering |
+| React Scripts | 5.0.1 | Build tooling (CRA) |
+| Testing Library | ^13.4.0 | Component testing |
+
+### Deployment
+
+| Technology | Purpose |
+|------------|---------|
+| Docker | Multi-stage build (node:current-alpine → nginx:alpine + Python venv) |
+| Nginx | Static file server for frontend |
 
 ---
 
@@ -240,13 +261,13 @@ cd frontend && npm install
 
 ### Running Locally
 
-**Backend** (port 8080):
+**Backend** (port 8080, CORS accepts localhost:3000/8080 and 0.0.0.0 variants):
 ```bash
 cd backend
 python server.py
 ```
 
-**Frontend** (port 3000):
+**Frontend** (port 3000, connects to backend at localhost:8080/api):
 ```bash
 cd frontend
 npm start
@@ -259,7 +280,9 @@ npm start
 - `POST /api/game/{id}` - Update game state (submit move)
 - `POST /api/buy_piece` - Purchase piece with gold
 - `GET /api/moves` - Get legal moves for a piece
-- `GET /` - Health check
+- `GET /` - Health check (returns "OK")
+
+Request/response: JSON with `snake_case` keys (backend) ↔ `camelCase` (frontend, converted by `GameStateContext.js`).
 
 ### Testing
 
@@ -279,6 +302,8 @@ docker run -p 80:80 -p 8080:8080 league-of-chess
 ```
 
 Ports: `80` = frontend (Nginx), `8080` = backend (FastAPI). Requires `.env` at project root.
+
+`run.sh` entrypoint: starts Nginx, then Python backend. Build arg `LOCAL=true` (default) for dev, `LOCAL=false` for prod.
 
 ---
 
@@ -333,7 +358,7 @@ pytest -v -s -x -k "dragon"        # verbose, print, stop-on-fail, filter
 
 ### Active Development Branch
 
-**Primary branch:** `backend/neutral_monster_buffs` — neutral monster buffs, marked-for-death mechanics, stalemate fixes.
+**Primary branch:** `backend/neutral_monster_buffs` — neutral monster buff implementation, marked-for-death mechanics validation, and stalemate detection fixes.
 
 ### Recent Development Work
 

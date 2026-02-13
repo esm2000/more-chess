@@ -220,21 +220,11 @@ Universal mechanics: moving adjacent/onto a monster deals 1 damage; pieces stayi
 
 ## Development Workflow
 
-This section covers local setup, running the application, testing, and deployment processes.
+### Setup
 
-### Local Setup
+**Prerequisites:** Python 3.12, Node.js (current), MongoDB, Docker (optional)
 
-#### Prerequisites
-
-- **Python 3.12** - Backend runtime
-- **Node.js** (current) - Frontend build tooling
-- **MongoDB** - Database (remote or local instance)
-- **Docker** (optional) - For containerized deployment
-
-#### Environment Configuration
-
-The project uses environment variables managed via `.env` file in the project root:
-
+**.env file (project root):**
 ```bash
 PYTHONPATH=backend
 DB_HOST=your-mongodb-host
@@ -242,252 +232,53 @@ DB_USERNAME=your-db-username
 DB_PASSWORD=your-db-password
 ```
 
-**Environment Variables:**
-- `PYTHONPATH=backend` - Required for Python module imports
-- `DB_HOST` - MongoDB connection host (format: `cluster.xxxxx.mongodb.net`)
-- `DB_USERNAME` - MongoDB authentication username
-- `DB_PASSWORD` - MongoDB authentication password
-
-**Note:** Database setup documentation is in progress. Current configuration uses MongoDB Atlas cloud instance.
-
-#### Installing Dependencies
-
-**Backend:**
+**Install dependencies:**
 ```bash
-cd backend
-pip install -r requirements.txt
+cd backend && pip install -r requirements.txt
+cd frontend && npm install
 ```
 
-Dependencies include: FastAPI 0.89.1, PyMongo 4.3.3, Uvicorn 0.20.0, Pytest 7.2.1, python-dotenv 0.21.1
+### Running Locally
 
-**Frontend:**
-```bash
-cd frontend
-npm install
-```
-
-Dependencies include: React 18.2.0, React DOM 18.2.0, React Scripts 5.0.1
-
-### Running the Application Locally
-
-#### Backend Server
-
-From the `backend/` directory:
-
+**Backend** (port 8080):
 ```bash
 cd backend
 python server.py
 ```
 
-Or using uvicorn directly:
-
-```bash
-cd backend
-uvicorn server:app --host 0.0.0.0 --port 8080 --reload
-```
-
-**Backend Details:**
-- **Port:** 8080
-- **Host:** 0.0.0.0 (accepts connections from any IP)
-- **Reload:** Enabled by default (hot-reload on file changes)
-- **Entry Point:** `backend/server.py` (calls `uvicorn.run()`)
-- **API Base Path:** `/api`
-
-**CORS Configuration:** Backend accepts requests from `localhost:3000`, `localhost:80`, `localhost:8080`, and `0.0.0.0` variants.
-
-#### Frontend Development Server
-
-From the `frontend/` directory:
-
+**Frontend** (port 3000):
 ```bash
 cd frontend
 npm start
 ```
 
-**Frontend Details:**
-- **Port:** 3000 (default for Create React App)
-- **Hot Reload:** Enabled by default
-- **Build Tool:** React Scripts 5.0.1
-- **API Communication:** Connects to backend at `localhost:8080/api`
+### API Endpoints
 
-**Access:** Open browser to `http://localhost:3000`
-
-### API Endpoint Structure
-
-The backend exposes RESTful API endpoints under the `/api` prefix:
-
-**Core Endpoints:**
-- `POST /api/game` - Create new game (returns game ID)
-- `GET /api/game/{id}` - Retrieve game state by ID
+- `POST /api/game` - Create new game
+- `GET /api/game/{id}` - Retrieve game state
 - `POST /api/game/{id}` - Update game state (submit move)
 - `POST /api/buy_piece` - Purchase piece with gold
-- `GET /api/moves` - Get legal moves for specific piece
-- `GET /` - Health check endpoint (returns "OK")
-
-**Request/Response Format:** JSON with snake_case keys on backend, camelCase on frontend (conversion handled by `GameStateContext.js`)
-
-**Game State Schema:** Defined in `src/api.py` via Pydantic `GameState` model. Key fields include:
-- `turn_count` - Current turn number
-- `board_state` - 8x8 array of piece objects
-- `position_in_play` - Currently selected piece position
-- `possible_moves`, `possible_captures` - Legal move arrays
-- `captured_pieces` - Graveyard of captured pieces
-- `gold_count` - Player gold balances
-- `check` - Check status for both players
-- `black_defeat`, `white_defeat` - Game ending flags
-- Neutral monster states, buff tracking, castle log, etc.
+- `GET /api/moves` - Get legal moves for a piece
+- `GET /` - Health check
 
 ### Testing
 
-The project uses Pytest for backend testing with comprehensive unit and integration test coverage.
-
-#### Running All Tests
-
-From the project root:
-
 ```bash
-pytest
+pytest                                          # all tests
+pytest backend/tests/unit/                     # unit tests only
+pytest backend/tests/integration/              # integration tests only
+pytest -v -s -x -k "dragon"                    # verbose, print, stop-on-fail, filter
+python3 -m compileall backend/src/ -q          # typecheck
 ```
-
-Or from backend directory:
-
-```bash
-cd backend
-pytest
-```
-
-**Test Discovery:** Pytest automatically discovers all `test_*.py` files in `backend/tests/` directory.
-
-#### Running Specific Test Suites
-
-**Unit Tests (piece mechanics):**
-```bash
-pytest backend/tests/unit/
-```
-
-**Integration Tests (API flows):**
-```bash
-pytest backend/tests/integration/
-```
-
-**Specific Test File:**
-```bash
-pytest backend/tests/unit/test_moves_pawn.py
-```
-
-**Specific Test Function:**
-```bash
-pytest backend/tests/integration/test_api_neutral_monsters.py::test_dragon_spawn
-```
-
-#### Test Output Options
-
-**Verbose output:**
-```bash
-pytest -v
-```
-
-**Show print statements:**
-```bash
-pytest -s
-```
-
-**Stop on first failure:**
-```bash
-pytest -x
-```
-
-**Run tests matching pattern:**
-```bash
-pytest -k "dragon"
-```
-
-### Code Quality Checks
-
-#### Python Typecheck
-
-The project uses Python's built-in compilation check to validate syntax:
-
-```bash
-python3 -m compileall backend/src/ -q
-```
-
-**Options:**
-- `-q` (quiet) - Only show errors, suppress successful compilation messages
-- Target `backend/src/` directory to check all source files
-
-**Note:** This validates Python 3 syntax (f-strings, type hints, etc.). Python 2 style checks will fail.
 
 ### Docker Deployment
 
-The project includes a multi-stage Dockerfile for production deployment.
-
-#### Building Docker Image
-
-From the project root:
-
 ```bash
 docker build . -t league-of-chess
-```
-
-**Build Stages:**
-1. **Node Build Stage** (`node:current-alpine`) - Installs npm packages, builds React production bundle
-2. **Nginx Setup** - Configures Nginx static file server
-3. **Python Setup** - Installs Python 3, creates virtual environment (PEP 668 compliance)
-4. **Dependency Installation** - Installs backend requirements via pip
-5. **Test Execution** - Runs pytest to validate build
-6. **Entrypoint** - Sets `run.sh` as container entrypoint
-
-#### Running Docker Container
-
-```bash
 docker run -p 80:80 -p 8080:8080 league-of-chess
 ```
 
-**Port Mappings:**
-- `80:80` - Frontend (Nginx serves static React build)
-- `8080:8080` - Backend API (FastAPI via Uvicorn)
-
-**Access:** Navigate to `http://localhost:80` or `http://0.0.0.0:80` in browser
-
-#### Docker Architecture
-
-**Entrypoint (`run.sh`):**
-1. Starts Nginx server
-2. Reloads Nginx (prevents stdout spam from request logging)
-3. Starts Python backend via `python backend/server.py`
-
-**Environment Variables:** `.env` file must be present at project root for database connection configuration.
-
-**Build Arguments:**
-- `LOCAL=true` (default) - Uses local development build configuration
-- `LOCAL=false` - Uses production build configuration
-
-### Development Best Practices
-
-**Before Making Changes:**
-1. Read relevant files using the Read tool to understand existing patterns
-2. Check test coverage for the area you're modifying
-3. Review game mechanics documentation (Section 4) for rule context
-
-**Making Changes:**
-1. Follow existing code patterns (see Section 9: Common Patterns and Conventions)
-2. Update or add tests for new functionality
-3. Run typecheck: `python3 -m compileall backend/src/ -q`
-4. Run relevant test suite: `pytest backend/tests/unit/` or `pytest backend/tests/integration/`
-5. Test manually in browser if UI changes are involved
-
-**After Making Changes:**
-1. Ensure all tests pass: `pytest`
-2. Verify typecheck passes: `python3 -m compileall backend/src/ -q`
-3. Test in browser at `localhost:3000` (frontend) with backend running on `localhost:8080`
-4. Commit changes with descriptive message following conventional commits format
-
-**Debugging:**
-- Backend logs output to console when running `python server.py` with uvicorn's `log_level="info"`
-- Frontend errors appear in browser console (React Developer Tools recommended)
-- Use `logger.info()` in backend code for debugging (imported from `src.log`)
-- Test with mock game states in `backend/mocks/` for consistent scenarios
+Ports: `80` = frontend (Nginx), `8080` = backend (FastAPI). Requires `.env` at project root.
 
 ---
 

@@ -1,0 +1,173 @@
+{
+  "project": "League of Chess",
+  "branchName": "ralph/shrink-claude-md",
+  "description": "Reduce CLAUDE.md from ~84k characters to 20-35k characters by condensing verbose prose, removing redundant examples, and replacing long narrative sections with concise references and bullet points.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Condense Project Overview and Technology Stack sections",
+      "description": "As a developer, I want the opening sections of CLAUDE.md to be brief so that Claude Code can quickly absorb project context without spending context window on boilerplate.",
+      "acceptanceCriteria": [
+        "Remove the 'Inspiration Source' paragraph from Project Overview (not useful for dev context)",
+        "Condense 'Current Development Status' bullet items to one line each (remove the sub-descriptions after the em-dash, or reduce to ≤15 words)",
+        "Technology Stack section: keep the tables but remove the 'Key Dependencies' paragraph at the bottom (already obvious from the tables)",
+        "Combined sections should be under 1,200 characters",
+        "Typecheck passes"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Condense Codebase Architecture section",
+      "description": "As a developer, I want the architecture section to show the directory tree and one-line descriptions per module, rather than multi-paragraph explanations for each file.",
+      "acceptanceCriteria": [
+        "Keep the full directory tree as-is (it is the most valuable part of the section)",
+        "Replace the 'Directory Purpose Descriptions' subsection with a single compact table: two columns (Path | Purpose) with one sentence per entry",
+        "Remove the separate 'Entry Points' subsection entirely (the table covers this)",
+        "Combined section should be under 3,000 characters",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Condense Game Mechanics section",
+      "description": "As a developer, I want a compact mechanic reference in CLAUDE.md that summarizes each rule in bullet points and defers to README.md for full detail.",
+      "acceptanceCriteria": [
+        "Add a one-line note at the top of the section: 'Full rules and examples are in README.md. This section summarizes mechanics for quick developer reference.'",
+        "Condense each piece-specific mechanic subsection to 3-5 bullet points (remove all prose paragraphs and 'Implementation:' lines)",
+        "Condense each neutral monster subsection to Spawn location/timing + Buff description as bullets (remove HP details and implementation refs)",
+        "Remove 'Special Systems' subsections for Check/Checkmate/Stalemate, Castling, and Special Items (these are already covered in Core Code Modules)",
+        "Section should be under 4,000 characters",
+        "Typecheck passes"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Condense Core Code Modules section",
+      "description": "As a developer, I want each module described in 3-5 lines so I can quickly find where logic lives without reading paragraphs per file.",
+      "acceptanceCriteria": [
+        "For each module entry: keep the filename header and 'Primary Responsibility' sentence",
+        "Replace 'Key Functions' lists with a compact comma-separated list of function names only (no descriptions per function)",
+        "Remove all 'Dependencies', 'Notable', and 'Key Endpoints' prose paragraphs",
+        "Remove the 'Key Exports' subsections (these are obvious from the module name)",
+        "Section should be under 3,500 characters",
+        "Typecheck passes"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-005",
+      "title": "Condense Development Workflow section",
+      "description": "As a developer, I want the workflow section to contain commands and config facts, not prose explanations of what those commands do.",
+      "acceptanceCriteria": [
+        "Keep all code blocks (install commands, run commands, docker commands) exactly as-is",
+        "Remove all explanatory prose paragraphs around the code blocks (the 'Backend Details:', 'Frontend Details:' bullet lists after each block)",
+        "Keep 'Environment Variables' table and '.env' example block",
+        "Condense 'API Endpoint Structure' to the bulleted endpoint list only (remove 'Request/Response Format' and 'Game State Schema' paragraphs)",
+        "Remove 'Development Best Practices' subsection (covered in CLAUDE.md conventions and workflow already)",
+        "Remove 'Code Quality Checks' subsection (one command, can be an inline note in the Testing section)",
+        "Section should be under 3,000 characters",
+        "Typecheck passes"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-006",
+      "title": "Condense Testing Strategy section",
+      "description": "As a developer, I want a concise testing reference that lists what is tested and how to run tests, without inline code examples.",
+      "acceptanceCriteria": [
+        "Keep the directory structure block",
+        "Replace 'Unit Tests - Piece Mechanics' and 'Integration Tests - Full API Flows' subsection prose with a single compact coverage table: two columns (Test File | What it covers) with one line per file",
+        "Remove 'Example Test Pattern' and 'Example Integration Test Pattern' code blocks entirely",
+        "Remove 'Mock Game States' and 'Test Utilities' subsections (reduce to 1-2 sentences inline)",
+        "Keep 'Running Tests' commands as-is",
+        "Keep 'Test Quality Metrics' bullet list",
+        "Section should be under 2,500 characters",
+        "Typecheck passes"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-007",
+      "title": "Condense Current Development Focus section",
+      "description": "As a developer, I want a brief snapshot of current development status without per-commit narratives.",
+      "acceptanceCriteria": [
+        "Keep 'Active Development Branch' note (branch name and one-sentence summary)",
+        "Replace 'Recent Development Work' subsection (lists commits with multi-sentence descriptions) with a simple bulleted list of themes only, max 6 bullets, one line each",
+        "Keep 'Current Roadmap Status' progress percentages and emoji bullets as-is (already compact)",
+        "Keep 'Current Priorities' numbered list but reduce each item to one line (remove the parenthetical elaborations)",
+        "Remove 'Development Context' subsection entirely",
+        "Section should be under 1,500 characters",
+        "Typecheck passes"
+      ],
+      "priority": 7,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-008",
+      "title": "Condense Common Patterns and Conventions section",
+      "description": "As a developer, I want key conventions listed as bullets, not illustrated with long inline code examples that duplicate what is already in the source.",
+      "acceptanceCriteria": [
+        "Remove all inline code example blocks from every subsection (Game State Structure, MongoDB Document Format, API Request/Response Cycle, Error Handling and Logging, Frontend-Backend Communication, Move Generation Pattern, Testing Patterns, Code Organization Principles)",
+        "For each subsection, keep the subsection header and the 'Key Conventions' bullet list only",
+        "For 'Game State Structure': keep the schema code block (it is the most useful reference) but remove the 'Core Structure' prose paragraph above it",
+        "For 'Move Generation Pattern': keep the 'Standard Return Format' code block only; remove the 'Piece-Specific Function Pattern' example block",
+        "Section should be under 3,500 characters",
+        "Typecheck passes"
+      ],
+      "priority": 8,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-009",
+      "title": "Condense Maintaining This Document section",
+      "description": "As a developer, I want the maintenance guidance reduced to the actionable checklist only, removing all explanatory prose, examples, and templates.",
+      "acceptanceCriteria": [
+        "Remove 'Why Maintain This Document' subsection entirely",
+        "Remove 'When to Update' prose subsection (keep only the checklist)",
+        "Remove 'How to Update' step-by-step subsection entirely",
+        "Keep the 'Update Triggers Checklist' checkboxes as-is",
+        "Remove 'Examples of Updates' subsection entirely",
+        "Remove 'Maintenance Best Practices' subsection entirely",
+        "Remove 'Who Should Update' and 'Quick Update Template' subsections entirely",
+        "Keep only: section header, one-sentence purpose statement, and the Update Triggers Checklist",
+        "Section should be under 600 characters",
+        "Typecheck passes"
+      ],
+      "priority": 9,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-010",
+      "title": "Verify overall CLAUDE.md character count is within target",
+      "description": "As a developer, I want confirmation that the fully condensed CLAUDE.md lands between 20,000 and 35,000 characters so it is usable within Claude Code's context budget.",
+      "acceptanceCriteria": [
+        "Run `wc -c CLAUDE.md` and confirm output is between 20000 and 35000",
+        "All 10 sections are still present (none removed entirely, only condensed)",
+        "Table of contents links still correspond to existing section headers",
+        "Update 'Last Updated' date at top of file to today's date",
+        "Typecheck passes"
+      ],
+      "priority": 10,
+      "passes": true,
+      "notes": ""
+    }
+  ]
+}

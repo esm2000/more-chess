@@ -182,318 +182,39 @@ Universal mechanics: moving adjacent/onto a monster deals 1 damage; pieces stayi
 
 ## Core Code Modules
 
-This section provides detailed descriptions of key code modules, making it easy to locate specific functionality and understand module responsibilities.
-
-### Backend Core Files
-
-#### `backend/src/api.py` (141 lines)
-
-**Primary Responsibility:** FastAPI route definitions and request handling for all game operations.
-
-**Key Endpoints:**
-- `POST /api/game` - Create new game
-- `GET /api/game/{id}` - Retrieve game state
-- `POST /api/game/{id}` - Update game state (move pieces)
-- `POST /api/buy_piece` - Purchase pieces with gold
-- `GET /api/moves` - Get legal moves for a piece
-
-**Dependencies:** Imports `game_update_pipeline` functions to orchestrate turn processing. Uses `validation.py` for input validation and `database.py` for MongoDB operations.
-
-**Notable:** Entry point for all frontend-backend communication. Routes delegate business logic to utility modules.
-
-#### `backend/src/moves.py` (543 lines)
-
-**Primary Responsibility:** Core move generation engine - computes all legal moves, captures, and special moves for each piece type.
-
-**Key Functions:**
-- `get_moves()` - Main dispatcher that routes to piece-specific move generators
-- `get_moves_for_pawn()` - Pawn movement with conditional capture logic
-- `get_moves_for_knight()` - Knight movement with unit collision checks
-- `get_moves_for_bishop()` - Bishop diagonal movement with energize mechanics
-- `get_moves_for_rook()` - Rook movement with turn-based scaling range
-- `get_moves_for_queen()` - Queen omnidirectional movement
-- `get_moves_for_king()` - King movement with castle detection
-
-**Return Format:** Returns dictionary with `possible_moves`, `possible_captures`, `threatening_move`, and `castle_moves` arrays.
-
-**Notable:** This is the heart of the game logic. Every piece interaction flows through these functions. Integrates with piece mechanics from `utils/piece_mechanics.py`.
-
-#### `backend/src/database.py` (15 lines)
-
-**Primary Responsibility:** MongoDB connection and client initialization.
-
-**Key Exports:**
-- `mongo_client` - PyMongo client instance for database operations
-
-**Notable:** Minimal module - connection configuration comes from environment variables. Actual CRUD operations are in `api.py`.
-
-#### `backend/src/log.py` (6 lines)
-
-**Primary Responsibility:** Logging configuration and logger instance.
-
-**Key Exports:**
-- `logger` - Configured logger for application-wide logging
-
-**Notable:** Simple logging setup using Python's standard logging library.
-
-### Backend Utilities (`backend/src/utils/`)
-
-#### `game_update_pipeline.py` (211 lines)
-
-**Primary Responsibility:** Orchestrates turn processing and game state updates. Acts as the main pipeline for validating and applying moves.
-
-**Key Functions:**
-- `prepare_game_update()` - Validates game hasn't ended, determines moved pieces
-- `apply_special_piece_effects()` - Handles queen resets, bishop energize, Divine Right
-- `manage_turn_progression()` - Processes neutral monsters, stun mechanics, turn advancement
-- `validate_moves_and_pieces()` - Ensures moves are legal and pieces are valid
-- `handle_pawn_exchanges()` - Manages pawn promotion logic
-- `handle_captures_and_combat()` - Processes piece captures and combat interactions
-- `update_game_metrics()` - Updates gold, scores, statistics
-- `handle_endgame_conditions()` - Checks for checkmate, stalemate, victory
-- `finalize_game_state()` - Final state cleanup and preparation for database save
-
-**Notable:** This module is called by `api.py` endpoints and coordinates calls to all other utility modules. It's the central nervous system of game updates.
-
-#### `piece_mechanics.py` (347 lines)
-
-**Primary Responsibility:** Implements piece-specific rules and special mechanics.
-
-**Key Functions:**
-- `apply_bishop_energize_stacks_and_bishop_debuffs()` - Grants energize stacks (5 per square, 10 per capture), applies marked-for-death debuff
-- `enable_adjacent_bishop_captures()` - Allows bishops to capture on adjacent squares when vulnerable
-- `apply_divine_right_to_kings()` - Spawns Sword in the Stone every 10 turns, handles Divine Right buff
-- `apply_marked_for_death_from_five_dragon_stacks()` - Implements 5-dragon-stack capture mechanic (capture by adjacency)
-- `update_piece_move_count()` - Tracks piece movement history for castling eligibility
-
-**Notable:** Core implementation of League of Chess unique mechanics. Works closely with `moves.py` to modify legal move generation.
-
-#### `check_checkmate.py` (302 lines)
-
-**Primary Responsibility:** Detects check, checkmate, and stalemate conditions.
-
-**Key Functions:**
-- `is_in_check()` - Determines if a king is under threat
-- `is_checkmate()` - Validates checkmate (king in check with no legal escapes)
-- `is_stalemate()` - Validates stalemate (no legal moves but not in check)
-- `trim_king_moves()` - Filters out illegal king moves that would place king in check
-
-**Notable:** Critical for game ending detection. Integrates with Divine Right mechanics to prevent false checkmates.
-
-#### `queen_mechanics.py` (77 lines)
-
-**Primary Responsibility:** Queen stun ability and turn reset logic.
-
-**Key Functions:**
-- `apply_queen_stun()` - Stuns enemy pieces adjacent to queen after non-capture moves
-- `apply_queen_turn_reset()` - Grants queen another move after kills/assists if safe
-
-**Notable:** Implements queen's most unique mechanics. Turn reset logic is complex - must verify queen safety after capture.
-
-#### `monsters.py` (varies)
-
-**Primary Responsibility:** Neutral monster spawning, damage, capture, and buff application.
-
-**Key Functions:**
-- `spawn_neutral_monsters()` - Spawns Dragon (every 10 turns), Board Herald (turns 10, 20), Baron Nashor (every 15 turns after turn 20)
-- `damage_neutral_monsters()` - Applies damage when pieces move adjacent/onto monsters
-- `apply_neutral_monster_buffs()` - Grants buffs to capturing team (dragon stacks, herald buff, baron buff)
-- `respawn_neutral_monsters()` - Respawns monsters that haven't taken damage in 3 turns
-
-**Notable:** Implements MOBA-style objective system. Dragon stacks are permanent and cumulative; Baron/Herald buffs are temporary/conditional.
-
-#### `validation.py` (316 lines)
-
-**Primary Responsibility:** Input validation for API requests and game state updates.
-
-**Key Functions:**
-- `is_valid_move()` - Checks if piece movement is legal based on possible moves
-- `is_valid_piece_to_move()` - Validates piece ownership and turn order
-- `is_valid_board_state()` - Ensures board state structure is valid
-- `is_valid_piece_purchase()` - Validates gold balance and purchase legality
-
-**Notable:** First line of defense against invalid game states. Prevents cheating and malformed requests.
-
-#### `stun_mechanics.py` (varies)
-
-**Primary Responsibility:** Stun status tracking and turn-skip logic.
-
-**Key Functions:**
-- Tracks stunned pieces via `stunned_until` property
-- Prevents stunned pieces from moving
-- Clears stun status when turn counter reaches `stunned_until`
-
-**Notable:** Used primarily by queen stun ability.
-
-#### `castle_mechanics.py` (varies)
-
-**Primary Responsibility:** Castling validation and execution.
-
-**Key Functions:**
-- `can_castle_kingside()` - Validates kingside castle legality
-- `can_castle_queenside()` - Validates queenside castle legality
-
-**Notable:** Checks all castling requirements including king safety, piece movement history, and path clearance.
-
-#### `game_scoring.py` (varies)
-
-**Primary Responsibility:** Gold economy and scoring mechanics.
-
-**Key Functions:**
-- Awards +1 gold to King for each enemy piece captured by allies
-- Tracks capture counts and game statistics
-- Manages gold balance for piece purchases
-
-**Notable:** Gold is only earned by King when allies (not King himself) capture pieces.
-
-#### `game_ending.py` (varies)
-
-**Primary Responsibility:** Win/loss/draw condition detection and game termination.
-
-**Key Functions:**
-- Detects checkmate and declares winner
-- Detects stalemate and declares draw
-- Handles special loss condition (neutral monster spawning on King's square)
-
-**Notable:** Final arbiter of game conclusion. Sets `white_defeat` or `black_defeat` flags.
-
-#### `game_state.py` (varies)
-
-**Primary Responsibility:** Game state structure initialization and management.
-
-**Key Functions:**
-- Defines default game state structure
-- Initializes new games with starting positions
-- Manages game state persistence
-
-**Notable:** Defines the canonical game state schema used throughout the application.
-
-#### `board_analysis.py` (varies)
-
-**Primary Responsibility:** Board state analysis utilities.
-
-**Key Functions:**
-- `evaluate_current_position()` - Calculates average piece value for pawn mechanics
-- `get_neutral_monster_slain_position()` - Identifies which neutral monster was killed
-- Position and distance calculations
-
-**Notable:** Provides analytical utilities used by other modules. Critical for pawn advantage calculations.
-
-#### `moves_and_positions.py` (varies)
-
-**Primary Responsibility:** Move validation helpers and position utilities.
-
-**Key Functions:**
-- Validates piece positions are within board bounds
-- Checks if squares are occupied
-- Path clearance checking for sliding pieces
-
-**Notable:** Low-level utilities used by `moves.py`.
-
-#### `special_items.py` (varies)
-
-**Primary Responsibility:** Special item effects (shop purchases, Divine Right sword).
-
-**Key Functions:**
-- Handles Sword in the Stone pickup
-- Processes piece purchases via shop
-- Manages special item spawning
-
-**Notable:** Implements King's shop system and Divine Right mechanic.
-
-### Frontend Core Files
-
-#### `frontend/src/index.js`
-
-**Primary Responsibility:** React application entry point - mounts the app to the DOM.
-
-**Notable:** Minimal file - imports root component and renders to `#root` div.
-
-#### `frontend/src/components/Board.js` (115 lines)
-
-**Primary Responsibility:** Main game board component - handles piece interactions, move highlighting, and board rendering.
-
-**Key Responsibilities:**
-- Renders 8x8 chess board grid
-- Manages piece selection and movement via drag-and-drop
-- Displays possible moves and captures as overlays
-- Shows victory/defeat screens when game ends
-- Integrates HUD, CapturedPieces, and Shop components
-
-**State Management:** Uses `GameStateContext` for global game state. Maintains local state for shop piece selection.
-
-**Notable:** This is the main game UI component. All visual gameplay flows through this component.
-
-#### `frontend/src/components/Piece.js` (313 lines)
-
-**Primary Responsibility:** Renders individual chess pieces with drag-and-drop, buff indicators, and status effects.
-
-**Key Responsibilities:**
-- Displays piece images (white/black variants for each piece type)
-- Implements drag-and-drop movement for desktop
-- Implements tap-to-select movement for mobile
-- Shows buff/debuff indicators (energize stacks, marked-for-death, stun, Divine Right, baron buff)
-- Displays neutral monster health bars
-- Handles piece animations and visual feedback
-
-**Notable:** Complex component with extensive conditional rendering based on piece type and status effects. Handles both desktop and mobile input methods.
-
-#### `frontend/src/context/GameStateContext.js` (177 lines)
-
-**Primary Responsibility:** Provides global game state via React Context API.
-
-**Key State Properties:**
-- `boardState` - 8x8 array of piece objects
-- `turnCount` - Current turn number
-- `possibleMoves` - Legal moves for selected piece
-- `possibleCaptures` - Legal captures for selected piece
-- `capturedPieces` - List of captured pieces
-- `goldCount` - Player gold balances
-- `check` - Check status for both players
-- `blackDefeat`, `whiteDefeat` - Game ending flags
-- `dragonStacks` - Dragon buff stacks for both teams
-- `baronBuff` - Baron buff status and expiration
-- Neutral monster states (health, position, buffs)
-
-**Key Functions:**
-- `updateGameState()` - Sends POST request to backend to update game state
-- `fetchGameState()` - Retrieves current game state from backend
-- `convertKeysToCamelCase()`, `convertKeysToSnakeCase()` - Format conversion between frontend/backend
-
-**Notable:** Central state management for entire application. All components consume this context. Handles frontend-backend synchronization.
-
-#### `frontend/src/components/` (Other Components)
-
-**UI Components:**
-- `Background.js` - Game background rendering
-- `Title.js` - Game title display
-- `HUD.js` - Heads-up display (gold, turn info, player indicators)
-- `CapturedPieces.js` - Captured piece graveyard display
-- `PossibleMove.js` - Move highlight indicators on board
-- `Buff.js` - Buff/debuff icon indicators
-- `Victory.js` - Victory screen overlay
-- `Defeat.js` - Defeat screen overlay
-- `Shop.js` - Item shop UI for piece purchases
-- `PieceShopModal.js` - Modal dialog for piece purchase confirmation
-
-**Rules Components:**
-- `Rules.js` - Rules modal container with tab navigation
-- `GeneralRules.js` - General game rules display
-- `PawnRules.js`, `KnightRules.js`, `BishopRules.js`, `RookRules.js`, `QueenRules.js`, `KingRules.js` - Piece-specific rule displays
-
-**Notable:** UI components are highly modular. Each component handles a specific visual responsibility.
-
-#### `frontend/src/utility.js`
-
-**Primary Responsibility:** Helper functions for common operations.
-
-**Key Functions:**
-- `pickSide()` - Determines which player's turn it is
-- `snakeToCamel()` - Converts snake_case to camelCase
-- `determineIsMobile()` - Detects mobile device
-- `BASE_API_URL` - Backend API base URL constant
-
-**Notable:** Shared utilities used across multiple components.
+### Backend
+
+| Module | Primary Responsibility | Key Functions |
+|--------|----------------------|---------------|
+| `src/api.py` | FastAPI routes | endpoints: game CRUD, buy_piece, moves |
+| `src/moves.py` | Move generation engine | `get_moves`, `get_moves_for_*` (6 piece types) |
+| `src/database.py` | MongoDB connection | exports `mongo_client` |
+| `src/log.py` | Logging | exports `logger` |
+| `utils/game_update_pipeline.py` | Turn orchestration | `prepare_game_update`, `apply_special_piece_effects`, `manage_turn_progression`, `validate_moves_and_pieces`, `handle_endgame_conditions` |
+| `utils/piece_mechanics.py` | Piece-specific rules | `apply_bishop_energize_stacks_and_bishop_debuffs`, `apply_divine_right_to_kings`, `apply_marked_for_death_from_five_dragon_stacks` |
+| `utils/check_checkmate.py` | Check/checkmate/stalemate | `is_in_check`, `is_checkmate`, `is_stalemate`, `trim_king_moves` |
+| `utils/queen_mechanics.py` | Queen stun & turn reset | `apply_queen_stun`, `apply_queen_turn_reset` |
+| `utils/monsters.py` | Monster spawn/damage/buffs | `spawn_neutral_monsters`, `damage_neutral_monsters`, `apply_neutral_monster_buffs` |
+| `utils/validation.py` | API input validation | `is_valid_move`, `is_valid_piece_to_move`, `is_valid_piece_purchase` |
+| `utils/castle_mechanics.py` | Castling validation | `can_castle_kingside`, `can_castle_queenside` |
+| `utils/game_scoring.py` | Gold economy | awards +1g to King per ally capture |
+| `utils/game_ending.py` | Win/loss/draw detection | sets `white_defeat`/`black_defeat` |
+| `utils/game_state.py` | State schema init | default structure for new games |
+| `utils/board_analysis.py` | Board analysis | `evaluate_current_position`, `get_neutral_monster_slain_position` |
+| `utils/moves_and_positions.py` | Position helpers | bounds check, path clearance |
+| `utils/special_items.py` | Shop/sword effects | sword pickup, piece purchase |
+| `utils/stun_mechanics.py` | Stun tracking | `stunned_until` property; skips stunned pieces |
+
+### Frontend
+
+| Component | Primary Responsibility |
+|-----------|----------------------|
+| `src/index.js` | React entry point |
+| `components/Board.js` | Game board; piece interactions, move highlighting |
+| `components/Piece.js` | Piece rendering; drag-and-drop, buff indicators |
+| `context/GameStateContext.js` | Global state + API sync; `updateGameState`, `fetchGameState` |
+| `components/HUD,Shop,Buff,etc.` | UI areas (gold, shop, buffs, win/loss screens, rules) |
+| `utility.js` | Shared helpers: `pickSide`, `snakeToCamel`, `BASE_API_URL` |
 
 ---
 

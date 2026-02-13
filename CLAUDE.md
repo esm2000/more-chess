@@ -342,7 +342,7 @@ Ports: `80` = frontend (Nginx), `8080` = backend (FastAPI). Requires `.env` at p
 pytest                              # all tests
 pytest backend/tests/unit/          # unit only
 pytest backend/tests/integration/   # integration only
-pytest -v -s -x -k "dragon"        # verbose, print, stop-on-fail, filter
+pytest -v -s -x -k "dragon"         # verbose, print, stop-on-fail, filter
 ```
 
 ### Test Quality Metrics
@@ -455,9 +455,9 @@ game_state = {
 # All get_moves_for_*() return:
 {
     "possible_moves": [[row, col], ...],
-    "possible_captures": [[[r1,c1], [r2,c2]], ...],  # [move_to, capture_at]
-    "threatening_move": [[row, col]],
-    "castle_moves": [[row, col]]
+    "possible_captures": [[[r1,c1], [r2,c2]], ...],   # [move_to, capture_at]
+    "threatening_move": [[row, col]],                 # squares this piece attacks (used for check detection, not shown to player)
+    "castle_moves": [[row, col]]                      # valid castle destination squares for the King (empty for all other pieces)
 }
 ```
 

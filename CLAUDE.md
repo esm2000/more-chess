@@ -147,7 +147,7 @@ more-chess/
 
 - Black starts with pawn on d6 (not d7) to balance white's first-move advantage
 - Pieces cannot move past center file boundary (c3-c6-f6-f3) unless already in center
-- Multiple pieces can occupy same square when a neutral monster is present
+- A player's piece and a neutral monster can occupy the same square simultaneously (player pieces cannot otherwise share squares)
 - If a neutral monster spawns on a King's square, that side loses immediately
 - King can have Divine Right buff (prevents 1 check/checkmate instance)
 

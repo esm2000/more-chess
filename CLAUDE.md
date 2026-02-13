@@ -331,88 +331,33 @@ pytest -v -s -x -k "dragon"        # verbose, print, stop-on-fail, filter
 
 ## Current Development Focus
 
-This section provides context on active development work, recent commits, and current priorities to help developers understand where the project stands and what's being worked on.
-
 ### Active Development Branch
 
-**Primary Development Branch:** `backend/neutral_monster_buffs`
-
-This branch contains the most recent active development work focused on neutral monster buff implementation, marked-for-death mechanics validation, and stalemate detection fixes. The branch is ahead of `main` by 10 commits as of 2026-02-10.
-
-**Current Branch (Documentation):** `ralph/claude-md-documentation`
-
-This branch is focused on creating comprehensive Claude.md documentation for improved AI-assisted development.
+**Primary branch:** `backend/neutral_monster_buffs` — neutral monster buffs, marked-for-death mechanics, stalemate fixes.
 
 ### Recent Development Work
 
-The project has seen significant progress in finalizing neutral monster buff mechanics and edge case handling:
-
-**Latest Commits on `backend/neutral_monster_buffs` Branch:**
-
-1. **Stalemate Detection Fix** (commit bc37527d) - Fixed stalemate detection logic to correctly identify the side to move and only detect stalemate when no non-king pieces have legal moves. This addresses edge cases where stalemate was incorrectly triggered.
-
-2. **Marked-for-Death Validation** (commits de23a146, ac63260a, db281943, 2b639ea3) - Comprehensive validation of the marked-for-death mechanic including:
-   - Single piece marked-for-death capture flow
-   - Multiple pieces marked-for-death capture flow
-   - Turn reset interaction with marked-for-death pieces
-   - Mandatory piece surrender when all pieces are marked
-   - Surrendering marked pieces while in check
-
-3. **Baron Nashor Buff Validation** (commit 0e770556) - Validated that Kings are correctly placed in check when positioned in front of a pawn with Baron Nashor buff (which allows pawns to capture pieces directly in front).
-
-4. **Pawn Advantage Mechanic Fix** (commit 09735c44) - Fixed capture point advantage calculation to use average piece value of remaining board pieces per README rules, ensuring pawn mechanics (+2/+3 advantage) work as intended.
-
-5. **Turn Skip Edge Cases** (commits 3565a18a, b86a6676) - Validated realistic scenarios involving turn skips from all pieces being stunned, ensuring game state remains valid.
-
-**Latest Commits on `main` Branch:**
-
-1. **UI Documentation Update** (commit 7899494f) - Updated frontend README TODO list to account for new neutral monster buff UI requirements.
-
-2. **Code Refactoring** (commits c2ffc2576, cf48c791) - Broke down `update_game_state()` function for better maintainability and improved exception handling for determining moved pieces.
-
-3. **Test Stability** (commit 3487c7a0) - Fixed intermittent test failures caused by Sword in the Stone spawning in unpredictable locations.
+- Stalemate detection fix (side-to-move logic)
+- Marked-for-death mechanic validation (bishop 3-stack, 5-dragon-stack)
+- Baron Nashor buff + check validation
+- Pawn advantage calculation fix (average piece value)
+- Turn skip edge cases (all pieces stunned)
 
 ### Current Roadmap Status
 
-**Frontend Progress: ~75% Complete**
-- ✅ Complete: Board, pieces, neutral monsters, status effects, win/loss screens, rules modal, shop interface
-- 🔄 In Progress: Neutral monster buff UI enhancements (color tint + number indicators for stacked buffs)
-- 📋 Remaining: Shop rework, pawn exchange UI, visual cues for turn skips/resets, piece deselection, draw UI
+**Frontend ~75%:** ✅ Board, pieces, monsters, status effects, win/loss, rules, shop | 🔄 Monster buff UI | 📋 Shop rework, pawn exchange, visual cues
 
-**Backend Progress: ~80% Complete**
-- ✅ Complete: Core game logic, move generation for all pieces, check/checkmate detection, neutral monster spawning/damage, most buff systems, API endpoints
-- 🔄 In Progress: Neutral monster buff validation (dragon stacks, marked-for-death mechanics), edge case handling
-- 📋 Remaining: Final shop/pawn exchange logic, code refactoring for maintainability, AI opponent implementation
+**Backend ~80%:** ✅ Core logic, move gen, check/checkmate, monsters, buffs, API | 🔄 Monster buff validation, edge cases | 📋 Shop/pawn exchange, refactoring, AI
 
-**Production Progress: ~30% Complete**
-- ✅ Complete: Docker containerization, multi-stage build, basic deployment structure
-- 📋 Remaining: Database setup documentation, code cleanup and refactoring, linting, Kubernetes deployment scripts, production deployment
+**Production ~30%:** ✅ Docker, multi-stage build | 📋 DB docs, linting, Kubernetes
 
 ### Current Priorities
 
-Based on the roadmap and recent commit activity, the current development priorities are:
-
-1. **Finalize Neutral Monster Buff Implementation** (Active) - Complete validation and testing of all dragon stack mechanics, marked-for-death systems (both bishop 3-stack and 5-dragon-stack), and Baron/Herald buff interactions.
-
-2. **Improve Code Maintainability** (Active) - Continue refactoring large functions like `update_game_state()` and improving error handling throughout the codebase.
-
-3. **Complete Frontend Buff Visualization** (Next Priority) - Implement UI indicators for neutral monster buffs (color tints, stack numbers, buff icons) to provide clear visual feedback to players.
-
-4. **Shop and Pawn Exchange Finalization** (Upcoming) - Complete both backend logic and frontend UI for shop mechanics and pawn promotion.
-
-5. **Production Readiness** (Future) - Code cleanup, linting, comprehensive testing, database documentation, and deployment preparation.
-
-### Development Context
-
-**Testing Focus:** Recent development has emphasized comprehensive integration testing for edge cases, particularly around:
-- Stalemate detection with various board states
-- Marked-for-death mechanics with multiple pieces
-- Turn reset interactions with queen mechanics
-- Baron Nashor buff interactions with check/checkmate
-
-**Code Quality Focus:** Ongoing effort to break down large functions (300+ lines) into smaller, more maintainable modules while maintaining test coverage.
-
-**Branch Strategy:** Feature branches for major work (`backend/neutral_monster_buffs`), with periodic merges to `main` after thorough testing.
+1. Finalize Neutral Monster Buff Implementation
+2. Improve Code Maintainability
+3. Complete Frontend Buff Visualization
+4. Shop and Pawn Exchange Finalization
+5. Production Readiness
 
 ---
 

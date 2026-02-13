@@ -384,7 +384,8 @@ Current focus: neutral monster buff implementation, marked-for-death mechanics v
 2. Improve Code Maintainability
 3. Complete Frontend Buff Visualization
 4. Shop and Pawn Exchange Finalization
-5. Production Readiness
+5. Develop CPU Opponent
+6. Production Readiness
 
 ---
 

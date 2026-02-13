@@ -480,6 +480,8 @@ game_state = {
 - Backend: absolute imports from `src/`; Frontend: relative imports
 - Constants in ALL_CAPS: `BASE_API_URL`, `PLAYERS`, `IMAGE_MAP`
 
+---
+
 ## Maintaining This Document
 
 Update this file whenever you change architecture, game mechanics, modules, workflow, tests, or priorities.

@@ -363,36 +363,25 @@ pytest -v -s -x -k "dragon"        # verbose, print, stop-on-fail, filter
 
 ## Common Patterns and Conventions
 
-This section documents recurring code patterns, conventions, and best practices used throughout the project. Understanding these patterns helps maintain consistency and reduce cognitive load when working on the codebase.
-
 ### Game State Structure
-
-The game state is the central data structure that represents the complete state of a chess game at any point in time. It follows a consistent schema across both backend (Python dict) and frontend (JavaScript object).
-
-**Core Structure:**
 
 ```python
 game_state = {
-    "turn_count": 0,                    # Current turn number
-    "position_in_play": [None, None],   # [row, col] of selected piece
-    "board_state": [                    # 8x8 array of piece arrays
-        [[{"type": "white_pawn"}], [], ...],  # Each cell is array of piece objects
-        ...
-    ],
-    "possible_moves": [[row, col], ...],            # Legal move positions
-    "possible_captures": [[[r1,c1], [r2,c2]], ...], # [move_to, capture_at] pairs
-    "captured_pieces": {"white": [], "black": []},   # Graveyard
-    "gold_count": {"white": 0, "black": 0},         # Player gold balances
-    "check": {"white": False, "black": False},       # Check status
-    "black_defeat": False,              # Game ending flags
-    "white_defeat": False,
-    "sword_in_the_stone_position": None,  # [row, col] or None
-    "capture_point_advantage": None,    # Average piece value difference
-    "bishop_special_captures": [],      # Bishop marked-for-death targets
-    "latest_movement": {},              # Last move metadata
-    "queen_reset": False,               # Queen turn reset flag
-    "neutral_attack_log": {},           # Monster damage tracking
-    "castle_log": {                     # Castling eligibility
+    "turn_count": 0,
+    "position_in_play": [None, None],   # [row, col]
+    "board_state": [[[{"type": "white_pawn"}], [], ...]],  # 8x8 array of piece arrays
+    "possible_moves": [[row, col], ...],
+    "possible_captures": [[[r1,c1], [r2,c2]], ...],  # [move_to, capture_at]
+    "captured_pieces": {"white": [], "black": []},
+    "gold_count": {"white": 0, "black": 0},
+    "check": {"white": False, "black": False},
+    "black_defeat": False, "white_defeat": False,
+    "sword_in_the_stone_position": None,
+    "capture_point_advantage": None,
+    "bishop_special_captures": [],
+    "queen_reset": False,
+    "neutral_attack_log": {},
+    "castle_log": {
         "white": {"has_king_moved": False, "has_left_rook_moved": False, "has_right_rook_moved": False},
         "black": {"has_king_moved": False, "has_left_rook_moved": False, "has_right_rook_moved": False}
     }
@@ -400,393 +389,69 @@ game_state = {
 ```
 
 **Key Conventions:**
-- `board_state` is indexed as `board_state[row][col]`, where row 0 is black's back rank and row 7 is white's back rank
-- Each board cell is an **array** of piece objects (allows multiple pieces on same square for neutral monsters)
-- Piece objects have mandatory `type` field (e.g., `"white_pawn"`, `"neutral_dragon"`) and optional fields for buffs/debuffs
-- Positions are always `[row, col]` format (never col, row)
-- Color strings are always lowercase: `"white"`, `"black"`, `"neutral"`
+- `board_state[row][col]`: row 0 = black's back rank, row 7 = white's back rank
+- Each cell is an **array** of piece objects (supports monster co-occupancy)
+- Piece objects have mandatory `type` (e.g., `"white_pawn"`) and optional buff fields
+- Positions always `[row, col]`; colors always lowercase (`"white"`, `"black"`, `"neutral"`)
 
 ### MongoDB Document Format
 
-Game states are persisted in MongoDB with minimal modifications to the in-memory structure.
-
-**Database Schema:**
-
-```python
-# Collection: "games" in "game_db" database
-{
-    "_id": ObjectId("..."),           # MongoDB auto-generated ID
-    "turn_count": 0,
-    "board_state": [...],
-    # ... all game_state fields ...
-    "last_updated": datetime.datetime.now()  # Timestamp for debugging
-}
-```
-
-**CRUD Patterns:**
-
-```python
-# Create (api.py:create_game)
-game_database = mongo_client["game_db"]
-game_database["games"].insert_one(game_state)
-game_state["id"] = str(game_state.pop("_id"))  # Convert ObjectId to string for API response
-
-# Read (api.py:retrieve_game_state)
-game_database = mongo_client["game_db"]
-game_state = game_database["games"].find_one({"_id": ObjectId(id)})
-if not game_state:
-    raise HTTPException(status_code=404, detail="Game not found")
-game_state["id"] = str(game_state.pop("_id"))
-
-# Update (api.py:update_game_state)
-game_database["games"].replace_one(
-    {"_id": ObjectId(id)},
-    new_game_state
-)
-```
-
 **Key Conventions:**
-- MongoDB `_id` field is converted to string `id` field when returning to frontend
-- `last_updated` timestamp is added on create/update for debugging
-- Replace operations use `replace_one()` not `update_one()` to avoid partial updates
-- Always use `ObjectId(id)` for query filters
+- Collection: `"games"` in `"game_db"`; `_id` converted to string `id` for API responses
+- Use `replace_one()` not `update_one()`; always use `ObjectId(id)` for queries
 
 ### API Request/Response Cycle
 
-The frontend-backend communication follows a consistent pattern for all game state updates.
-
-**Request Flow:**
-
-1. **Frontend initiates update** - User moves piece or performs action
-2. **Frontend sends PUT request** - `PUT /api/game/{id}` with full game state (snake_case)
-3. **Backend validates state** - Runs through game_update_pipeline checks
-4. **Backend persists state** - Saves to MongoDB
-5. **Backend returns updated state** - Responds with full game state (snake_case)
-6. **Frontend updates context** - Converts to camelCase and updates React context
-
-**Example Frontend Pattern (GameStateContext.js):**
-
-```javascript
-const updateGameState = (gameState) => {
-    const gameStateId = sessionStorage.getItem("gameStateId")
-
-    fetch(`${BASE_API_URL}/api/game/${gameStateId}`, {
-        method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(convertKeysToSnakeCase(gameState))
-    })
-    .then(response => {
-        if (!response.ok) throw new Error(`Request failed: ${response.status}`)
-        return response.json();
-    })
-    .then(jsonResponse => {
-        const parsedResponse = {
-            ...convertKeysToCamelCase(jsonResponse),
-            updateGameState: updateGameState
-        }
-        setGameState(parsedResponse)
-    })
-    .catch(exception => console.log(exception));
-}
-```
-
-**Example Backend Pattern (api.py):**
-
-```python
-@router.put("/game/{id}", status_code=200)
-def update_game_state(id, state: GameState, response: Response):
-    # Pipeline orchestration
-    old_game_state, new_game_state, moved_pieces = prepare_game_update(id, state, retrieve_game_state)
-    if old_game_state.get("black_defeat") or old_game_state.get("white_defeat"):
-        return old_game_state  # Game already ended
-
-    is_valid = apply_special_piece_effects(old_game_state, new_game_state, moved_pieces)
-    is_valid, should_increment = manage_turn_progression(...)
-    is_valid = validate_moves_and_pieces(...)
-    # ... more pipeline stages ...
-
-    if not is_valid:
-        raise HTTPException(status_code=400, detail="Invalid game state")
-
-    # Persist and return
-    game_database["games"].replace_one({"_id": ObjectId(id)}, new_game_state)
-    new_game_state["id"] = str(new_game_state.pop("_id"))
-    return new_game_state
-```
-
 **Key Conventions:**
-- Frontend always sends **full game state**, not just the changed fields
-- Backend validates **entire pipeline** before persisting (all-or-nothing)
-- Use `convertKeysToSnakeCase()` when sending, `convertKeysToCamelCase()` when receiving
-- Game state ID stored in `sessionStorage.getItem("gameStateId")`
-- Always check for game ending conditions before processing updates
+- Frontend always sends **full game state**; backend validates entire pipeline before persisting
+- `convertKeysToSnakeCase()` sending, `convertKeysToCamelCase()` receiving
+- Game state ID in browser `sessionStorage`
 
 ### Error Handling and Logging
 
-The project uses consistent error handling and logging patterns across backend modules.
-
-**Logging Pattern (log.py):**
-
-```python
-import logging
-from src.log import logger
-
-# Usage examples
-logger.debug("Detailed debug information")
-logger.info("General information about game state")
-logger.error(f"Error occurred: {exception_message}")
-```
-
-**Error Handling in game_update_pipeline.py:**
-
-```python
-try:
-    moved_pieces = utils.determine_pieces_that_have_moved(
-        new_game_state["board_state"], old_game_state["board_state"]
-    )
-except Exception as e:
-    logger.error(f"Unable to determine pieces that have moved: {e}")
-    raise HTTPException(status_code=400, detail=utils.INVALID_GAME_STATE_ERROR_MESSAGE)
-```
-
-**Validation Pattern (utils/validation.py):**
-
-```python
-# Validation functions return boolean flags
-is_valid_game_state = True
-
-is_valid_game_state = utils.check_to_see_if_more_than_one_piece_has_moved(
-    old_game_state, new_game_state, moved_pieces, capture_positions, is_valid_game_state
-)
-
-is_valid_game_state = utils.invalidate_game_if_stunned_piece_moves(
-    moved_pieces, is_valid_game_state
-)
-
-# Final check
-if not is_valid_game_state:
-    raise HTTPException(status_code=400, detail=utils.INVALID_GAME_STATE_ERROR_MESSAGE)
-```
-
 **Key Conventions:**
-- Use `logger.error()` for validation failures and exceptions
-- Validation functions take `is_valid_game_state` boolean flag and return updated flag
-- All validation errors use `HTTPException(status_code=400, detail=...)`
-- Common error messages defined as constants in `utils/__init__.py`
-- Never silently fail - always log and raise exceptions for invalid states
+- `logger.error()` for failures; validation functions pass `is_valid_game_state` bool flag
+- All validation errors: `HTTPException(status_code=400, ...)`
+- Error message constants in `utils/__init__.py`; never silently fail
 
 ### Frontend-Backend Communication
 
-The project uses specific naming conventions and conversion utilities to bridge JavaScript and Python naming styles.
+**Key Conventions:**
+- Backend: `snake_case`; Frontend: `camelCase`; conversion in `GameStateContext.js`
+- Piece types: `"white_pawn"` in state, `whitePawn` in image map
+- CORS: `localhost:3000`, `localhost:8080`, `0.0.0.0` variants
 
-**Case Conversion Pattern:**
+### Move Generation Pattern
 
-```javascript
-// utility.js - Converts between snake_case and camelCase
-
-// Backend to Frontend
-convertKeysToCamelCase({
-    "turn_count": 10,
-    "board_state": [...],
-    "captured_pieces": {...}
-})
-// Returns: {turnCount: 10, boardState: [...], capturedPieces: {...}}
-
-// Frontend to Backend
-convertKeysToSnakeCase({
-    turnCount: 10,
-    boardState: [...],
-    capturedPieces: {...}
-})
-// Returns: {"turn_count": 10, "board_state": [...], "captured_pieces": {...}}
-```
-
-**Piece Type Naming:**
-- Backend: `"white_pawn"`, `"black_king"`, `"neutral_dragon"` (snake_case with color prefix)
-- Frontend: Same format maintained (JavaScript objects preserve Python naming)
-- Image mapping: `whitePawn`, `blackKing`, `neutralDragon` (camelCase for JavaScript keys)
-
-**API Base URL Configuration (utility.js):**
-
-```javascript
-var BASE_API_URL
-if (process.env.REACT_APP_LOCAL === "true") {
-    BASE_API_URL = "http://0.0.0.0:8080";  // Local development
-} else {
-    var current_link = window.location.href
-    // Production: derive from current window location
-    if (current_link === 'http://0.0.0.0:3000') {
-        current_link = 'http://0.0.0.0:8080'
-    }
-    BASE_API_URL = current_link
+```python
+# All get_moves_for_*() return:
+{
+    "possible_moves": [[row, col], ...],
+    "possible_captures": [[[r1,c1], [r2,c2]], ...],  # [move_to, capture_at]
+    "threatening_move": [[row, col]],
+    "castle_moves": [[row, col]]
 }
 ```
 
 **Key Conventions:**
-- Backend uses `snake_case` for all keys (Python PEP 8 standard)
-- Frontend uses `camelCase` for JavaScript variables and state (JavaScript convention)
-- Conversion happens at API boundary in `GameStateContext.js`
-- Game state ID persisted in browser `sessionStorage` for session continuity
-- CORS configured to accept `localhost:3000`, `localhost:8080`, `0.0.0.0` variants
-
-### Move Generation Pattern
-
-Move generation follows a consistent structure across all piece types in `src/moves.py`.
-
-**Standard Return Format:**
-
-```python
-def get_moves(old_game_state, new_game_state, curr_position, piece):
-    # Returns dictionary with 4 keys
-    return {
-        "possible_moves": [[row, col], ...],              # Legal non-capture moves
-        "possible_captures": [[[r1,c1], [r2,c2]], ...],  # [move_to, capture_at] pairs
-        "threatening_move": [[row, col]],                 # Positions threatening enemy king
-        "castle_moves": [[row, col]]                      # Castle destination squares
-    }
-```
-
-**Piece-Specific Function Pattern:**
-
-```python
-def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
-    possible_moves = []
-    possible_captures = []
-    threatening_move = []
-
-    # 1. Determine piece color and direction
-    piece = curr_game_state["board_state"][curr_position[0]][curr_position[1]][0]
-    side = "white" if "white" in piece["type"] else "black"
-    direction = 1 if side == "white" else -1
-
-    # 2. Generate base moves
-    # ... movement logic ...
-
-    # 3. Apply special mechanics (buffs, debuffs, etc.)
-    # ... special rules ...
-
-    # 4. Return standardized dictionary
-    return {
-        "possible_moves": possible_moves,
-        "possible_captures": possible_captures,
-        "threatening_move": threatening_move,
-        "castle_moves": []
-    }
-```
-
-**Key Conventions:**
-- All move generation functions take `curr_game_state`, `prev_game_state`, `curr_position`
-- Position format is always `[row, col]` not `(row, col)` or `{row, col}`
-- `possible_captures` uses nested arrays: first element is where piece moves, second is what gets captured
-- Empty arrays returned for unused keys (e.g., pawns return `[]` for `castle_moves`)
-- Special mechanics (energize stacks, stun, etc.) applied in piece-specific functions
-- File control restrictions (center boundary) checked in individual move generators
+- Functions take `curr_game_state`, `prev_game_state`, `curr_position`
+- Unused keys return `[]`; file boundary (c3-c6-f6-f3) checked in each generator
 
 ### Testing Patterns
 
-The test suite follows consistent patterns for unit and integration tests.
-
-**Unit Test Pattern (tests/unit/):**
-
-```python
-import copy
-import src.moves as moves
-from mocks.empty_game import empty_game
-
-def test_piece_movement():
-    # 1. Setup - Create clean game state
-    curr_game_state = copy.deepcopy(empty_game)
-    curr_game_state["board_state"][3][3] = [{"type": "white_pawn"}]
-
-    # 2. Execute - Call move generation
-    prev_game_state = copy.deepcopy(curr_game_state)
-    result = moves.get_moves(curr_game_state, prev_game_state, 3, 3)
-
-    # 3. Assert - Verify expected moves
-    assert [4, 3] in result["possible_moves"]
-```
-
-**Integration Test Pattern (tests/integration/):**
-
-```python
-import copy
-from fastapi import Response
-from mocks.starting_game import starting_game
-import src.api as api
-from tests.test_utils import select_and_move_white_piece
-
-def test_gameplay_scenario(game):  # game fixture from conftest.py
-    # 1. Setup - Modify game state to specific turn
-    game_on_next_turn = copy.deepcopy(game)
-    game_on_next_turn["turn_count"] = 9
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
-
-    # 2. Execute - Perform moves via test helpers
-    game = select_and_move_white_piece(game=game, from_row=6, from_col=0, to_row=5, to_col=0)
-
-    # 3. Assert - Verify game state changes
-    assert game["board_state"][4][7][0]["type"] == "neutral_dragon"
-```
-
-**Test Utility Helpers (tests/test_utils.py):**
-
-```python
-# Helpers reduce boilerplate and improve readability
-select_and_move_white_piece(game, from_row, from_col, to_row, to_col)
-select_and_move_black_piece(game, from_row, from_col, to_row, to_col)
-```
-
 **Key Conventions:**
-- Unit tests use `mocks/empty_game.py` for isolated piece mechanics
-- Integration tests use `mocks/starting_game.py` for realistic scenarios
-- Always use `copy.deepcopy()` when modifying mock states
-- Test utilities in `test_utils.py` for common operations (select, move, combined)
-- Pytest fixtures defined in `conftest.py` for game setup/teardown
-- Test function names follow `test_<description>` pattern for autodiscovery
-- Use descriptive assertions with clear expected values
+- Unit: `mocks/empty_game.py`, direct `moves.get_moves()` calls, no DB
+- Integration: `mocks/starting_game.py`, FastAPI test client, `select_and_move_*()` helpers
+- Always `copy.deepcopy()` mock states; fixtures in `conftest.py`
 
 ### Code Organization Principles
 
-The codebase follows consistent organization principles across backend and frontend.
-
-**Backend Module Organization:**
-- **Single Responsibility:** Each utility module has one clear purpose (e.g., `queen_mechanics.py` only handles queen-specific logic)
-- **Pipeline Pattern:** `game_update_pipeline.py` orchestrates all utility modules in defined order
-- **Validation Separation:** All input validation in `validation.py`, not scattered in logic files
-- **Mock Data Isolation:** Test mocks in `backend/mocks/`, never in production code paths
-
-**Frontend Component Organization:**
-- **Component Hierarchy:** Board.js → Piece.js → Buff.js (parent to child composition)
-- **Context for State:** GameStateContext.js provides global state, no prop drilling
-- **Utility Separation:** All helper functions in `utility.js`, not inline in components
-- **Asset Organization:** Images grouped by type (`pieces/`, `rules/`, `statuses/`)
-
-**Import Conventions:**
-
-```python
-# Backend imports - always absolute from src/
-from src.log import logger
-import src.moves as moves
-from src.utils.game_update_pipeline import prepare_game_update
-from mocks.starting_game import starting_game
-```
-
-```javascript
-// Frontend imports - relative paths for components
-import { GameStateContextData } from '../context/GameStateContext';
-import { PLAYERS, BASE_API_URL, convertKeysToCamelCase } from '../utility';
-import Piece from './Piece';
-```
-
 **Key Conventions:**
-- Backend uses absolute imports from `src/` (enabled by `PYTHONPATH=backend` in .env)
-- Frontend uses relative imports (`../` for parent directory navigation)
-- Utility functions exported as named exports: `export { pickSide, snakeToCamel, ... }`
-- Context uses default export: `export default GameStateContext`
+- Single responsibility per module; all validation in `validation.py`
+- Pipeline orchestration in `game_update_pipeline.py`
+- Component hierarchy: Board.js → Piece.js → Buff.js; global state via Context
+- Backend: absolute imports from `src/`; Frontend: relative imports
 - Constants in ALL_CAPS: `BASE_API_URL`, `PLAYERS`, `IMAGE_MAP`
-
----
 
 ## Maintaining This Document
 

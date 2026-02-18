@@ -347,7 +347,7 @@ pytest -v -s -x -k "dragon"         # verbose, print, stop-on-fail, filter
 
 ### Test Quality Metrics
 
-- **Total Tests:** 121 test functions
+- **Total Tests:** 123 test functions
 - **Test Files:** 18 files (6 unit, 12 integration/support)
 - **Coverage Focus:** Backend game logic (100% of core mechanics tested)
 - **Test Execution Time:** ~5-10 seconds for full suite (fast feedback loop)

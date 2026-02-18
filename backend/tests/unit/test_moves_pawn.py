@@ -477,33 +477,77 @@ def test_pawn_en_passant_capture():
         assert [[[5 if side == 'black' else 2, 3], [4 if side == 'black' else 3, 3]]] == possible_moves_and_captures["possible_captures"]
 
 
-# TODO: create two tests for en_passant that fails due to the reasoning below
-#  Issues:
-
-#   Critical Logic Error (line 223):
-#   (all("king" not in piece.get("type", "None") for piece in (curr_game_state["board_state"][curr_position[0]][lateral_position[1]] or [])))
-#   This checks [curr_position[0]][lateral_position[1]] but should check the destination square [row_ahead][lateral_position[1]].
-
-#   Missing Validation:
-#   - Should verify the destination square is empty
-#   - Should check that the lateral pawn moved exactly 2 squares in the previous turn (standard en passant rule)
-
-#   Corrected version should be:
-#   # Line 223 should check the destination square, not current row
-#   (all("king" not in piece.get("type", "None") for piece in (curr_game_state["board_state"][row_ahead][lateral_position[1]] or [])))
-
-#   # And add destination square validation:
-#   destination_square = curr_game_state["board_state"][row_ahead][lateral_position[1]]
-#   if destination_square:  # destination must be empty
-#       continue
-
-#   The core logic is sound, but you need to fix the king check and add destination validation for proper en passant
 def test_pawn_en_passant_neagtive_1():
-    pass
+    # En passant should be blocked when the opposing king occupies the destination square.
+    # Bug (moves.py line 315): king check uses curr_position[0] (the pawn's row) instead of
+    # row_ahead (the destination row), so a king on the destination square is not detected.
+
+    ##    0  1  2  3  4  5  6  7                ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|              ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|bp|##|__|##|__|   prev       ## 1 |##|__|##|__|##|__|##|__|   prev
+    ## 2 |__|##|__|bk|__|##|__|##|              ## 2 |__|##|__|__|__|##|__|##|
+    ## 3 |##|__|##|bp|wp|__|##|__|   curr       ## 4 |__|##|__|wp|bp|##|__|##|   curr
+    ## 4 |__|##|__|##|__|##|__|##|              ## 5 |##|__|##|wk|##|__|##|__|
+    ## 5 |##|__|##|__|##|__|##|__|              ## 6 |__|##|__|wp|__|##|__|##|   prev
+    ## 6 |__|##|__|##|__|##|__|##|              ## 7 |##|__|##|__|##|__|##|__|
+    ## 7 |##|__|##|__|##|__|##|__|
+
+    for side in ["white", "black"]:
+        opposing_side = "black" if side == "white" else "white"
+        curr_row = 3 if side == "white" else 4
+        row_ahead = 2 if side == "white" else 5
+        opposing_start_row = 1 if opposing_side == "black" else 6
+
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][curr_row][4] = [{"type": f"{side}_pawn"}]
+        curr_game_state["board_state"][curr_row][3] = [{"type": f"{opposing_side}_pawn"}]
+        curr_game_state["board_state"][row_ahead][3] = [{"type": f"{opposing_side}_king"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        prev_game_state["board_state"][opposing_start_row][3] = [{"type": f"{opposing_side}_pawn"}]
+        prev_game_state["board_state"][curr_row][3] = None
+
+        result = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [curr_row, 4])
+
+        assert [row_ahead, 3] not in result["possible_moves"]
+        assert not any(capture[0] == [row_ahead, 3] for capture in result["possible_captures"])
 
 
 def test_pawn_en_passant_neagtive_2():
-    pass
+    # En passant should be blocked when the destination square is already occupied.
+    # Bug (moves.py): no check that board_state[row_ahead][lateral_position[1]] is empty,
+    # so en passant is incorrectly allowed even when a piece already occupies the landing square.
+
+    ##    0  1  2  3  4  5  6  7                ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|              ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|bp|##|__|##|__|   prev       ## 1 |##|__|##|__|##|__|##|__|   prev
+    ## 2 |__|##|__|wp|__|##|__|##|  destination ## 2 |__|##|__|__|__|##|__|##|
+    ## 3 |##|__|##|bp|wp|__|##|__|   curr       ## 4 |__|##|__|wp|bp|##|__|##|   curr
+    ## 4 |__|##|__|##|__|##|__|##|              ## 5 |##|__|##|bp|##|__|##|__|  destination
+    ## 5 |##|__|##|__|##|__|##|__|              ## 6 |__|##|__|wp|__|##|__|##|   prev
+    ## 6 |__|##|__|##|__|##|__|##|              ## 7 |##|__|##|__|##|__|##|__|
+    ## 7 |##|__|##|__|##|__|##|__|
+
+    for side in ["white", "black"]:
+        opposing_side = "black" if side == "white" else "white"
+        curr_row = 3 if side == "white" else 4
+        row_ahead = 2 if side == "white" else 5
+        opposing_start_row = 1 if opposing_side == "black" else 6
+
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][curr_row][4] = [{"type": f"{side}_pawn"}]
+        curr_game_state["board_state"][curr_row][3] = [{"type": f"{opposing_side}_pawn"}]
+        # Destination square is occupied by a friendly pawn
+        curr_game_state["board_state"][row_ahead][3] = [{"type": f"{side}_pawn"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        prev_game_state["board_state"][opposing_start_row][3] = [{"type": f"{opposing_side}_pawn"}]
+        prev_game_state["board_state"][curr_row][3] = None
+
+        result = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [curr_row, 4])
+
+        assert [row_ahead, 3] not in result["possible_moves"]
+        assert not any(capture[0] == [row_ahead, 3] for capture in result["possible_captures"])
 
 
 def test_pawn_capturing_adjacent_bishop():

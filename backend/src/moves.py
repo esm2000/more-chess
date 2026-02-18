@@ -308,13 +308,16 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
                 prev_opposing_starting_square = []
             curr_opposing_starting_square = curr_game_state["board_state"][opposing_starting_position[0]][opposing_starting_position[1]]
             
+            en_passant_dest_row = curr_position[0] + (-1 if side == "white" else 1)
+            destination_square = curr_game_state["board_state"][en_passant_dest_row][lateral_position[1]] or []
             if ((side == "black" and curr_position[0] == 4) or (side == "white" and curr_position[0] == 3)) and \
             (lateral_square and any(piece.get("type", "None") == f"{opposing_side}_pawn" for piece in lateral_square)) and \
             (prev_opposing_starting_square and any(piece.get("type", "None") == f"{opposing_side}_pawn" for piece in prev_opposing_starting_square)) and \
             (not curr_opposing_starting_square or all(piece.get("type", "None") != f"{opposing_side}_pawn" for piece in curr_opposing_starting_square)) and \
-            (all("king" not in piece.get("type", "None") for piece in (curr_game_state["board_state"][curr_position[0]][lateral_position[1]] or []))):
-                possible_moves.append([curr_position[0] + (-1 if side == "white" else 1), lateral_position[1]])
-                possible_captures.append([[curr_position[0] + (-1 if side == "white" else 1), lateral_position[1]], [curr_position[0] , lateral_position[1]]])
+            (not destination_square) and \
+            (all("king" not in piece.get("type", "None") for piece in destination_square)):
+                possible_moves.append([en_passant_dest_row, lateral_position[1]])
+                possible_captures.append([[en_passant_dest_row, lateral_position[1]], [curr_position[0] , lateral_position[1]]])
 
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
 

@@ -376,8 +376,9 @@ def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
             for path_position in path_positions:
                 square = curr_game_state["board_state"][path_position[0]][path_position[1]]
 
-                if (square and not (dragon_buff == 3 and all(piece.get('type') == f"{side}_pawn" for piece in square))) \
-                    or (square and not (dragon_buff >= 4 and all(side in piece.get('type') for piece in square))) \
+                if (square \
+                    and not (dragon_buff == 3 and all(piece.get('type') == f"{side}_pawn" for piece in square)) \
+                    and not (dragon_buff >= 4 and all(side in piece.get('type') for piece in square))) \
                     or curr_game_state["sword_in_the_stone_position"] == path_position:
                     if not i:
                         path_1_free = False
@@ -406,8 +407,23 @@ def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
                         if piece.get("health", 0) == 1:
                             possible_captures.append([potential_position, potential_position])
 
+    # 5 dragon buff stacks: marked-for-death - enemy pieces adjacent to knight's landing square can be captured
+    if dragon_buff >= 5:
+        adjacent_squares = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
+        for possible_move in possible_moves:
+            for adjacent_square in adjacent_squares:
+                potential_capture_square = [possible_move[0] + adjacent_square[0], possible_move[1] + adjacent_square[1]]
+                if potential_capture_square[0] < 0 or potential_capture_square[0] > 7 or potential_capture_square[1] < 0 or potential_capture_square[1] > 7:
+                    continue
+                square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
+                if square and any(opposing_side in piece.get("type", "") for piece in square):
+                    if any("king" in piece.get("type", "") for piece in square):
+                        threatening_move.append(possible_move)
+                    else:
+                        possible_captures.append([possible_move, potential_capture_square])
+
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
-                    
+
 def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
     evaluate_current_position(curr_position, curr_game_state)
     piece_in_play = None

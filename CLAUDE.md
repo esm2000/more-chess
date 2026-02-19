@@ -1,6 +1,6 @@
 # League of Chess - Developer Documentation
 
-Last Updated: 2026-02-13
+Last Updated: 2026-02-19
 
 > **Keep this file current.** Update the relevant sections whenever you change game mechanics, add/rename modules, restructure directories, change dependencies, or shift development priorities. See [Maintaining This Document](#maintaining-this-document) for the update checklist.
 
@@ -311,7 +311,7 @@ Ports: `80` = frontend (Nginx), `8080` = backend (FastAPI). Requires `.env` at p
 
 ## Testing Strategy
 
-121 test functions across 18 files. Unit tests use `mocks/empty_game.py` (isolated, no DB); integration tests use `mocks/starting_game.py` + FastAPI test client. `test_utils.py` provides `select_and_move_white/black_piece()` helpers.
+212 test functions across 19 files. Unit tests use `mocks/empty_game.py` (isolated, no DB); integration tests use `mocks/starting_game.py` + FastAPI test client. `test_utils.py` provides `select_and_move_white/black_piece()` helpers.
 
 ### Test Coverage
 
@@ -347,7 +347,7 @@ pytest -v -s -x -k "dragon"         # verbose, print, stop-on-fail, filter
 
 ### Test Quality Metrics
 
-- **Total Tests:** 123 test functions
+- **Total Tests:** 212 test functions (some tests are stubs awaiting implementation)
 - **Test Files:** 18 files (6 unit, 12 integration/support)
 - **Coverage Focus:** Backend game logic (100% of core mechanics tested)
 - **Test Execution Time:** ~5-10 seconds for full suite (fast feedback loop)
@@ -366,6 +366,8 @@ Current focus: neutral monster buff implementation, marked-for-death mechanics v
 
 - Stalemate detection fix (side-to-move logic)
 - Marked-for-death mechanic validation (bishop 3-stack, 5-dragon-stack)
+- 5-dragon-stack marked-for-death adjacent capture implemented for all piece types
+- Knight dragon buff path collision bug fix (or → and)
 - Baron Nashor buff + check validation
 - Pawn advantage calculation fix (average piece value)
 - Turn skip edge cases (all pieces stunned)

@@ -319,6 +319,21 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
                 possible_moves.append([en_passant_dest_row, lateral_position[1]])
                 possible_captures.append([[en_passant_dest_row, lateral_position[1]], [curr_position[0] , lateral_position[1]]])
 
+    # 5 dragon buff stacks: marked-for-death - enemy pieces adjacent to pawn's landing square can be captured
+    if dragon_buff >= 5:
+        adjacent_squares = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
+        for possible_move in possible_moves:
+            for adjacent_square in adjacent_squares:
+                potential_capture_square = [possible_move[0] + adjacent_square[0], possible_move[1] + adjacent_square[1]]
+                if potential_capture_square[0] < 0 or potential_capture_square[0] > 7 or potential_capture_square[1] < 0 or potential_capture_square[1] > 7:
+                    continue
+                square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
+                if square and any(opposing_side in piece.get("type", "") for piece in square):
+                    if any("king" in piece.get("type", "") for piece in square):
+                        threatening_move.append(possible_move)
+                    else:
+                        possible_captures.append([possible_move, potential_capture_square])
+
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
 
 
@@ -500,6 +515,21 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
                     else:
                         possible_captures.append([possible_move, potential_capture_square])
 
+    # 5 dragon buff stacks: marked-for-death - enemy pieces adjacent to bishop's landing square can be captured
+    if dragon_buff >= 5:
+        adjacent_squares = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
+        for possible_move in possible_moves:
+            for adjacent_square in adjacent_squares:
+                potential_capture_square = [possible_move[0] + adjacent_square[0], possible_move[1] + adjacent_square[1]]
+                if potential_capture_square[0] < 0 or potential_capture_square[0] > 7 or potential_capture_square[1] < 0 or potential_capture_square[1] > 7:
+                    continue
+                square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
+                if square and any(opposing_side in piece.get("type", "") for piece in square):
+                    if any("king" in piece.get("type", "") for piece in square):
+                        threatening_move.append(possible_move)
+                    else:
+                        possible_captures.append([possible_move, potential_capture_square])
+
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
 
 
@@ -582,6 +612,21 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
             castle_moves.append([start_row, rook_targets["left"]])
         elif curr_position == [start_row, rook_cols["right"]] and not curr_game_state["castle_log"][side]["has_right_rook_moved"]:
             castle_moves.append([start_row, rook_targets["right"]])
+    # 5 dragon buff stacks: marked-for-death - enemy pieces adjacent to rook's landing square can be captured
+    if dragon_buff >= 5:
+        adjacent_squares = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
+        for possible_move in possible_moves:
+            for adjacent_square in adjacent_squares:
+                potential_capture_square = [possible_move[0] + adjacent_square[0], possible_move[1] + adjacent_square[1]]
+                if potential_capture_square[0] < 0 or potential_capture_square[0] > 7 or potential_capture_square[1] < 0 or potential_capture_square[1] > 7:
+                    continue
+                square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
+                if square and any(opposing_side in piece.get("type", "") for piece in square):
+                    if any("king" in piece.get("type", "") for piece in square):
+                        threatening_move.append(possible_move)
+                    else:
+                        possible_captures.append([possible_move, potential_capture_square])
+
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move, "castle_moves": castle_moves})
 
 
@@ -638,6 +683,21 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
             possible_position[0] += direction[0]
             possible_position[1] += direction[1]
             
+    # 5 dragon buff stacks: marked-for-death - enemy pieces adjacent to queen's landing square can be captured
+    if dragon_buff >= 5:
+        adjacent_squares = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
+        for possible_move in possible_moves:
+            for adjacent_square in adjacent_squares:
+                potential_capture_square = [possible_move[0] + adjacent_square[0], possible_move[1] + adjacent_square[1]]
+                if potential_capture_square[0] < 0 or potential_capture_square[0] > 7 or potential_capture_square[1] < 0 or potential_capture_square[1] > 7:
+                    continue
+                square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
+                if square and any(opposing_side in piece.get("type", "") for piece in square):
+                    if any("king" in piece.get("type", "") for piece in square):
+                        threatening_move.append(possible_move)
+                    else:
+                        possible_captures.append([possible_move, potential_capture_square])
+
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
 
 
@@ -719,4 +779,20 @@ def get_moves_for_king(curr_game_state, prev_game_state, curr_position):
             ((rook_dragon_buff(start_row, 7) >= 4 and dragon_buff >= 4) or is_path_clear(4, 7))):
             castle_moves.append([start_row, 6])
     
-    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": [], "castle_moves": castle_moves}, is_king=True)
+    # 5 dragon buff stacks: marked-for-death - enemy pieces adjacent to king's landing square can be captured
+    threatening_move = []
+    if dragon_buff >= 5:
+        adjacent_squares = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
+        for possible_move in possible_moves:
+            for adjacent_square in adjacent_squares:
+                potential_capture_square = [possible_move[0] + adjacent_square[0], possible_move[1] + adjacent_square[1]]
+                if potential_capture_square[0] < 0 or potential_capture_square[0] > 7 or potential_capture_square[1] < 0 or potential_capture_square[1] > 7:
+                    continue
+                square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
+                if square and any(opposing_side in piece.get("type", "") for piece in square):
+                    if any("king" in piece.get("type", "") for piece in square):
+                        threatening_move.append(possible_move)
+                    else:
+                        possible_captures.append([possible_move, potential_capture_square])
+
+    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move, "castle_moves": castle_moves}, is_king=True)

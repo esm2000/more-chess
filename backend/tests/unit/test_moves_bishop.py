@@ -543,31 +543,292 @@ def test_bishop_threatening_move():
 
 
 def test_bishop_with_three_or_more_dragon_buff_stacks_ignores_unit_collision_with_ally_pawns():
-    pass
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|wp|##|wp|##|__|##|      ## 2 |__|##|bp|##|bp|##|__|##|
+    ## 3 |##|__|##|wb|##|__|##|__|      ## 3 |##|__|##|bb|##|__|##|__|
+    ## 4 |__|##|wp|##|wp|##|__|##|      ## 4 |__|##|bp|##|bp|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    # Ally pawns at [2,2],[2,4],[4,2],[4,4] block all 4 bishop diagonals.
+    # With 3+ dragon buff stacks, ally pawn collisions should be ignored.
+    for side in ["white", "black"]:
+        for dragon_buff_stacks in [3, 4, 5]:
+            curr_game_state = copy.deepcopy(empty_game)
+            curr_game_state["board_state"][3][3] = [{"type": f"{side}_bishop", "dragon_buff": dragon_buff_stacks}]
+            curr_game_state["board_state"][2][2] = [{"type": f"{side}_pawn"}]
+            curr_game_state["board_state"][2][4] = [{"type": f"{side}_pawn"}]
+            curr_game_state["board_state"][4][2] = [{"type": f"{side}_pawn"}]
+            curr_game_state["board_state"][4][4] = [{"type": f"{side}_pawn"}]
+
+            prev_game_state = copy.deepcopy(curr_game_state)
+
+            possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, prev_game_state, [3, 3])
+            assert [1, 5] in possible_moves_and_captures["possible_moves"]
+            assert [1, 1] in possible_moves_and_captures["possible_moves"]
+            assert [5, 5] in possible_moves_and_captures["possible_moves"]
+            assert [5, 1] in possible_moves_and_captures["possible_moves"]
+            assert len(possible_moves_and_captures["possible_captures"]) == 0
+
 
 def test_bishop_with_three_dragon_buff_stacks_does_not_ignore_unit_collision_with_ally_non_pawns():
-    pass
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|wr|##|wr|##|__|##|      ## 2 |__|##|br|##|br|##|__|##|
+    ## 3 |##|__|##|wb|##|__|##|__|      ## 3 |##|__|##|bb|##|__|##|__|
+    ## 4 |__|##|wr|##|wr|##|__|##|      ## 4 |__|##|br|##|br|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    # With exactly 3 dragon buff stacks, ally non-pawn pieces should still block the bishop.
+    for side in ["white", "black"]:
+        for ally_piece_type in ["knight", "bishop", "rook", "queen"]:
+            curr_game_state = copy.deepcopy(empty_game)
+            curr_game_state["board_state"][3][3] = [{"type": f"{side}_bishop", "dragon_buff": 3}]
+            curr_game_state["board_state"][2][2] = [{"type": f"{side}_{ally_piece_type}"}]
+            curr_game_state["board_state"][2][4] = [{"type": f"{side}_{ally_piece_type}"}]
+            curr_game_state["board_state"][4][2] = [{"type": f"{side}_{ally_piece_type}"}]
+            curr_game_state["board_state"][4][4] = [{"type": f"{side}_{ally_piece_type}"}]
+
+            prev_game_state = copy.deepcopy(curr_game_state)
+
+            possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, prev_game_state, [3, 3])
+            assert len(possible_moves_and_captures["possible_moves"]) == 0
+            assert len(possible_moves_and_captures["possible_captures"]) == 0
+
 
 def test_bishop_with_three_dragon_buff_stacks_does_not_ignore_unit_collision_with_enemy_pawns():
-    pass
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|bp|##|bp|##|__|##|      ## 2 |__|##|wp|##|wp|##|__|##|
+    ## 3 |##|__|##|wb|##|__|##|__|      ## 3 |##|__|##|bb|##|__|##|__|
+    ## 4 |__|##|bp|##|bp|##|__|##|      ## 4 |__|##|wp|##|wp|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    # With 3 dragon buff stacks, enemy pawns should still block the bishop.
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_bishop", "dragon_buff": 3}]
+        curr_game_state["board_state"][2][2] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][2][4] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][4][2] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][4][4] = [{"type": f"{opposite_side}_pawn"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+
+        possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, prev_game_state, [3, 3])
+        # Bishop captures enemy pawns but should NOT move beyond them
+        assert [1, 5] not in possible_moves_and_captures["possible_moves"]
+        assert [1, 1] not in possible_moves_and_captures["possible_moves"]
+        assert [5, 5] not in possible_moves_and_captures["possible_moves"]
+        assert [5, 1] not in possible_moves_and_captures["possible_moves"]
+
 
 def test_bishop_with_three_dragon_buff_stacks_does_not_ignore_unit_collision_with_enemy_non_pawns():
-    pass
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|br|##|br|##|__|##|      ## 2 |__|##|wr|##|wr|##|__|##|
+    ## 3 |##|__|##|wb|##|__|##|__|      ## 3 |##|__|##|bb|##|__|##|__|
+    ## 4 |__|##|br|##|br|##|__|##|      ## 4 |__|##|wr|##|wr|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    # With 3 dragon buff stacks, enemy non-pawn pieces should still block the bishop.
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        for enemy_piece_type in ["knight", "bishop", "rook", "queen"]:
+            curr_game_state = copy.deepcopy(empty_game)
+            curr_game_state["board_state"][3][3] = [{"type": f"{side}_bishop", "dragon_buff": 3}]
+            curr_game_state["board_state"][2][2] = [{"type": f"{opposite_side}_{enemy_piece_type}"}]
+            curr_game_state["board_state"][2][4] = [{"type": f"{opposite_side}_{enemy_piece_type}"}]
+            curr_game_state["board_state"][4][2] = [{"type": f"{opposite_side}_{enemy_piece_type}"}]
+            curr_game_state["board_state"][4][4] = [{"type": f"{opposite_side}_{enemy_piece_type}"}]
+
+            prev_game_state = copy.deepcopy(curr_game_state)
+
+            possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, prev_game_state, [3, 3])
+            assert [1, 5] not in possible_moves_and_captures["possible_moves"]
+            assert [1, 1] not in possible_moves_and_captures["possible_moves"]
+            assert [5, 5] not in possible_moves_and_captures["possible_moves"]
+            assert [5, 1] not in possible_moves_and_captures["possible_moves"]
+
 
 def test_bishop_with_four_or_more_dragon_buff_stacks_ignores_unit_collision_with_ally_pieces():
-    pass
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|wr|##|wr|##|__|##|      ## 2 |__|##|br|##|br|##|__|##|
+    ## 3 |##|__|##|wb|##|__|##|__|      ## 3 |##|__|##|bb|##|__|##|__|
+    ## 4 |__|##|wr|##|wr|##|__|##|      ## 4 |__|##|br|##|br|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    # With 4+ dragon buff stacks, ALL ally pieces (including non-pawns) should be ignored.
+    for side in ["white", "black"]:
+        for dragon_buff_stacks in [4, 5]:
+            for ally_piece_type in ["pawn", "knight", "bishop", "rook", "queen"]:
+                curr_game_state = copy.deepcopy(empty_game)
+                curr_game_state["board_state"][3][3] = [{"type": f"{side}_bishop", "dragon_buff": dragon_buff_stacks}]
+                curr_game_state["board_state"][2][2] = [{"type": f"{side}_{ally_piece_type}"}]
+                curr_game_state["board_state"][2][4] = [{"type": f"{side}_{ally_piece_type}"}]
+                curr_game_state["board_state"][4][2] = [{"type": f"{side}_{ally_piece_type}"}]
+                curr_game_state["board_state"][4][4] = [{"type": f"{side}_{ally_piece_type}"}]
+
+                prev_game_state = copy.deepcopy(curr_game_state)
+
+                possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, prev_game_state, [3, 3])
+                assert [1, 5] in possible_moves_and_captures["possible_moves"]
+                assert [1, 1] in possible_moves_and_captures["possible_moves"]
+                assert [5, 5] in possible_moves_and_captures["possible_moves"]
+                assert [5, 1] in possible_moves_and_captures["possible_moves"]
+                assert len(possible_moves_and_captures["possible_captures"]) == 0
+
 
 def test_bishop_with_four_or_more_dragon_buff_stacks_does_not_ignore_unit_collision_with_enemy_pieces():
-    pass
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|br|##|br|##|__|##|      ## 2 |__|##|wr|##|wr|##|__|##|
+    ## 3 |##|__|##|wb|##|__|##|__|      ## 3 |##|__|##|bb|##|__|##|__|
+    ## 4 |__|##|br|##|br|##|__|##|      ## 4 |__|##|wr|##|wr|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    # With 4+ dragon buff stacks, enemy pieces should still block the bishop.
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        for dragon_buff_stacks in [4, 5]:
+            for enemy_piece_type in ["pawn", "knight", "bishop", "rook", "queen"]:
+                curr_game_state = copy.deepcopy(empty_game)
+                curr_game_state["board_state"][3][3] = [{"type": f"{side}_bishop", "dragon_buff": dragon_buff_stacks}]
+                curr_game_state["board_state"][2][2] = [{"type": f"{opposite_side}_{enemy_piece_type}"}]
+                curr_game_state["board_state"][2][4] = [{"type": f"{opposite_side}_{enemy_piece_type}"}]
+                curr_game_state["board_state"][4][2] = [{"type": f"{opposite_side}_{enemy_piece_type}"}]
+                curr_game_state["board_state"][4][4] = [{"type": f"{opposite_side}_{enemy_piece_type}"}]
+
+                prev_game_state = copy.deepcopy(curr_game_state)
+
+                possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, prev_game_state, [3, 3])
+                assert [1, 5] not in possible_moves_and_captures["possible_moves"]
+                assert [1, 1] not in possible_moves_and_captures["possible_moves"]
+                assert [5, 5] not in possible_moves_and_captures["possible_moves"]
+                assert [5, 1] not in possible_moves_and_captures["possible_moves"]
+
 
 def test_bishop_with_five_dragon_buff_stacks_marks_enemy_piece_for_death():
-    pass
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|wb|##|__|##|__|      ## 3 |##|__|##|bb|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|bp|__|##|      ## 6 |__|##|__|##|__|wp|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    # Enemy pawn at [6,5] is adjacent to destination [5,5].
+    # With 5 dragon buff stacks, moving to [5,5] should allow capturing [6,5].
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_bishop", "dragon_buff": 5}]
+        curr_game_state["board_state"][6][5] = [{"type": f"{opposite_side}_pawn"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+
+        possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, prev_game_state, [3, 3])
+        assert [5, 5] in possible_moves_and_captures["possible_moves"]
+        assert [[5, 5], [6, 5]] in possible_moves_and_captures["possible_captures"]
+
 
 def test_bishop_with_five_dragon_buff_stacks_marks_enemy_pieces_for_death():
-    pass
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|wb|##|__|##|__|      ## 3 |##|__|##|bb|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|bp|__|      ## 5 |##|__|##|__|##|__|wp|__|
+    ## 6 |__|##|__|##|__|bp|__|##|      ## 6 |__|##|__|##|__|wp|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    # Enemy pawns at [6,5] and [5,6], both adjacent to destination [5,5].
+    # With 5 dragon buff stacks, moving to [5,5] should allow capturing both.
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_bishop", "dragon_buff": 5}]
+        curr_game_state["board_state"][6][5] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][5][6] = [{"type": f"{opposite_side}_pawn"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+
+        possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, prev_game_state, [3, 3])
+        assert [[5, 5], [6, 5]] in possible_moves_and_captures["possible_captures"]
+        assert [[5, 5], [5, 6]] in possible_moves_and_captures["possible_captures"]
+
 
 def test_bishop_with_five_dragon_buff_stacks_does_not_mark_enemy_pieces_for_death():
-    pass
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|wb|##|__|##|__|      ## 3 |##|__|##|bb|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|bp|##|__|##|__|      ## 7 |##|__|##|wp|##|__|##|__|
+
+    # Enemy pawn at [7,3] is NOT adjacent to any bishop diagonal from [3,3].
+    # It should not be marked for death.
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_bishop", "dragon_buff": 5}]
+        curr_game_state["board_state"][7][3] = [{"type": f"{opposite_side}_pawn"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+
+        possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, prev_game_state, [3, 3])
+        for capture in possible_moves_and_captures["possible_captures"]:
+            assert capture[1] != [7, 3]
+
 
 def test_bishop_with_five_dragon_buff_stacks_does_not_mark_enemy_kings():
-    pass
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|wb|##|__|##|__|      ## 3 |##|__|##|bb|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|bK|__|##|      ## 6 |__|##|__|##|__|wK|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    # Enemy king at [6,5] is adjacent to destination [5,5].
+    # Kings should NOT be capturable via marked-for-death.
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_bishop", "dragon_buff": 5}]
+        curr_game_state["board_state"][6][5] = [{"type": f"{opposite_side}_king"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+
+        possible_moves_and_captures = moves.get_moves_for_bishop(curr_game_state, prev_game_state, [3, 3])
+        for capture in possible_moves_and_captures["possible_captures"]:
+            assert capture[1] != [6, 5]
+        assert [5, 5] in possible_moves_and_captures["possible_moves"]

@@ -1,6 +1,6 @@
 # League of Chess - Developer Documentation
 
-Last Updated: 2026-02-19
+Last Updated: 2026-02-24
 
 > **Keep this file current.** Update the relevant sections whenever you change game mechanics, add/rename modules, restructure directories, change dependencies, or shift development priorities. See [Maintaining This Document](#maintaining-this-document) for the update checklist.
 
@@ -347,8 +347,8 @@ pytest -v -s -x -k "dragon"         # verbose, print, stop-on-fail, filter
 
 ### Test Quality Metrics
 
-- **Total Tests:** 212 test functions (some tests are stubs awaiting implementation)
-- **Test Files:** 18 files (6 unit, 12 integration/support)
+- **Total Tests:** 212 test functions (pawn dragon buff stubs and 2 file_control_limitations stubs still pending)
+- **Test Files:** 19 files (6 unit, 12 integration, 1 support)
 - **Coverage Focus:** Backend game logic (100% of core mechanics tested)
 - **Test Execution Time:** ~5-10 seconds for full suite (fast feedback loop)
 - **Test Isolation:** Each test uses fresh game state from mocks (no shared state)
@@ -368,6 +368,7 @@ Current focus: neutral monster buff implementation, marked-for-death mechanics v
 - Marked-for-death mechanic validation (bishop 3-stack, 5-dragon-stack)
 - 5-dragon-stack marked-for-death adjacent capture implemented for all piece types
 - Knight dragon buff path collision bug fix (or → and)
+- Dragon buff stack unit tests implemented for bishop, rook, queen, king (34 tests)
 - Baron Nashor buff + check validation
 - Pawn advantage calculation fix (average piece value)
 - Turn skip edge cases (all pieces stunned)
@@ -487,7 +488,7 @@ game_state = {
 
 ## Maintaining This Document
 
-Update this file whenever you change architecture, game mechanics, modules, workflow, tests, or priorities.
+**IMPORTANT — this applies to all contributors including AI agents:** Update this file as part of the same task/commit whenever you change architecture, game mechanics, modules, workflow, tests, or priorities. Do not defer CLAUDE.md updates to a separate task. If you implemented something, record it here before closing the task.
 
 ### Update Triggers Checklist
 
@@ -496,7 +497,7 @@ Update this file whenever you change architecture, game mechanics, modules, work
 - [ ] Changed directory structure → Section 3
 - [ ] New dependency → Section 2
 - [ ] Modified build/test process → Section 6
-- [ ] New test suite → Section 7
+- [ ] New test suite or significant test additions → Section 7 (update counts and stub notes)
 - [ ] Completed major feature → Section 8
 - [ ] Changed common pattern → Section 9
-- [ ] Any update → bump "Last Updated" timestamp
+- [ ] Any update → bump "Last Updated" timestamp to today's date

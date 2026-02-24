@@ -207,13 +207,106 @@ def test_king_being_allowed_to_move_to_sword_in_stone_square():
             assert sword_in_the_stone_position in possible_moves_and_captures["possible_moves"]
 
 def test_king_with_five_dragon_buff_stacks_marks_enemy_piece_for_death():
-    pass
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|bp|##|__|##|__|      ## 1 |##|__|##|wp|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|wK|##|__|##|__|      ## 3 |##|__|##|bK|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    # Enemy pawn at [1,3] is adjacent to destination [2,3].
+    # With 5 dragon buff stacks, moving to [2,3] should allow capturing [1,3].
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_king", "dragon_buff": 5}]
+        curr_game_state["board_state"][1][3] = [{"type": f"{opposite_side}_pawn"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+
+        possible_moves_and_captures = moves.get_moves_for_king(curr_game_state, prev_game_state, [3, 3])
+        assert [2, 3] in possible_moves_and_captures["possible_moves"]
+        assert [[2, 3], [1, 3]] in possible_moves_and_captures["possible_captures"]
+
 
 def test_king_with_five_dragon_buff_stacks_marks_enemy_pieces_for_death():
-    pass
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|bp|bp|##|__|##|__|      ## 1 |##|__|wp|wp|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|wK|##|__|##|__|      ## 3 |##|__|##|bK|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    # Enemy pawns at [1,3] and [1,2], both adjacent to destination [2,3].
+    # With 5 dragon buff stacks, moving to [2,3] should allow capturing both.
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_king", "dragon_buff": 5}]
+        curr_game_state["board_state"][1][3] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][1][2] = [{"type": f"{opposite_side}_pawn"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+
+        possible_moves_and_captures = moves.get_moves_for_king(curr_game_state, prev_game_state, [3, 3])
+        assert [[2, 3], [1, 3]] in possible_moves_and_captures["possible_captures"]
+        assert [[2, 3], [1, 2]] in possible_moves_and_captures["possible_captures"]
+
 
 def test_king_with_five_dragon_buff_stacks_does_not_mark_enemy_pieces_for_death():
-    pass
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |bp|##|__|##|__|##|__|##|      ## 0 |wp|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|wK|##|__|##|__|      ## 3 |##|__|##|bK|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    # Enemy pawn at [0,0] is NOT adjacent to any king destination from [3,3].
+    # It should not be marked for death.
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_king", "dragon_buff": 5}]
+        curr_game_state["board_state"][0][0] = [{"type": f"{opposite_side}_pawn"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+
+        possible_moves_and_captures = moves.get_moves_for_king(curr_game_state, prev_game_state, [3, 3])
+        for capture in possible_moves_and_captures["possible_captures"]:
+            assert capture[1] != [0, 0]
+
 
 def test_king_with_five_dragon_buff_stacks_does_not_mark_enemy_kings():
-    pass
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|bK|##|__|##|__|      ## 1 |##|__|##|wK|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|wK|##|__|##|__|      ## 3 |##|__|##|bK|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+
+    # Enemy king at [1,3] is adjacent to destination [2,3].
+    # Kings should NOT be capturable via marked-for-death.
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][3][3] = [{"type": f"{side}_king", "dragon_buff": 5}]
+        curr_game_state["board_state"][1][3] = [{"type": f"{opposite_side}_king"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+
+        possible_moves_and_captures = moves.get_moves_for_king(curr_game_state, prev_game_state, [3, 3])
+        for capture in possible_moves_and_captures["possible_captures"]:
+            assert capture[1] != [1, 3]
+        assert [2, 3] in possible_moves_and_captures["possible_moves"]

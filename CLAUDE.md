@@ -382,7 +382,7 @@ Current focus: neutral monster buff implementation, marked-for-death mechanics v
 ### Current Priorities
 
 1. Finalize Neutral Monster Buff Implementation
-2. Improve Code Maintainability
+2. Add type annotations, module/function docstrings, and TypedDicts (especially `GameState`) to reduce AI tool token usage and improve maintainability
 3. Complete Frontend Buff Visualization
 4. Shop and Pawn Exchange Finalization
 5. Develop CPU Opponent

@@ -28,13 +28,11 @@ def test_pawn_movement():
         curr_game_state["board_state"][3][3] = [{"type": f"{side}_pawn"}]
 
         prev_game_state = copy.deepcopy(curr_game_state)
-        prev_game_state["board_state"][2 if side == 'black' else 4][3] = copy.deepcopy(curr_game_state["board_state"][5 if side == 'black' else 2][3])
-        prev_game_state["board_state"][3][3] = None
 
         curr_position = [3, 3]
 
         possible_moves_and_captures = moves.get_moves_for_pawn(curr_game_state, prev_game_state, curr_position)
-        assert [[4 if side == 'black' else 2, 3]] == sorted(possible_moves_and_captures["possible_moves"])
+        assert [[2 if side == 'white' else 4, 3]] == sorted(possible_moves_and_captures["possible_moves"])
         assert len(possible_moves_and_captures["possible_captures"]) == 0
 
 
@@ -60,20 +58,22 @@ def test_pawn_capture():
     ## 6 |__|##|__|##|__|##|__|##|
     ## 7 |##|__|##|__|##|__|##|__|
     for side in ["white", "black"]:
+        opposite_side = "black" if side == "white" else "white"
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][4 if side == 'black' else 3][2] = [{"type": f"{'black' if side == 'black' else 'white'}_pawn"}]
-        curr_game_state["board_state"][4 if side == 'black' else 3][4] = [{"type": f"{'black' if side == 'black' else 'white'}_king"}]
-        curr_game_state["board_state"][5 if side == 'black' else 2][3] = [{"type": f"{'white' if side == 'black' else 'black'}_pawn"}]
+        curr_game_state["board_state"][3 if side == 'white' else 4][2] = [{"type": f"{side}_pawn"}]
+        curr_game_state["board_state"][3 if side == 'white' else 4][4] = [{"type": f"{side}_king"}]
+        curr_game_state["board_state"][2 if side == 'white' else 5][3] = [{"type": f"{opposite_side}_pawn"}]
 
         prev_game_state = copy.deepcopy(curr_game_state)
-        prev_game_state["board_state"][6 if side == 'black' else 1][3] = [{"type": f"{'white' if side == 'black' else 'black'}_pawn"}]
-        
-        curr_position = [5 if side == 'black' else 2, 3]
+        prev_game_state["board_state"][4 if side == 'white' else 3][2] = copy.deepcopy(curr_game_state["board_state"][3 if side == 'white' else 4][2])
+        prev_game_state["board_state"][3 if side == 'white' else 4][2] = None
+
+        curr_position = [2 if side == 'white' else 5, 3]
 
         possible_moves_and_captures = moves.get_moves_for_pawn(curr_game_state, prev_game_state, curr_position)
 
-        assert sorted([[4 if side == 'black' else 3, 3], [4 if side == 'black' else 3, 2]]) == sorted(possible_moves_and_captures["possible_moves"])
-        assert [[[4 if side == 'black' else 3, 2], [4 if side == 'black' else 3, 2]]] == possible_moves_and_captures["possible_captures"]
+        assert sorted([[3 if side == 'white' else 4, 3], [3 if side == 'white' else 4, 2]]) == sorted(possible_moves_and_captures["possible_moves"])
+        assert [[[3 if side == 'white' else 4, 2], [3 if side == 'white' else 4, 2]]] == possible_moves_and_captures["possible_captures"]
         
 
 def test_blocked_pawn():
@@ -99,16 +99,17 @@ def test_blocked_pawn():
     ## 7 |##|__|##|__|##|__|##|__|
     
     for side in ["white", "black"]:
+        opposite_side = "black" if side == "white" else "white"
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][4 if side == 'black' else 3][3] = [{"type": f"{'black' if side == 'black' else 'white'}_pawn"}]
-        curr_game_state["board_state"][4 if side == 'black' else 3][2] = [{"type": f"{'black' if side == 'black' else 'white'}_king"}]
-        curr_game_state["board_state"][5 if side == 'black' else 2][3] = [{"type": f"{'white' if side == 'black' else 'black'}_pawn"}]
+        curr_game_state["board_state"][3 if side == 'white' else 4][3] = [{"type": f"{side}_pawn"}]
+        curr_game_state["board_state"][3 if side == 'white' else 4][2] = [{"type": f"{side}_king"}]
+        curr_game_state["board_state"][2 if side == 'white' else 5][3] = [{"type": f"{opposite_side}_pawn"}]
 
         prev_game_state = copy.deepcopy(curr_game_state)
-        prev_game_state["board_state"][6 if side == 'black' else 1][3] = copy.deepcopy(curr_game_state["board_state"][5 if side == 'black' else 2][3])
-        prev_game_state["board_state"][5 if side == 'black' else 2][3] = None
+        prev_game_state["board_state"][4 if side == 'white' else 3][2] = copy.deepcopy(curr_game_state["board_state"][3 if side == 'white' else 4][2])
+        prev_game_state["board_state"][3 if side == 'white' else 4][2] = None
 
-        curr_position = [5 if side == 'black' else 2, 3]
+        curr_position = [2 if side == 'white' else 5, 3]
 
         possible_moves_and_captures = moves.get_moves_for_pawn(curr_game_state, prev_game_state, curr_position)
 
@@ -139,24 +140,25 @@ def test_buffed_pawn_capture():
     ## 7 |##|__|##|__|##|__|##|__|
 
     for side in ["white", "black"]:
+        opposite_side = "black" if side == "white" else "white"
         for pawn_buff in [1, 2]:
             curr_game_state = copy.deepcopy(empty_game)
-            curr_game_state["board_state"][4 if side == 'black' else 3][3] = [{"type": f"{'black' if side == 'black' else 'white'}_pawn"}]
-            curr_game_state["board_state"][5 if side == 'black' else 2][3] = [{
-                                                                    "type": f"{'white' if side == 'black' else 'black'}_pawn",
+            curr_game_state["board_state"][3 if side == 'white' else 4][3] = [{"type": f"{side}_pawn"}]
+            curr_game_state["board_state"][2 if side == 'white' else 5][3] = [{
+                                                                    "type": f"{opposite_side}_pawn",
                                                                     "pawn_buff": pawn_buff
                                                                 }]
-            
+
             prev_game_state = copy.deepcopy(curr_game_state)
-            prev_game_state["board_state"][6 if side == 'black' else 1][3] = copy.deepcopy(curr_game_state["board_state"][5 if side == 'black' else 2][3])
-            prev_game_state["board_state"][5 if side == 'black' else 2][3] = None
-            
-            curr_position = [5 if side == 'black' else 2, 3]
+            prev_game_state["board_state"][4 if side == 'white' else 3][3] = copy.deepcopy(curr_game_state["board_state"][3 if side == 'white' else 4][3])
+            prev_game_state["board_state"][3 if side == 'white' else 4][3] = None
+
+            curr_position = [2 if side == 'white' else 5, 3]
 
             possible_moves_and_captures = moves.get_moves_for_pawn(curr_game_state, prev_game_state, curr_position)
 
-            assert sorted([[4 if side == 'black' else 3, 3]]) == sorted(possible_moves_and_captures["possible_moves"])
-            assert [[[4 if side == 'black' else 3, 3], [4 if side == 'black' else 3, 3]]] == possible_moves_and_captures["possible_captures"]
+            assert sorted([[3 if side == 'white' else 4, 3]]) == sorted(possible_moves_and_captures["possible_moves"])
+            assert [[[3 if side == 'white' else 4, 3], [3 if side == 'white' else 4, 3]]] == possible_moves_and_captures["possible_captures"]
 
 
 def test_buffed_pawn_invicibility():
@@ -182,24 +184,25 @@ def test_buffed_pawn_invicibility():
     ## 7 |##|__|##|__|##|__|##|__|
 
     for side in ["white", "black"]:
+        opposite_side = "black" if side == "white" else "white"
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][4 if side == 'black' else 3][2] = [{
-                                                                "type": f"{'black' if side == 'black' else 'white'}_pawn",
+        curr_game_state["board_state"][3 if side == 'white' else 4][2] = [{
+                                                                "type": f"{side}_pawn",
                                                                 "pawn_buff": 2
                                                             }]
-        curr_game_state["board_state"][5 if side == 'black' else 2][3] = [{
-                                                                "type": f"{'white' if side == 'black' else 'black'}_pawn"
+        curr_game_state["board_state"][2 if side == 'white' else 5][3] = [{
+                                                                "type": f"{opposite_side}_pawn"
                                                             }]
-        
+
         prev_game_state = copy.deepcopy(curr_game_state)
-        prev_game_state["board_state"][6 if side == 'black' else 1][3] = copy.deepcopy(curr_game_state["board_state"][5 if side == 'black' else 2][3])
-        prev_game_state["board_state"][5 if side == 'black' else 2][3] = None
-        
-        curr_position = [5 if side == 'black' else 2, 3]
+        prev_game_state["board_state"][4 if side == 'white' else 3][2] = copy.deepcopy(curr_game_state["board_state"][3 if side == 'white' else 4][2])
+        prev_game_state["board_state"][3 if side == 'white' else 4][2] = None
+
+        curr_position = [2 if side == 'white' else 5, 3]
 
         possible_moves_and_captures = moves.get_moves_for_pawn(curr_game_state, prev_game_state, curr_position)
 
-        assert sorted([[4 if side == 'black' else 3, 3]]) == sorted(possible_moves_and_captures["possible_moves"])
+        assert sorted([[3 if side == 'white' else 4, 3]]) == sorted(possible_moves_and_captures["possible_moves"])
         assert len(possible_moves_and_captures["possible_captures"]) == 0
 
 
@@ -226,23 +229,22 @@ def test_pawn_interactions_with_neutral_monster():
     ## 7 |##|__|##|__|##|__|##|__|
 
     for side in ["white", "black"]:
+        opposite_side = "black" if side == "white" else "white"
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][4 if side == 'black' else 3][3] = [{
+        curr_game_state["board_state"][3 if side == 'white' else 4][3] = [{
                                                                 "type": "neutral_dragon",
                                                             }]
-        curr_game_state["board_state"][5 if side == 'black' else 2][3] = [{
-                                                                "type": f"{'white' if side == 'black' else 'black'}_pawn"
+        curr_game_state["board_state"][2 if side == 'white' else 5][3] = [{
+                                                                "type": f"{opposite_side}_pawn"
                                                             }]
-        
+
         prev_game_state = copy.deepcopy(curr_game_state)
-        prev_game_state["board_state"][6 if side == 'black' else 1][3] = copy.deepcopy(curr_game_state["board_state"][5 if side == 'black' else 2][3])
-        prev_game_state["board_state"][5 if side == 'black' else 2][3] = None
-        
-        curr_position = [5 if side == 'black' else 2, 3]
+
+        curr_position = [2 if side == 'white' else 5, 3]
 
         possible_moves_and_captures = moves.get_moves_for_pawn(curr_game_state, prev_game_state, curr_position)
 
-        assert sorted([[4 if side == 'black' else 3, 3]]) == sorted(possible_moves_and_captures["possible_moves"])
+        assert sorted([[3 if side == 'white' else 4, 3]]) == sorted(possible_moves_and_captures["possible_moves"])
         assert len(possible_moves_and_captures["possible_captures"]) == 0
 
     ##    0  1  2  3  4  5  6  7
@@ -268,29 +270,28 @@ def test_pawn_interactions_with_neutral_monster():
 
     for health in [5, 1]:
         for side in ["white", "black"]:
+            opposite_side = "black" if side == "white" else "white"
             for boss in ["dragon", "baron_nashor", "board_herald"]:
                 curr_game_state = copy.deepcopy(empty_game)
-                curr_game_state["board_state"][4 if side == 'black' else 3][2] = [{
+                curr_game_state["board_state"][3 if side == 'white' else 4][2] = [{
                                                                         "type": f"neutral_{boss}",
                                                                         "health": health
                                                                     }]
-                curr_game_state["board_state"][5 if side == 'black' else 2][3] = [{
-                                                                        "type": f"{'white' if side == 'black' else 'black'}_pawn"
+                curr_game_state["board_state"][2 if side == 'white' else 5][3] = [{
+                                                                        "type": f"{opposite_side}_pawn"
                                                                     }]
-                
+
                 prev_game_state = copy.deepcopy(curr_game_state)
-                prev_game_state["board_state"][6 if side == 'black' else 1][3] = copy.deepcopy(curr_game_state["board_state"][5 if side == 'black' else 2][3])
-                prev_game_state["board_state"][5 if side == 'black' else 2][3] = None
-                
-                curr_position = [5 if side == 'black' else 2, 3]
+
+                curr_position = [2 if side == 'white' else 5, 3]
 
                 possible_moves_and_captures = moves.get_moves_for_pawn(curr_game_state, prev_game_state, curr_position)
 
-                assert sorted([[4 if side == 'black' else 3, 3], [4 if side == 'black' else 3, 2]]) == sorted(possible_moves_and_captures["possible_moves"])
+                assert sorted([[3 if side == 'white' else 4, 3], [3 if side == 'white' else 4, 2]]) == sorted(possible_moves_and_captures["possible_moves"])
                 if health != 1:
                     assert len(possible_moves_and_captures["possible_captures"]) == 0
                 else:
-                    assert [[[4 if side == 'black' else 3, 2], [4 if side == 'black' else 3, 2]]] == possible_moves_and_captures["possible_captures"]
+                    assert [[[3 if side == 'white' else 4, 2], [3 if side == 'white' else 4, 2]]] == possible_moves_and_captures["possible_captures"]
 
 
 def test_pawn_starting_position():
@@ -424,17 +425,15 @@ def test_pawn_second_move():
 
     for side in ["white", "black"]:
         curr_game_state = copy.deepcopy(empty_game)
-        curr_game_state["board_state"][2 if side == 'black' else 5][2] = [{"type": f"{'black' if side == 'black' else 'white'}_pawn"}]
+        curr_game_state["board_state"][5 if side == 'white' else 2][2] = [{"type": f"{side}_pawn"}]
 
         prev_game_state = copy.deepcopy(curr_game_state)
-        prev_game_state["board_state"][1 if side == 'black' else 6][2] = copy.deepcopy(curr_game_state["board_state"][2 if side == 'black' else 5][2])
-        prev_game_state["board_state"][2 if side == 'black' else 5][2] = None
-        
-        curr_position = [2 if side == 'black' else 5, 2]
+
+        curr_position = [5 if side == 'white' else 2, 2]
 
         possible_moves_and_captures = moves.get_moves_for_pawn(curr_game_state, prev_game_state, curr_position)
 
-        assert sorted([[3 if side == 'black' else 4, 2]]) == sorted(possible_moves_and_captures["possible_moves"])
+        assert sorted([[4 if side == 'white' else 3, 2]]) == sorted(possible_moves_and_captures["possible_moves"])
         assert len(possible_moves_and_captures["possible_captures"]) == 0
 
 
@@ -477,7 +476,7 @@ def test_pawn_en_passant_capture():
         assert [[[5 if side == 'black' else 2, 3], [4 if side == 'black' else 3, 3]]] == possible_moves_and_captures["possible_captures"]
 
 
-def test_pawn_en_passant_neagtive_1():
+def test_pawn_en_passant_negative_1():
     # En passant should be blocked when the opposing king occupies the destination square.
 
     ##    0  1  2  3  4  5  6  7                ##    0  1  2  3  4  5  6  7
@@ -511,7 +510,7 @@ def test_pawn_en_passant_neagtive_1():
         assert not any(capture[0] == [row_ahead, 3] for capture in result["possible_captures"])
 
 
-def test_pawn_en_passant_neagtive_2():
+def test_pawn_en_passant_negative_2():
     # En passant should be blocked when the destination square is already occupied.
 
     ##    0  1  2  3  4  5  6  7                ##    0  1  2  3  4  5  6  7
@@ -667,14 +666,117 @@ def test_pawn_threatening_move():
                 assert len(possible_moves_and_captures["threatening_move"]) == 0
 
 def test_pawn_forward_capture_when_average_piece_value_is_at_least_two_points_higher():
-    # might need to change how its calculated in update_capture_point_advantage()
-    # might need to implement
-    pass
+    ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|bp|__|##|__|##|
+    ## 3 |##|__|##|wp|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|
+
+    ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|__|##|__|##|__|
+    ## 4 |__|##|__|bp|__|##|__|##|
+    ## 5 |##|__|##|wp|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|
+
+    for side in ["white", "black"]:
+        opposite_side = "black" if side == "white" else "white"
+        row_ahead = 3 if side == 'white' else 4
+        attacker_row = 2 if side == 'white' else 5
+
+        # Case A: attacker pawn_buff=2, enemy pawn pawn_buff=0 → forward capture is available
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][row_ahead][3] = [{"type": f"{side}_pawn", "pawn_buff": 0}]
+        curr_game_state["board_state"][attacker_row][3] = [{"type": f"{opposite_side}_pawn", "pawn_buff": 2}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        prev_game_state["board_state"][row_ahead + (1 if side == 'white' else -1)][3] = copy.deepcopy(curr_game_state["board_state"][row_ahead][3])
+        prev_game_state["board_state"][row_ahead][3] = None
+
+        possible_moves_and_captures = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [attacker_row, 3])
+
+        assert [row_ahead, 3] in possible_moves_and_captures["possible_moves"]
+        assert [[row_ahead, 3], [row_ahead, 3]] in possible_moves_and_captures["possible_captures"]
+
+        # Case B: attacker pawn_buff=0 (no advantage) → forward capture is not available
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][row_ahead][3] = [{"type": f"{side}_pawn", "pawn_buff": 0}]
+        curr_game_state["board_state"][attacker_row][3] = [{"type": f"{opposite_side}_pawn", "pawn_buff": 0}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        prev_game_state["board_state"][row_ahead + (1 if side == 'white' else -1)][3] = copy.deepcopy(curr_game_state["board_state"][row_ahead][3])
+        prev_game_state["board_state"][row_ahead][3] = None
+
+        possible_moves_and_captures = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [attacker_row, 3])
+
+        assert len(possible_moves_and_captures["possible_moves"]) == 0
+        assert len(possible_moves_and_captures["possible_captures"]) == 0
+
 
 def test_pawn_immunity_when_average_piece_value_is_at_least_three_points_higher():
-    # might need to change how its calculated in update_capture_point_advantage()
-    # might need to implement
-    pass
+    ## Case A: immune pawn only          Case B: immune pawn + capturable knight
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|bp|__|##|__|##|      ## 2 |__|##|__|bp|__|##|__|##|
+    ## 3 |##|__|wp|__|##|__|##|__|      ## 3 |##|__|wp|__|wk|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+    ## wp=immune(pawn_buff=3)           ## wp=immune(pawn_buff=3), wk=capturable
+
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|__|##|__|##|__|      ## 3 |##|__|##|__|##|__|##|__|
+    ## 4 |__|##|bp|##|__|##|__|##|      ## 4 |__|##|bp|##|bk|##|__|##|
+    ## 5 |##|__|##|wp|##|__|##|__|      ## 5 |##|__|##|wp|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|      ## 7 |##|__|##|__|##|__|##|__|
+    ## bp=immune(pawn_buff=3)           ## bp=immune(pawn_buff=3), bk=capturable
+
+    for side in ["white", "black"]:
+        opposite_side = "black" if side == "white" else "white"
+        row_ahead = 3 if side == 'white' else 4
+        attacker_row = 2 if side == 'white' else 5
+
+        # Case A: immune pawn (pawn_buff=3) in diagonal — attacker cannot capture it
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][row_ahead][2] = [{"type": f"{side}_pawn", "pawn_buff": 3}]
+        curr_game_state["board_state"][attacker_row][3] = [{"type": f"{opposite_side}_pawn", "pawn_buff": 0}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        prev_game_state["board_state"][row_ahead + (1 if side == 'white' else -1)][2] = copy.deepcopy(curr_game_state["board_state"][row_ahead][2])
+        prev_game_state["board_state"][row_ahead][2] = None
+
+        possible_moves_and_captures = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [attacker_row, 3])
+
+        assert len(possible_moves_and_captures["possible_captures"]) == 0
+        assert [row_ahead, 3] in possible_moves_and_captures["possible_moves"]
+
+        # Case B: immune pawn at [row_ahead][2], non-immune knight at [row_ahead][4] — knight IS capturable, immune pawn is not
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][row_ahead][2] = [{"type": f"{side}_pawn", "pawn_buff": 3}]
+        curr_game_state["board_state"][row_ahead][4] = [{"type": f"{side}_knight"}]
+        curr_game_state["board_state"][attacker_row][3] = [{"type": f"{opposite_side}_pawn", "pawn_buff": 0}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        prev_game_state["board_state"][row_ahead + (1 if side == 'white' else -1)][2] = copy.deepcopy(curr_game_state["board_state"][row_ahead][2])
+        prev_game_state["board_state"][row_ahead][2] = None
+
+        possible_moves_and_captures = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [attacker_row, 3])
+
+        assert [[row_ahead, 4], [row_ahead, 4]] in possible_moves_and_captures["possible_captures"]
+        assert [[row_ahead, 2], [row_ahead, 2]] not in possible_moves_and_captures["possible_captures"]
 
 def test_board_herald_buff_enables_pawn_forward_capture():
     pass
@@ -743,16 +845,4 @@ def test_pawn_with_four_or_more_dragon_buff_stacks_ignores_unit_collision_with_a
     pass
 
 def test_pawn_with_four_or_more_dragon_buff_stacks_does_not_ignore_unit_collision_with_enemy_pieces():
-    pass
-
-def test_pawn_with_five_dragon_buff_stacks_marks_enemy_piece_for_death():
-    pass
-
-def test_pawn_with_five_dragon_buff_stacks_marks_enemy_pieces_for_death():
-    pass
-
-def test_pawn_with_five_dragon_buff_stacks_does_not_mark_enemy_pieces_for_death():
-    pass
-
-def test_pawn_with_five_dragon_buff_stacks_does_not_mark_enemy_kings():
     pass

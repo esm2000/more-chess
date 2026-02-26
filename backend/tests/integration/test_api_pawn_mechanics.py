@@ -74,3 +74,18 @@ def test_pawn_exchange(game):
                         game_on_next_turn["board_state"][7][3] = [{"type": f"black_{piece_type}"}]
                     game_state = api.GameState(**game_on_next_turn)
                     game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
+
+
+def test_pawn_forward_capture_available_when_capture_point_advantage_is_at_least_two(game):
+    # Set up board so winning side has >= +2 avg advantage
+    # Use select piece (GET /moves) for a winning-side pawn with enemy pawn directly ahead
+    # Assert forward square is in possible_moves / possible_captures
+    # Negative: losing-side pawn with enemy pawn directly ahead → no forward capture
+    pass
+
+
+def test_pawn_immunity_when_capture_point_advantage_is_at_least_three(game):
+    # Set up board so one side has >= +3 avg advantage
+    # Attempt (via API) to have an enemy pawn capture the immune pawn → expect HTTPException or move not in possible_moves
+    # Confirm non-pawn pieces can still capture the immune pawn normally
+    pass

@@ -70,6 +70,16 @@ def test_capture_point_advantage_calculation_tie(game):
 
         assert game["capture_point_advantage"] is None
 
+
+def test_pawn_buff_assigned_to_winning_side_pawns_based_on_capture_point_advantage(game):
+    # Set up board where one side has a known advantage
+    # After a turn, iterate board_state and assert:
+    #   - all winning-side pawns have pawn_buff == expected (capped at 3)
+    #   - all losing-side pawns have pawn_buff == 0
+    # Test the cap: advantage > 3 → pawn_buff still == 3
+    pass
+
+
 def test_king_cannot_be_captured(game):
     for side in ["white", "black"]:
         game = clear_game(game)

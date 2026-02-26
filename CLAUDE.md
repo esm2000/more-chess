@@ -311,7 +311,7 @@ Ports: `80` = frontend (Nginx), `8080` = backend (FastAPI). Requires `.env` at p
 
 ## Testing Strategy
 
-212 test functions across 19 files. Unit tests use `mocks/empty_game.py` (isolated, no DB); integration tests use `mocks/starting_game.py` + FastAPI test client. `test_utils.py` provides `select_and_move_white/black_piece()` helpers.
+Unit tests use `mocks/empty_game.py` (isolated, no DB); integration tests use `mocks/starting_game.py` + FastAPI test client. `test_utils.py` provides `select_and_move_white/black_piece()` helpers.
 
 ### Test Coverage
 
@@ -347,8 +347,6 @@ pytest -v -s -x -k "dragon"         # verbose, print, stop-on-fail, filter
 
 ### Test Quality Metrics
 
-- **Total Tests:** 212 test functions (pawn dragon buff stubs and 2 file_control_limitations stubs still pending)
-- **Test Files:** 19 files (6 unit, 12 integration, 1 support)
 - **Coverage Focus:** Backend game logic (100% of core mechanics tested)
 - **Test Execution Time:** ~5-10 seconds for full suite (fast feedback loop)
 - **Test Isolation:** Each test uses fresh game state from mocks (no shared state)
@@ -474,6 +472,12 @@ game_state = {
 - Unit: `mocks/empty_game.py`, direct `moves.get_moves()` calls, no DB
 - Integration: `mocks/starting_game.py`, FastAPI test client, `select_and_move_*()` helpers
 - Always `copy.deepcopy()` mock states; fixtures in `conftest.py`
+
+**ASCII Board Diagram Convention (unit tests):**
+- First row of diagrams = white case (`side='white'` in the loop)
+- Second row of diagrams = black case (`side='black'` in the loop)
+- A second column is only used when showing piece movement from the first column (before → after)
+- Piece abbreviations: `wp` (white pawn), `bp` (black pawn), `wk` (white knight), `bk` (black knight), `wK` (white king), `bK` (black king), `wb` (white bishop), `wr` (white rook), `wQ` (white queen), `nd` (neutral dragon), `ss` (sword in stone), etc.
 
 ### Code Organization Principles
 

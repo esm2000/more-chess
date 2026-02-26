@@ -1013,13 +1013,163 @@ def test_baron_nashor_buff_enables_forward_check():
 
 
 def test_baron_nashor_buff_prevents_pawn_capture():
-    # test all possible pawn capture scenarios (even en passant and special buffs)
-    pass
+    ## Case A: diagonal blocked              Case B: forward (pawn_buff) blocked
+    ##    0  1  2  3  4  5  6  7            ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|          ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|          ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|bp*|##|__|##|__|##|         ## 2 |__|##|__|bp*|__|##|__|##|
+    ## 3 |##|__|##|wp|##|__|##|__|          ## 3 |##|__|##|wp|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|          ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|          ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|          ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|          ## 7 |##|__|##|__|##|__|##|__|
+    ## bp*=baron buff, wp=no baron          ## bp*=baron buff, wp has pawn_buff=1
+    ##
+    ## Case C: forward (herald) blocked      Case D: en passant blocked
+    ##    0  1  2  3  4  5  6  7            ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|          ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|          ## 1 |##|__|##|bp*|##|__|##|__|  prev
+    ## 2 |__|##|__|bp*|__|##|__|##|         ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|wp|wr^|__|##|__|         ## 3 |##|__|##|bp*|wp|__|##|__|  curr
+    ## 4 |__|##|__|##|__|##|__|##|          ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|          ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|          ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|          ## 7 |##|__|##|__|##|__|##|__|
+    ## bp*=baron buff, wr^=herald buff      ## bp*=baron buff, wp=no baron
+    ##
+    ##    0  1  2  3  4  5  6  7            ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|          ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|          ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|          ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|__|##|__|##|__|          ## 3 |##|__|##|__|##|__|##|__|
+    ## 4 |__|##|__|bp|__|##|__|##|          ## 4 |__|##|__|bp|__|##|__|##|
+    ## 5 |##|__|wp*|##|__|##|__|##|         ## 5 |##|__|##|wp*|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|          ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|          ## 7 |##|__|##|__|##|__|##|__|
+    ## wp*=baron buff, bp=no baron          ## wp*=baron buff, bp has pawn_buff=1
+    ##
+    ##    0  1  2  3  4  5  6  7            ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|          ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|          ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|          ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|__|##|__|##|__|          ## 3 |##|__|##|__|##|__|##|__|
+    ## 4 |__|##|__|bp|br^|##|__|##|         ## 4 |__|##|__|wp*|bp|__|##|__|  curr
+    ## 5 |##|__|##|wp*|##|__|##|__|         ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|          ## 6 |__|##|__|wp*|__|##|__|##|  prev
+    ## 7 |##|__|##|__|##|__|##|__|          ## 7 |##|__|##|__|##|__|##|__|
+    ## wp*=baron buff, br^=herald buff      ## wp*=baron buff, bp=no baron
+
+    for side in ["white", "black"]:
+        opposite_side = "black" if side == "white" else "white"
+        pawn_row = 3 if side == "white" else 4
+        row_ahead = 2 if side == "white" else 5
+
+        # Case A: diagonal capture blocked — target pawn has baron buff, attacker has no baron
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][pawn_row][3] = [{"type": f"{side}_pawn"}]
+        curr_game_state["board_state"][row_ahead][2] = [{"type": f"{opposite_side}_pawn", "baron_nashor_buff": True}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+
+        result = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [pawn_row, 3])
+
+        assert [row_ahead, 2] not in result["possible_moves"]
+        assert [[row_ahead, 2], [row_ahead, 2]] not in result["possible_captures"]
+
+        # Case B: forward capture via pawn_buff blocked — target pawn has baron buff
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][pawn_row][3] = [{"type": f"{side}_pawn", "pawn_buff": 1}]
+        curr_game_state["board_state"][row_ahead][3] = [{"type": f"{opposite_side}_pawn", "baron_nashor_buff": True}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+
+        result = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [pawn_row, 3])
+
+        assert [row_ahead, 3] not in result["possible_moves"]
+        assert [[row_ahead, 3], [row_ahead, 3]] not in result["possible_captures"]
+
+        # Case C: forward capture via board_herald blocked — target pawn has baron buff
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][pawn_row][3] = [{"type": f"{side}_pawn"}]
+        curr_game_state["board_state"][row_ahead][3] = [{"type": f"{opposite_side}_pawn", "baron_nashor_buff": True}]
+        curr_game_state["board_state"][pawn_row][4] = [{"type": f"{side}_rook", "board_herald_buff": True}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+
+        result = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [pawn_row, 3])
+
+        assert [row_ahead, 3] not in result["possible_moves"]
+        assert [[row_ahead, 3], [row_ahead, 3]] not in result["possible_captures"]
+
+        # Case D: en passant blocked — target pawn has baron buff
+        opposing_start_row = 1 if opposite_side == "black" else 6
+
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][pawn_row][4] = [{"type": f"{side}_pawn"}]
+        curr_game_state["board_state"][pawn_row][3] = [{"type": f"{opposite_side}_pawn", "baron_nashor_buff": True}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        prev_game_state["board_state"][opposing_start_row][3] = [{"type": f"{opposite_side}_pawn", "baron_nashor_buff": True}]
+        prev_game_state["board_state"][pawn_row][3] = None
+
+        result = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [pawn_row, 4])
+
+        assert [row_ahead, 3] not in result["possible_moves"]
+        assert [[row_ahead, 3], [pawn_row, 3]] not in result["possible_captures"]
 
 
 def test_baron_nashor_buff_negates_baron_nashor_buff_forward_capture():
-    # test all possible pawn capture scenarios (even en passant and special buffs)
-    pass
+    ## Case A: both barons → no fwd capture  Case B: both barons → diagonal capture works
+    ##    0  1  2  3  4  5  6  7            ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|          ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|          ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|bp*|__|##|__|##|         ## 2 |__|##|bp*|##|__|##|__|##|
+    ## 3 |##|__|##|wp*|##|__|##|__|         ## 3 |##|__|##|wp*|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|          ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|          ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|          ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|          ## 7 |##|__|##|__|##|__|##|__|
+    ## both *=baron buff                    ## both *=baron buff
+    ##
+    ##    0  1  2  3  4  5  6  7            ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|          ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|          ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|          ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|__|##|__|##|__|          ## 3 |##|__|##|__|##|__|##|__|
+    ## 4 |__|##|__|bp*|__|##|__|##|         ## 4 |__|##|__|bp*|__|##|__|##|
+    ## 5 |##|__|##|wp*|##|__|##|__|         ## 5 |##|__|wp*|##|__|##|__|##|
+    ## 6 |__|##|__|##|__|##|__|##|          ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|          ## 7 |##|__|##|__|##|__|##|__|
+    ## both *=baron buff                    ## both *=baron buff
+
+    for side in ["white", "black"]:
+        opposite_side = "black" if side == "white" else "white"
+        pawn_row = 3 if side == "white" else 4
+        row_ahead = 2 if side == "white" else 5
+
+        # Case A: both pawns have baron buff → forward capture blocked (buffs cancel)
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][pawn_row][3] = [{"type": f"{side}_pawn", "baron_nashor_buff": True}]
+        curr_game_state["board_state"][row_ahead][3] = [{"type": f"{opposite_side}_pawn", "baron_nashor_buff": True}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+
+        result = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [pawn_row, 3])
+
+        assert [row_ahead, 3] not in result["possible_moves"]
+        assert [[row_ahead, 3], [row_ahead, 3]] not in result["possible_captures"]
+
+        # Case B: both pawns have baron buff → diagonal capture works (immunity negated)
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][pawn_row][3] = [{"type": f"{side}_pawn", "baron_nashor_buff": True}]
+        curr_game_state["board_state"][row_ahead][2] = [{"type": f"{opposite_side}_pawn", "baron_nashor_buff": True}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+
+        result = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [pawn_row, 3])
+
+        assert [row_ahead, 2] in result["possible_moves"]
+        assert [[row_ahead, 2], [row_ahead, 2]] in result["possible_captures"]
 
 def test_pawn_extended_movement_with_one_or_more_dragon_buff_stacks():
     pass

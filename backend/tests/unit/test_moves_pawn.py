@@ -898,11 +898,118 @@ def test_board_herald_buff_enables_pawn_forward_check():
 
 
 def test_baron_nashor_buff_enables_forward_capture():
-    pass
+    ## Case A: pawn w/ baron buff            Case B: pawn WITHOUT baron buff (negative)
+    ##    0  1  2  3  4  5  6  7            ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|          ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|          ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|bp|__|##|__|##|          ## 2 |__|##|__|bp|__|##|__|##|
+    ## 3 |##|__|##|wp*|__|##|__|##|         ## 3 |##|__|##|wp|__|##|__|##|
+    ## 4 |__|##|__|##|__|##|__|##|          ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|          ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|          ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|          ## 7 |##|__|##|__|##|__|##|__|
+    ## wp*=has baron_nashor_buff            ## wp=no buff → no forward capture
+
+    ##    0  1  2  3  4  5  6  7            ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|          ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|          ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|          ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|__|##|__|##|__|          ## 3 |##|__|##|__|##|__|##|__|
+    ## 4 |__|##|__|bp*|__|##|__|##|         ## 4 |__|##|__|bp|__|##|__|##|
+    ## 5 |##|__|##|wp|##|__|##|__|          ## 5 |##|__|##|wp|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|          ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|          ## 7 |##|__|##|__|##|__|##|__|
+    ## bp*=has baron_nashor_buff            ## bp=no buff → no forward capture
+
+    for side in ["white", "black"]:
+        opposite_side = "black" if side == "white" else "white"
+        pawn_row = 3 if side == "white" else 4
+        row_ahead = 2 if side == "white" else 5
+
+        # Case A: pawn with baron_nashor_buff → forward capture enabled
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][pawn_row][3] = [{"type": f"{side}_pawn", "baron_nashor_buff": True}]
+        curr_game_state["board_state"][row_ahead][3] = [{"type": f"{opposite_side}_pawn"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        prev_game_state["board_state"][row_ahead + (1 if side == "white" else -1)][3] = copy.deepcopy(curr_game_state["board_state"][row_ahead][3])
+        prev_game_state["board_state"][row_ahead][3] = None
+
+        result = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [pawn_row, 3])
+
+        assert [row_ahead, 3] in result["possible_moves"]
+        assert [[row_ahead, 3], [row_ahead, 3]] in result["possible_captures"]
+
+        # Case B: pawn WITHOUT baron_nashor_buff → no forward capture
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][pawn_row][3] = [{"type": f"{side}_pawn"}]
+        curr_game_state["board_state"][row_ahead][3] = [{"type": f"{opposite_side}_pawn"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        prev_game_state["board_state"][row_ahead + (1 if side == "white" else -1)][3] = copy.deepcopy(curr_game_state["board_state"][row_ahead][3])
+        prev_game_state["board_state"][row_ahead][3] = None
+
+        result = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [pawn_row, 3])
+
+        assert [row_ahead, 3] not in result["possible_moves"]
+        assert [[row_ahead, 3], [row_ahead, 3]] not in result["possible_captures"]
 
 
 def test_baron_nashor_buff_enables_forward_check():
-    pass
+    ## Case A: pawn w/ baron buff            Case B: pawn WITHOUT baron buff (negative)
+    ##    0  1  2  3  4  5  6  7            ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|          ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|          ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|bK|__|##|__|##|          ## 2 |__|##|__|bK|__|##|__|##|
+    ## 3 |##|__|##|wp*|__|##|__|##|         ## 3 |##|__|##|wp|__|##|__|##|
+    ## 4 |__|##|__|##|__|##|__|##|          ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|          ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|          ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|          ## 7 |##|__|##|__|##|__|##|__|
+    ## wp*=has baron_nashor_buff            ## wp=no buff → no forward check
+
+    ##    0  1  2  3  4  5  6  7            ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|          ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|          ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|          ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|__|##|__|##|__|          ## 3 |##|__|##|__|##|__|##|__|
+    ## 4 |__|##|__|bp*|__|##|__|##|         ## 4 |__|##|__|bp|__|##|__|##|
+    ## 5 |##|__|##|wK|##|__|##|__|          ## 5 |##|__|##|wK|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|          ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|          ## 7 |##|__|##|__|##|__|##|__|
+    ## bp*=has baron_nashor_buff            ## bp=no buff → no forward check
+
+    for side in ["white", "black"]:
+        opposite_side = "black" if side == "white" else "white"
+        pawn_row = 3 if side == "white" else 4
+        row_ahead = 2 if side == "white" else 5
+
+        # Case A: pawn with baron_nashor_buff → forward check on enemy king
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][pawn_row][3] = [{"type": f"{side}_pawn", "baron_nashor_buff": True}]
+        curr_game_state["board_state"][row_ahead][3] = [{"type": f"{opposite_side}_king"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        prev_game_state["board_state"][row_ahead + (1 if side == "white" else -1)][3] = copy.deepcopy(curr_game_state["board_state"][row_ahead][3])
+        prev_game_state["board_state"][row_ahead][3] = None
+
+        result = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [pawn_row, 3])
+
+        assert [row_ahead, 3] in result["threatening_move"]
+        assert [[row_ahead, 3], [row_ahead, 3]] not in result["possible_captures"]
+
+        # Case B: pawn WITHOUT baron_nashor_buff → no forward check
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][pawn_row][3] = [{"type": f"{side}_pawn"}]
+        curr_game_state["board_state"][row_ahead][3] = [{"type": f"{opposite_side}_king"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        prev_game_state["board_state"][row_ahead + (1 if side == "white" else -1)][3] = copy.deepcopy(curr_game_state["board_state"][row_ahead][3])
+        prev_game_state["board_state"][row_ahead][3] = None
+
+        result = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [pawn_row, 3])
+
+        assert [row_ahead, 3] not in result["threatening_move"]
 
 
 def test_baron_nashor_buff_prevents_pawn_capture():

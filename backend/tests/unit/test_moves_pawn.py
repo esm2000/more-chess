@@ -779,18 +779,122 @@ def test_pawn_immunity_when_average_piece_value_is_at_least_three_points_higher(
         assert [[row_ahead, 2], [row_ahead, 2]] not in possible_moves_and_captures["possible_captures"]
 
 def test_board_herald_buff_enables_pawn_forward_capture():
-    pass
+    ## Case A: ally w/ herald buff adjacent  Case B: ally WITHOUT herald buff (negative)
+    ##    0  1  2  3  4  5  6  7            ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|          ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|          ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|bp|__|##|__|##|          ## 2 |__|##|__|bp|__|##|__|##|
+    ## 3 |##|__|##|wp|wr*|__|##|__|         ## 3 |##|__|##|wp|wr|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|          ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|          ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|          ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|          ## 7 |##|__|##|__|##|__|##|__|
+    ## wr*=has board_herald_buff            ## wr=no buff → no forward capture
+
+    ##    0  1  2  3  4  5  6  7            ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|          ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|          ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|          ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|__|##|__|##|__|          ## 3 |##|__|##|__|##|__|##|__|
+    ## 4 |__|##|__|bp|br*|##|__|##|         ## 4 |__|##|__|bp|br|##|__|##|
+    ## 5 |##|__|##|wp|##|__|##|__|          ## 5 |##|__|##|wp|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|          ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|          ## 7 |##|__|##|__|##|__|##|__|
+    ## br*=has board_herald_buff            ## br=no buff → no forward capture
+
+    for side in ["white", "black"]:
+        opposite_side = "black" if side == "white" else "white"
+        pawn_row = 3 if side == "white" else 4
+        row_ahead = 2 if side == "white" else 5
+
+        # Case A: ally piece with board_herald_buff adjacent → forward capture enabled
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][pawn_row][3] = [{"type": f"{side}_pawn"}]
+        curr_game_state["board_state"][row_ahead][3] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][pawn_row][4] = [{"type": f"{side}_rook", "board_herald_buff": True}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        prev_game_state["board_state"][row_ahead + (1 if side == "white" else -1)][3] = copy.deepcopy(curr_game_state["board_state"][row_ahead][3])
+        prev_game_state["board_state"][row_ahead][3] = None
+
+        result = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [pawn_row, 3])
+
+        assert [row_ahead, 3] in result["possible_moves"]
+        assert [[row_ahead, 3], [row_ahead, 3]] in result["possible_captures"]
+
+        # Case B: ally piece WITHOUT board_herald_buff → no forward capture
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][pawn_row][3] = [{"type": f"{side}_pawn"}]
+        curr_game_state["board_state"][row_ahead][3] = [{"type": f"{opposite_side}_pawn"}]
+        curr_game_state["board_state"][pawn_row][4] = [{"type": f"{side}_rook"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        prev_game_state["board_state"][row_ahead + (1 if side == "white" else -1)][3] = copy.deepcopy(curr_game_state["board_state"][row_ahead][3])
+        prev_game_state["board_state"][row_ahead][3] = None
+
+        result = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [pawn_row, 3])
+
+        assert [row_ahead, 3] not in result["possible_moves"]
+        assert [[row_ahead, 3], [row_ahead, 3]] not in result["possible_captures"]
 
 
 def test_board_herald_buff_enables_pawn_forward_check():
-    pass
+    ## Case A: ally w/ herald buff adjacent  Case B: ally WITHOUT herald buff (negative)
+    ##    0  1  2  3  4  5  6  7            ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|          ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|          ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|bK|__|##|__|##|          ## 2 |__|##|__|bK|__|##|__|##|
+    ## 3 |##|__|##|wp|wr*|__|##|__|         ## 3 |##|__|##|wp|wr|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|          ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|          ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|          ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|          ## 7 |##|__|##|__|##|__|##|__|
+    ## wr*=has board_herald_buff            ## wr=no buff → no forward check
 
+    ##    0  1  2  3  4  5  6  7            ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|          ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|          ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|          ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|__|##|__|##|__|          ## 3 |##|__|##|__|##|__|##|__|
+    ## 4 |__|##|__|bp|br*|##|__|##|         ## 4 |__|##|__|bp|br|##|__|##|
+    ## 5 |##|__|##|wK|##|__|##|__|          ## 5 |##|__|##|wK|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|          ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|__|##|__|##|__|          ## 7 |##|__|##|__|##|__|##|__|
+    ## br*=has board_herald_buff            ## br=no buff → no forward check
 
-def test_board_herald_buff_enables_adjacent_pawn_forward_capture():
-    # test multiple positions with the board_herald buff location 
+    for side in ["white", "black"]:
+        opposite_side = "black" if side == "white" else "white"
+        pawn_row = 3 if side == "white" else 4
+        row_ahead = 2 if side == "white" else 5
 
-    # test multiple piece types with the piece being captured or in danger
-    pass
+        # Case A: ally piece with board_herald_buff adjacent → forward check on enemy king
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][pawn_row][3] = [{"type": f"{side}_pawn"}]
+        curr_game_state["board_state"][row_ahead][3] = [{"type": f"{opposite_side}_king"}]
+        curr_game_state["board_state"][pawn_row][4] = [{"type": f"{side}_rook", "board_herald_buff": True}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        prev_game_state["board_state"][row_ahead + (1 if side == "white" else -1)][3] = copy.deepcopy(curr_game_state["board_state"][row_ahead][3])
+        prev_game_state["board_state"][row_ahead][3] = None
+
+        result = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [pawn_row, 3])
+
+        assert [row_ahead, 3] in result["threatening_move"]
+        assert [[row_ahead, 3], [row_ahead, 3]] not in result["possible_captures"]
+
+        # Case B: ally piece WITHOUT board_herald_buff → no forward check
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][pawn_row][3] = [{"type": f"{side}_pawn"}]
+        curr_game_state["board_state"][row_ahead][3] = [{"type": f"{opposite_side}_king"}]
+        curr_game_state["board_state"][pawn_row][4] = [{"type": f"{side}_rook"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        prev_game_state["board_state"][row_ahead + (1 if side == "white" else -1)][3] = copy.deepcopy(curr_game_state["board_state"][row_ahead][3])
+        prev_game_state["board_state"][row_ahead][3] = None
+
+        result = moves.get_moves_for_pawn(curr_game_state, prev_game_state, [pawn_row, 3])
+
+        assert [row_ahead, 3] not in result["threatening_move"]
 
 
 def test_baron_nashor_buff_enables_forward_capture():

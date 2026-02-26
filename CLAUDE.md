@@ -480,6 +480,12 @@ game_state = {
 - A second column is only used when showing piece movement from the first column (before → after)
 - Piece abbreviations: `wp` (white pawn), `bp` (black pawn), `wk` (white knight), `bk` (black knight), `wK` (white king), `bK` (black king), `wb` (white bishop), `wr` (white rook), `wQ` (white queen), `nd` (neutral dragon), `ss` (sword in stone), etc.
 
+### Commit Messages
+
+- One sentence, no co-author notes
+- Start with a verb (e.g. "Implement", "Fix", "Add", "Remove")
+- Describe what changed and why in a single line
+
 ### Code Organization Principles
 
 **Key Conventions:**

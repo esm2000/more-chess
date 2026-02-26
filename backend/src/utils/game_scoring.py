@@ -65,7 +65,7 @@ def reassign_pawn_buffs(new_game_state):
             if square:
                 for i, piece in enumerate(square):
                     if "pawn" in piece.get("type", ""):
-                        if piece.get("side") == winning_side:
+                        if winning_side in piece.get("type", ""):
                             new_game_state["board_state"][row][col][i]["pawn_buff"] = pawn_buff
-                        elif piece.get("side") == losing_side:
+                        elif losing_side in piece.get("type", ""):
                             new_game_state["board_state"][row][col][i]["pawn_buff"] = 0

@@ -154,7 +154,7 @@ more-chess/
 ### Piece-Specific Mechanics
 
 #### Pawns
-- Average piece value compared per team (excl. pawns): Knight/Bishop=3, Rook=5, Queen=9
+- Average piece value compared per team (Pawn=1, Knight/Bishop=3, Rook=5, Queen=9)
 - +2 avg point advantage: pawns can capture enemy pawns directly in front (not just diagonal)
 - +3 avg point advantage: your pawns are immune to capture by enemy pawns
 

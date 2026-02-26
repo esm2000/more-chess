@@ -984,7 +984,8 @@ def test_buff_acquired_from_dragon_slain_restack_5_after_expiration(game):
             validate_dragon_buffs(game, side, 4, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 3), (7, 2)])
             
             # a sword in the stone randomly in the way of the pieces can cause a failure
-            if game["sword_in_the_stone_position"] not in [[6, 7], [5, 7]]:
+            # second phase moves pieces along col 7: rook [7,3]->[7,7], enemy rook [0,7]->[3,7]
+            if game["sword_in_the_stone_position"] not in [[7, 4], [7, 5], [7, 6], [7, 7], [6, 7], [5, 7], [3, 7], [2, 7], [1, 7]]:
                 conditions_met_for_test = True
 
         # position pieces to slay dragon again

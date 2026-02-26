@@ -478,7 +478,7 @@ def test_that_a_player_can_surrender_a_piece_due_to_five_dragon_buff_stacks_whil
         game_on_next_turn["turn_count"] = 44 if side == "white" else 45
 
         game_on_next_turn["neutral_buff_log"][side]["dragon"]["stacks"] = 5
-        game_on_next_turn["neutral_buff_log"][side]["dragon"]["stacks"] = 43 if side == "white" else 44
+        game_on_next_turn["neutral_buff_log"][side]["dragon"]["turn"] = 43 if side == "white" else 44
 
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())

@@ -309,6 +309,8 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
             curr_opposing_starting_square = curr_game_state["board_state"][opposing_starting_position[0]][opposing_starting_position[1]]
             
             en_passant_dest_row = curr_position[0] + (-1 if side == "white" else 1)
+            if en_passant_dest_row < 0 or en_passant_dest_row > 7:
+                continue
             destination_square = curr_game_state["board_state"][en_passant_dest_row][lateral_position[1]] or []
             if ((side == "black" and curr_position[0] == 4) or (side == "white" and curr_position[0] == 3)) and \
             (lateral_square and any(piece.get("type", "None") == f"{opposing_side}_pawn" for piece in lateral_square)) and \
@@ -331,8 +333,6 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
                 if square and any(opposing_side in piece.get("type", "") for piece in square):
                     if any("king" in piece.get("type", "") for piece in square):
                         threatening_move.append(possible_move)
-                    else:
-                        possible_captures.append([possible_move, potential_capture_square])
 
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
 
@@ -434,8 +434,6 @@ def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
                 if square and any(opposing_side in piece.get("type", "") for piece in square):
                     if any("king" in piece.get("type", "") for piece in square):
                         threatening_move.append(possible_move)
-                    else:
-                        possible_captures.append([possible_move, potential_capture_square])
 
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
 
@@ -527,8 +525,6 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
                 if square and any(opposing_side in piece.get("type", "") for piece in square):
                     if any("king" in piece.get("type", "") for piece in square):
                         threatening_move.append(possible_move)
-                    else:
-                        possible_captures.append([possible_move, potential_capture_square])
 
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
 
@@ -624,8 +620,6 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
                 if square and any(opposing_side in piece.get("type", "") for piece in square):
                     if any("king" in piece.get("type", "") for piece in square):
                         threatening_move.append(possible_move)
-                    else:
-                        possible_captures.append([possible_move, potential_capture_square])
 
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move, "castle_moves": castle_moves})
 
@@ -695,8 +689,6 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
                 if square and any(opposing_side in piece.get("type", "") for piece in square):
                     if any("king" in piece.get("type", "") for piece in square):
                         threatening_move.append(possible_move)
-                    else:
-                        possible_captures.append([possible_move, potential_capture_square])
 
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
 
@@ -792,7 +784,5 @@ def get_moves_for_king(curr_game_state, prev_game_state, curr_position):
                 if square and any(opposing_side in piece.get("type", "") for piece in square):
                     if any("king" in piece.get("type", "") for piece in square):
                         threatening_move.append(possible_move)
-                    else:
-                        possible_captures.append([possible_move, potential_capture_square])
 
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move, "castle_moves": castle_moves}, is_king=True)

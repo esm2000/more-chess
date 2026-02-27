@@ -202,7 +202,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * change backend code to only use "pure functions" and remove side effects
 * Un-nest the code (extraction and inversion) - https://www.youtube.com/watch?v=CFRhGnuXG-4&t=40s
 * Clean up and refactor code
-* Linting
+* Linting (Black for Python backend)
 * Proofread and finalize README
 * Create a Kubernetes deployment script and a configuration file
 * Deploy

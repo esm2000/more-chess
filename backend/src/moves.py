@@ -264,7 +264,7 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
                 if not square or \
                     (dragon_buff < 3 and any([s for s in squares_ahead[:-1]])) or \
                     (dragon_buff == 3 and any([s and not all(f"{side}_pawn" == p.get("type", "") for p in s) for s in squares_ahead[:-1]])) or \
-                    (dragon_buff >= 4 and any([s and not all(f"{side}_pawn" == p.get("type", "") for p in s) for s in squares_ahead[:-1]])):
+                    (dragon_buff >= 4 and any([s and not all(side in p.get("type", "") for p in s) for s in squares_ahead[:-1]])):
                     continue
                 
                 # not having the baron buff and an opposing pawn having the baron buff makes the opposing pawn immune

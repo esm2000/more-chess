@@ -1067,7 +1067,6 @@ def test_buff_acquired_from_dragon_slain_restack_5_after_expiration(game):
         validate_dragon_buffs(game, side, 5, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 2)])
             
 
-# TODO: investigate why a loss occurs when {opposite_side}_king is on [0, 1]... (should be out of range from neutral monster)
 def test_buff_acquired_from_board_herald_slain(game):
     # validate neutral_monster_log update + buffs granted
     for side in ["white", "black"]:

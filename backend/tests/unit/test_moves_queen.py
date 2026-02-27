@@ -154,7 +154,6 @@ def test_queen_blocked():
             [[4, 4], [4, 4]],
             [[6, 3], [6, 3]]
         ]) == sorted(possible_moves_and_captures["possible_captures"])
-    pass
 
 def test_queen_cant_capture_king():
         # vertical                          # horizontal                        # diagonal
@@ -425,8 +424,54 @@ def test_queen_threatening_move():
                 assert [king_position] not in possible_moves_and_captures["threatening_move"]
                 assert len(possible_moves_and_captures["threatening_move"]) == 0
 
-def test_queen_file_control_limitations():
-    pass
+def test_queen_file_control_blocks_vertical_capture():
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|br|##|__|##|__|      ## 1 |##|__|##|wr|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|__|##|__|##|__|      ## 3 |##|__|##|__|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|wq|##|__|##|__|      ## 7 |##|__|##|bq|##|__|##|__|
+
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][7][3] = [{"type": f"{side}_queen"}]
+        curr_game_state["board_state"][1][3] = [{"type": f"{opposite_side}_rook"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        curr_position = [7, 3]
+
+        possible_moves_and_captures = moves.get_moves_for_queen(curr_game_state, prev_game_state, curr_position)
+
+        assert [[1, 3], [1, 3]] not in possible_moves_and_captures["possible_captures"]
+        assert [1, 3] not in possible_moves_and_captures["possible_moves"]
+
+def test_queen_file_control_does_not_block_diagonal_capture():
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|__|##|__|##|__|      ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|__|##|__|##|br|      ## 3 |##|__|##|__|##|__|##|wr|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|wq|##|__|##|__|      ## 7 |##|__|##|bq|##|__|##|__|
+
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["board_state"][7][3] = [{"type": f"{side}_queen"}]
+        curr_game_state["board_state"][3][7] = [{"type": f"{opposite_side}_rook"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        curr_position = [7, 3]
+
+        possible_moves_and_captures = moves.get_moves_for_queen(curr_game_state, prev_game_state, curr_position)
+
+        assert [[3, 7], [3, 7]] in possible_moves_and_captures["possible_captures"]
 
 def test_queen_with_three_or_more_dragon_buff_stacks_ignores_unit_collision_with_ally_pawns():
     ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7

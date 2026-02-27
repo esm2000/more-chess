@@ -540,7 +540,31 @@ def test_rook_threatening_move():
 
 
 def test_rook_file_control_limitations():
-    pass
+    ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|__|##|__|##|      ## 0 |__|##|__|##|__|##|__|##|
+    ## 1 |##|__|##|br|##|__|##|__|      ## 1 |##|__|##|wr|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|      ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |##|__|##|__|##|__|##|__|      ## 3 |##|__|##|__|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|      ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|      ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |__|##|__|##|__|##|__|##|      ## 6 |__|##|__|##|__|##|__|##|
+    ## 7 |##|__|##|wr|##|__|##|__|      ## 7 |##|__|##|br|##|__|##|__|
+
+    # vertical capture across center is blocked by file control
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        curr_game_state = copy.deepcopy(empty_game)
+        curr_game_state["turn_count"] = 50
+        curr_game_state["board_state"][7][3] = [{"type": f"{side}_rook"}]
+        curr_game_state["board_state"][1][3] = [{"type": f"{opposite_side}_rook"}]
+
+        prev_game_state = copy.deepcopy(curr_game_state)
+        curr_position = [7, 3]
+
+        possible_moves_and_captures = moves.get_moves_for_rook(curr_game_state, prev_game_state, curr_position)
+
+        assert [[1, 3], [1, 3]] not in possible_moves_and_captures["possible_captures"]
+        assert [1, 3] not in possible_moves_and_captures["possible_moves"]
 
 def test_rook_with_three_or_more_dragon_buff_stacks_ignores_unit_collision_with_ally_pawns():
     ##    0  1  2  3  4  5  6  7        ##    0  1  2  3  4  5  6  7

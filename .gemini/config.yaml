@@ -1,0 +1,10 @@
+# Disable automatic actions when a PR is opened
+pull_request_opened:
+  summary: false
+  code_review: false
+  help: false
+
+# Disable actions when new code is pushed to an existing PR
+pull_request_commit_added:
+  summary: false
+  code_review: false

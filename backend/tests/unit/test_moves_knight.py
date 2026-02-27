@@ -91,6 +91,18 @@ def test_knight_capture():
         ]) == sorted(possible_moves_and_captures["possible_captures"])
 
 
+def get_knight_path_squares(curr_pos, dest):
+    """Return the two L-shaped paths' intermediate squares from curr_pos to dest."""
+    rel = [dest[0] - curr_pos[0], dest[1] - curr_pos[1]]
+    if abs(rel[0]) == 2:
+        path_1 = [[curr_pos[0] + rel[0] // 2, curr_pos[1]], [curr_pos[0] + rel[0], curr_pos[1]]]
+        path_2 = [[curr_pos[0], curr_pos[1] + rel[1]], [curr_pos[0] + rel[0] // 2, curr_pos[1] + rel[1]]]
+    else:
+        path_1 = [[curr_pos[0], curr_pos[1] + rel[1] // 2], [curr_pos[0], curr_pos[1] + rel[1]]]
+        path_2 = [[curr_pos[0] + rel[0], curr_pos[1]], [curr_pos[0] + rel[0], curr_pos[1] + rel[1] // 2]]
+    return path_1, path_2
+
+
 def test_knight_blocked():
     ##    0  1  2  3  4  5  6  7       0  1  2  3  4  5  6  7      0  1  2  3  4  5  6  7       0  1  2  3  4  5  6  7
     ## 0 |__|##|__|##|__|##|__|##|  0 |__|##|__|##|__|##|__|##| 0 |__|##|__|##|__|##|__|##| 0 |__|##|__|##|__|##|__|##|
@@ -184,14 +196,20 @@ def test_knight_blocked():
                     assert enemy_position not in possible_moves_and_captures["possible_moves"]
                     assert [enemy_position, enemy_position] not in possible_moves_and_captures["possible_captures"]
 
-                    # blocking the paths to one possible move can possibly block the path to another possible move
-                    # TODO: (nice to have) tighten up validation so that we validate the expected positions exactly
-                    count_of_possible_moves_in_expected_positions = 0
-                    for expected_position in expected_positions:
-                        if expected_position in possible_moves_and_captures["possible_moves"] and \
-                        [expected_position, expected_position] in possible_moves_and_captures["possible_captures"]:
-                            count_of_possible_moves_in_expected_positions += 1
-                    assert count_of_possible_moves_in_expected_positions in [len(enemy_positions) - 2, len(enemy_positions) - 1]
+                    # compute exactly which other destinations are collaterally blocked by the two blockers
+                    blocker_set = {tuple(path_1_blocking_position), tuple(path_2_blocking_position)}
+                    expected_accessible = []
+                    for other_dest in enemy_positions:
+                        if other_dest == enemy_position:
+                            continue
+                        p1, p2 = get_knight_path_squares(curr_position, other_dest)
+                        p1_blocked = any(tuple(sq) in blocker_set for sq in p1)
+                        p2_blocked = any(tuple(sq) in blocker_set for sq in p2)
+                        if not (p1_blocked and p2_blocked):
+                            expected_accessible.append(other_dest)
+
+                    assert sorted(possible_moves_and_captures["possible_moves"]) == sorted(expected_accessible)
+                    assert sorted(possible_moves_and_captures["possible_captures"]) == sorted([[pos, pos] for pos in expected_accessible])
 
 
 def test_knight_cant_capture_king():

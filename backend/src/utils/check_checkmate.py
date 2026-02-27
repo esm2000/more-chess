@@ -39,7 +39,7 @@ def get_unsafe_positions_for_kings(old_game_state, new_game_state):
         
         positions = [tuple(possible_move) for possible_move in moves_info["possible_moves"]]
         positions += [tuple(possible_capture[0]) for possible_capture in moves_info["possible_captures"]]
-        # TODO: is it possible for this to be used ever?
+        # only populated when king has 5 dragon stacks and enemy king is adjacent to a landing square
         positions += [tuple(move) for move in moves_info["threatening_move"]]
 
         possible_king_locations[side] = list(set(positions + possible_king_locations[side]))

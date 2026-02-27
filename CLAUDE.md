@@ -1,6 +1,6 @@
 # League of Chess - Developer Documentation
 
-Last Updated: 2026-02-24
+Last Updated: 2026-02-26
 
 > **Keep this file current.** Update the relevant sections whenever you change game mechanics, add/rename modules, restructure directories, change dependencies, or shift development priorities. See [Maintaining This Document](#maintaining-this-document) for the update checklist.
 

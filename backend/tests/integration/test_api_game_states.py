@@ -72,12 +72,66 @@ def test_capture_point_advantage_calculation_tie(game):
 
 
 def test_pawn_buff_assigned_to_winning_side_pawns_based_on_capture_point_advantage(game):
-    # Set up board where one side has a known advantage
-    # After a turn, iterate board_state and assert:
-    #   - all winning-side pawns have pawn_buff == expected (capped at 3)
-    #   - all losing-side pawns have pawn_buff == 0
-    # Test the cap: advantage > 3 → pawn_buff still == 3
-    pass
+    test_cases = [
+        # (extra_pieces, expected_pawn_buff)
+        # Normal: side has king + rook + pawn, opposite has king + pawn
+        # side avg = (0+5+1)/3 = 2.0, opposite avg = (0+1)/2 = 0.5, advantage = 1.5
+        ("rook", 1.5),
+        # Cap at 3: side has king + 2 queens + pawn, opposite has king + pawn
+        # side avg = (0+9+9+1)/4 = 4.75, opposite avg = (0+1)/2 = 0.5, advantage = 4.25 → capped to 3
+        ("two_queens", 3),
+    ]
+
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        for extra_pieces, expected_pawn_buff in test_cases:
+            game = clear_game(game)
+            game_on_next_turn = copy.deepcopy(game)
+
+            if side == "white":
+                game_on_next_turn["board_state"][7][7] = [{"type": "white_king"}]
+                game_on_next_turn["board_state"][6][3] = [{"type": "white_pawn"}]
+                if extra_pieces == "rook":
+                    game_on_next_turn["board_state"][7][0] = [{"type": "white_rook"}]
+                else:
+                    game_on_next_turn["board_state"][7][0] = [{"type": "white_queen"}]
+                    game_on_next_turn["board_state"][7][1] = [{"type": "white_queen"}]
+                game_on_next_turn["board_state"][0][0] = [{"type": "black_king"}]
+                game_on_next_turn["board_state"][1][3] = [{"type": "black_pawn"}]
+            else:
+                game_on_next_turn["board_state"][0][0] = [{"type": "black_king"}]
+                game_on_next_turn["board_state"][1][3] = [{"type": "black_pawn"}]
+                if extra_pieces == "rook":
+                    game_on_next_turn["board_state"][0][7] = [{"type": "black_rook"}]
+                else:
+                    game_on_next_turn["board_state"][0][7] = [{"type": "black_queen"}]
+                    game_on_next_turn["board_state"][0][6] = [{"type": "black_queen"}]
+                game_on_next_turn["board_state"][7][7] = [{"type": "white_king"}]
+                game_on_next_turn["board_state"][6][3] = [{"type": "white_pawn"}]
+
+            game_on_next_turn["turn_count"] = 0 if side == "white" else 1
+
+            game_state = api.GameState(**game_on_next_turn)
+            game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+            # Move king one square to trigger the pipeline (which calls reassign_pawn_buffs)
+            if side == "white":
+                game = select_and_move_white_piece(game, from_row=7, from_col=7, to_row=7, to_col=6)
+            else:
+                game = select_and_move_black_piece(game, from_row=0, from_col=0, to_row=0, to_col=1)
+
+            # Verify pawn_buff values across the board
+            for row in range(8):
+                for col in range(8):
+                    square = game["board_state"][row][col] or []
+                    for piece in square:
+                        if "pawn" in piece.get("type", ""):
+                            if side in piece["type"]:
+                                assert piece["pawn_buff"] == expected_pawn_buff, \
+                                    f"{side} pawn at [{row}][{col}] expected pawn_buff={expected_pawn_buff}, got {piece['pawn_buff']}"
+                            elif opposite_side in piece["type"]:
+                                assert piece["pawn_buff"] == 0, \
+                                    f"{opposite_side} pawn at [{row}][{col}] expected pawn_buff=0, got {piece['pawn_buff']}"
 
 
 def test_king_cannot_be_captured(game):

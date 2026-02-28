@@ -496,7 +496,7 @@ game_state = {
 
 ### Commit Messages
 
-- One sentence, no co-author notes
+- One sentence, no co-author notes — **never** append `Co-Authored-By` lines
 - Start with a verb (e.g. "Implement", "Fix", "Add", "Remove")
 - Describe what changed and why in a single line
 

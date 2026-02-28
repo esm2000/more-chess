@@ -2,7 +2,7 @@ import collections
 
 import src.moves as moves
 from src.log import logger
-from .check_checkmate import can_king_move
+from .check_checkmate import can_king_move, _has_marked_for_death_pieces
 
 
 # conditionally mutates new_game_state
@@ -45,7 +45,8 @@ def handle_draw_conditions(old_game_state, new_game_state):
                     elif not moves_info["possible_moves"] and "king" in piece_type:
                         is_king_immobile = True
     
-    if only_king_can_move and is_king_immobile:
+    if only_king_can_move and is_king_immobile and \
+    not _has_marked_for_death_pieces(new_game_state, side_that_should_be_moving_next_turn):
         logger.info("BOTH DEFEATS set to True: Only king can move and king is immobile")
         new_game_state["white_defeat"] = True
         new_game_state["black_defeat"] = True
@@ -70,6 +71,10 @@ def tie_game_if_no_moves_are_possible_next_turn(old_game_state, new_game_state):
     old_game_turn_count = old_game_state["turn_count"]
     new_game_turn_count = new_game_state["turn_count"]
     side_that_should_be_moving_next_turn = "white" if not new_game_turn_count % 2 else "black"
+
+    # if the side has marked-for-death pieces to surrender, they have a valid action
+    if _has_marked_for_death_pieces(new_game_state, side_that_should_be_moving_next_turn):
+        return
 
     if can_king_move(old_game_state, new_game_state, turn_incremented=old_game_turn_count == new_game_turn_count):
         return

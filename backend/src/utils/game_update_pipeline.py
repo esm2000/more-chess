@@ -198,16 +198,15 @@ def update_game_metrics(old_game_state, new_game_state, moved_pieces, gold_spent
 def handle_endgame_conditions(old_game_state, new_game_state, moved_pieces, is_valid_game_state, should_increment_turn_count):
     # Check and checkmate logic
     utils.manage_check_status(old_game_state, new_game_state)
-    utils.end_game_on_checkmate(old_game_state, new_game_state)
-    
+
     # Validate check escape
     is_valid_game_state = utils.invalidate_game_if_player_moves_and_is_in_check(
         is_valid_game_state, old_game_state, new_game_state, moved_pieces
     )
-    
+
     if not is_valid_game_state:
         raise HTTPException(status_code=400, detail=utils.INVALID_GAME_STATE_ERROR_MESSAGE)
-    
+
     # if any of the piece(s) that moved this turn have five dragon buff stacks mark all non-king adjacent pieces for death
     # but only do this is new_game_state's turn count is greater than old_game_state's turn count or when queen_reset is True for new_game_state but False for old_game_state
     have_any_pieces_been_marked_for_death = False
@@ -229,6 +228,10 @@ def handle_endgame_conditions(old_game_state, new_game_state, moved_pieces, is_v
                     if opposite_side in piece.get("type") and "king" not in piece.get("type"):
                         piece["marked_for_death"] = True
                         have_any_pieces_been_marked_for_death = True
+
+    # Checkmate check runs after marks are applied so that marked-for-death surrenders
+    # (which could open an escape square for the king) are considered before declaring checkmate.
+    utils.end_game_on_checkmate(old_game_state, new_game_state)
 
     # handle stunned piece special case if pieces have not been marked for death this turn
     if should_increment_turn_count and utils.are_all_non_king_pieces_stunned(new_game_state) and not utils.can_king_move(old_game_state, new_game_state) and not have_any_pieces_been_marked_for_death:

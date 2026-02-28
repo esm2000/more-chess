@@ -134,9 +134,24 @@ def manage_check_status(old_game_state, new_game_state):
 
 
 # conditionally mutates new_game_state
+def _has_marked_for_death_pieces(game_state, side):
+    """Check if the given side has any pieces marked for death on the board."""
+    for row in game_state["board_state"]:
+        for square in row:
+            for piece in square or []:
+                if side in piece.get("type", "") and piece.get("marked_for_death", False):
+                    return True
+    return False
+
+
 def end_game_on_checkmate(old_game_state, new_game_state):
     side_that_should_be_moving_next_turn = "white" if old_game_state["turn_count"] % 2 else "black"
-    
+
+    # Don't declare checkmate if the defender has marked-for-death pieces to surrender —
+    # surrendering an ally piece adjacent to the king could open an escape square.
+    if _has_marked_for_death_pieces(new_game_state, side_that_should_be_moving_next_turn):
+        return
+
     if new_game_state["check"][side_that_should_be_moving_next_turn] and \
     not can_king_move(old_game_state, new_game_state) and \
     not can_other_pieces_prevent_check(side_that_should_be_moving_next_turn, old_game_state, new_game_state):

@@ -331,6 +331,10 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
                     continue
                 square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
                 if square and any(opposing_side in piece.get("type", "") for piece in square):
+                    # Only kings are added to threatening_move (for check detection).
+                    # Non-king pieces are intentionally omitted from possible_captures
+                    # because the opponent chooses which marked-for-death piece dies,
+                    # not the moving player. That resolution happens in the game update pipeline.
                     if any("king" in piece.get("type", "") for piece in square):
                         threatening_move.append(possible_move)
 
@@ -432,6 +436,10 @@ def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
                     continue
                 square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
                 if square and any(opposing_side in piece.get("type", "") for piece in square):
+                    # Only kings are added to threatening_move (for check detection).
+                    # Non-king pieces are intentionally omitted from possible_captures
+                    # because the opponent chooses which marked-for-death piece dies,
+                    # not the moving player. That resolution happens in the game update pipeline.
                     if any("king" in piece.get("type", "") for piece in square):
                         threatening_move.append(possible_move)
 
@@ -523,6 +531,10 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
                     continue
                 square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
                 if square and any(opposing_side in piece.get("type", "") for piece in square):
+                    # Only kings are added to threatening_move (for check detection).
+                    # Non-king pieces are intentionally omitted from possible_captures
+                    # because the opponent chooses which marked-for-death piece dies,
+                    # not the moving player. That resolution happens in the game update pipeline.
                     if any("king" in piece.get("type", "") for piece in square):
                         threatening_move.append(possible_move)
 
@@ -618,6 +630,10 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
                     continue
                 square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
                 if square and any(opposing_side in piece.get("type", "") for piece in square):
+                    # Only kings are added to threatening_move (for check detection).
+                    # Non-king pieces are intentionally omitted from possible_captures
+                    # because the opponent chooses which marked-for-death piece dies,
+                    # not the moving player. That resolution happens in the game update pipeline.
                     if any("king" in piece.get("type", "") for piece in square):
                         threatening_move.append(possible_move)
 
@@ -687,6 +703,10 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
                     continue
                 square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
                 if square and any(opposing_side in piece.get("type", "") for piece in square):
+                    # Only kings are added to threatening_move (for check detection).
+                    # Non-king pieces are intentionally omitted from possible_captures
+                    # because the opponent chooses which marked-for-death piece dies,
+                    # not the moving player. That resolution happens in the game update pipeline.
                     if any("king" in piece.get("type", "") for piece in square):
                         threatening_move.append(possible_move)
 
@@ -782,6 +802,10 @@ def get_moves_for_king(curr_game_state, prev_game_state, curr_position):
                     continue
                 square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
                 if square and any(opposing_side in piece.get("type", "") for piece in square):
+                    # Only kings are added to threatening_move (for check detection).
+                    # Non-king pieces are intentionally omitted from possible_captures
+                    # because the opponent chooses which marked-for-death piece dies,
+                    # not the moving player. That resolution happens in the game update pipeline.
                     if any("king" in piece.get("type", "") for piece in square):
                         threatening_move.append(possible_move)
 

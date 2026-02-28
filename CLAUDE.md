@@ -73,7 +73,15 @@ more-chess/
 ├── backend/
 │   ├── src/
 │   │   ├── api.py               # FastAPI route definitions
-│   │   ├── moves.py             # Core move generation
+│   │   ├── moves/                # Move generation package
+│   │   │   ├── __init__.py      # Dispatcher + re-exports
+│   │   │   ├── _helpers.py      # Shared move generation helpers
+│   │   │   ├── pawn.py          # Pawn move generation
+│   │   │   ├── knight.py        # Knight move generation
+│   │   │   ├── bishop.py        # Bishop move generation
+│   │   │   ├── rook.py          # Rook move generation
+│   │   │   ├── queen.py         # Queen move generation
+│   │   │   └── king.py          # King move generation
 │   │   ├── database.py          # MongoDB connection
 │   │   ├── log.py               # Logging
 │   │   └── utils/               # Game logic utilities
@@ -121,7 +129,9 @@ more-chess/
 |------|---------|
 | `backend/server.py` | FastAPI entry point |
 | `backend/src/api.py` | REST API route definitions |
-| `backend/src/moves.py` | Core move generation engine for all piece types |
+| `backend/src/moves/` | Move generation package (one module per piece type) |
+| `backend/src/moves/__init__.py` | Move dispatcher (`get_moves()`) + re-exports |
+| `backend/src/moves/_helpers.py` | Shared helpers (file control, dragon buff, baron immunity) |
 | `backend/src/database.py` | MongoDB connection and CRUD operations |
 | `backend/src/utils/game_update_pipeline.py` | Turn orchestration pipeline |
 | `backend/src/utils/check_checkmate.py` | Check/checkmate/stalemate detection |
@@ -210,7 +220,7 @@ Universal mechanics: moving adjacent/onto a monster deals 1 damage; pieces stayi
 | Module | Primary Responsibility | Key Functions |
 |--------|----------------------|---------------|
 | `src/api.py` | FastAPI routes | endpoints: game CRUD, buy_piece, moves |
-| `src/moves.py` | Move generation engine | `get_moves`, `get_moves_for_*` (6 piece types) |
+| `src/moves/` | Move generation package | `get_moves` (dispatcher in `__init__.py`), per-piece modules: `pawn.py`, `knight.py`, `bishop.py`, `rook.py`, `queen.py`, `king.py`; shared helpers in `_helpers.py` |
 | `src/database.py` | MongoDB connection | exports `mongo_client` |
 | `src/log.py` | Logging | exports `logger` |
 | `utils/game_update_pipeline.py` | Turn orchestration | `prepare_game_update`, `apply_special_piece_effects`, `manage_turn_progression`, `validate_moves_and_pieces`, `handle_endgame_conditions` |
@@ -362,6 +372,7 @@ Current focus: neutral monster buff implementation, marked-for-death mechanics v
 
 ### Recent Development Work
 
+- Split `moves.py` into per-piece package (`src/moves/`) for better readability by AI agents and developers
 - Stalemate detection fix (side-to-move logic)
 - Marked-for-death mechanic validation (bishop 3-stack, 5-dragon-stack)
 - 5-dragon-stack marked-for-death adjacent capture implemented for all piece types
@@ -382,8 +393,7 @@ Current focus: neutral monster buff implementation, marked-for-death mechanics v
 ### Current Priorities
 
 1. Finalize Neutral Monster Buff Implementation
-2. Split `moves.py` into per-piece modules
-3. Add type annotations, module/function docstrings, and TypedDicts (especially `GameState`) to reduce AI tool token usage and improve maintainability
+2. Add type annotations, module/function docstrings, and TypedDicts (especially `GameState`) to reduce AI tool token usage and improve maintainability
 4. Complete Frontend Buff Visualization
 5. Shop and Pawn Exchange Finalization
 6. Develop CPU Opponent

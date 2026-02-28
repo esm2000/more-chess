@@ -55,29 +55,18 @@ def manage_turn_progression(old_game_state, new_game_state, moved_pieces, is_val
         logger.debug("Not incrementing turn count: new position in play selected")
         is_valid_game_state = utils.does_position_in_play_match_turn(old_game_state, new_game_state) and is_valid_game_state
     
-    # if there are any pieces marked for death on the board and not all pieces are stunned, don't increment turn count
+    # if there are any non-stunned pieces marked for death on the board, don't increment turn count
     # (board from previous turn is scanned, since it's possible that only one piece is marked for death and that piece could be surrendered this turn)
+    has_active_marked_for_death = False
     for row in range(len(old_game_state["board_state"])):
         for col in range(len(old_game_state["board_state"][row])):
-            square = old_game_state["board_state"][row][col] or []
+            for piece in old_game_state["board_state"][row][col] or []:
+                if piece.get("marked_for_death", False) and not piece.get("is_stunned", False):
+                    has_active_marked_for_death = True
 
-            for piece in square:
-                if piece.get("marked_for_death", False):
-                    side = "white" if "white" in piece.get("type", "") else "black"
-
-                    are_all_pieces_stunned = True
-
-                    for r in range(len(old_game_state["board_state"])):
-                        for c in range(len(old_game_state["board_state"][r])):
-                            s = old_game_state["board_state"][row][col] or []
-
-                            for p in s:
-                                if side in p.get("type", "") and not p.get("is_stunned", False):
-                                    are_all_pieces_stunned = False
-
-                    if not are_all_pieces_stunned:
-                        should_increment_turn_count = False
-                        logger.debug("Not incrementing turn count: piece marked for death found on board")
+    if has_active_marked_for_death:
+        should_increment_turn_count = False
+        logger.debug("Not incrementing turn count: piece marked for death found on board")
 
     # queen turn logic
     if new_game_state["queen_reset"] and should_increment_turn_count:

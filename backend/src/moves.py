@@ -98,6 +98,23 @@ def process_possible_moves_dict(curr_game_state, curr_position, side, possible_m
     return possible_moves_dict
 
 
+def _add_marked_for_death_threats(possible_moves, threatening_move, opposing_side, board_state):
+    """5-dragon-stack marked-for-death: add king threats for squares adjacent to landing squares.
+    Only kings are added to threatening_move (for check detection). Non-king pieces are
+    intentionally omitted from possible_captures because the opponent chooses which
+    marked-for-death piece dies. That resolution happens in the game update pipeline."""
+    adjacent_deltas = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
+    for possible_move in possible_moves:
+        for delta in adjacent_deltas:
+            adj = [possible_move[0] + delta[0], possible_move[1] + delta[1]]
+            if adj[0] < 0 or adj[0] > 7 or adj[1] < 0 or adj[1] > 7:
+                continue
+            square = board_state[adj[0]][adj[1]]
+            if square and any(opposing_side in piece.get("type", "") for piece in square):
+                if any("king" in piece.get("type", "") for piece in square):
+                    threatening_move.append(possible_move)
+
+
 def _is_path_clear(squares, side, opposing_side, dragon_buff):
     """Check if all squares in a path are passable given dragon buff tier."""
     def is_square_passable(square):
@@ -315,22 +332,8 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
                 possible_moves.append([en_passant_dest_row, lateral_position[1]])
                 possible_captures.append([[en_passant_dest_row, lateral_position[1]], [curr_position[0] , lateral_position[1]]])
 
-    # 5 dragon buff stacks: marked-for-death - enemy pieces adjacent to pawn's landing square can be captured
     if dragon_buff >= 5:
-        adjacent_squares = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
-        for possible_move in possible_moves:
-            for adjacent_square in adjacent_squares:
-                potential_capture_square = [possible_move[0] + adjacent_square[0], possible_move[1] + adjacent_square[1]]
-                if potential_capture_square[0] < 0 or potential_capture_square[0] > 7 or potential_capture_square[1] < 0 or potential_capture_square[1] > 7:
-                    continue
-                square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
-                if square and any(opposing_side in piece.get("type", "") for piece in square):
-                    # Only kings are added to threatening_move (for check detection).
-                    # Non-king pieces are intentionally omitted from possible_captures
-                    # because the opponent chooses which marked-for-death piece dies,
-                    # not the moving player. That resolution happens in the game update pipeline.
-                    if any("king" in piece.get("type", "") for piece in square):
-                        threatening_move.append(possible_move)
+        _add_marked_for_death_threats(possible_moves, threatening_move, opposing_side, curr_game_state["board_state"])
 
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
 
@@ -420,22 +423,8 @@ def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
                         if piece.get("health", 0) == 1:
                             possible_captures.append([potential_position, potential_position])
 
-    # 5 dragon buff stacks: marked-for-death - enemy pieces adjacent to knight's landing square can be captured
     if dragon_buff >= 5:
-        adjacent_squares = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
-        for possible_move in possible_moves:
-            for adjacent_square in adjacent_squares:
-                potential_capture_square = [possible_move[0] + adjacent_square[0], possible_move[1] + adjacent_square[1]]
-                if potential_capture_square[0] < 0 or potential_capture_square[0] > 7 or potential_capture_square[1] < 0 or potential_capture_square[1] > 7:
-                    continue
-                square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
-                if square and any(opposing_side in piece.get("type", "") for piece in square):
-                    # Only kings are added to threatening_move (for check detection).
-                    # Non-king pieces are intentionally omitted from possible_captures
-                    # because the opponent chooses which marked-for-death piece dies,
-                    # not the moving player. That resolution happens in the game update pipeline.
-                    if any("king" in piece.get("type", "") for piece in square):
-                        threatening_move.append(possible_move)
+        _add_marked_for_death_threats(possible_moves, threatening_move, opposing_side, curr_game_state["board_state"])
 
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
 
@@ -515,22 +504,8 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
                     else:
                         possible_captures.append([possible_move, potential_capture_square])
 
-    # 5 dragon buff stacks: marked-for-death - enemy pieces adjacent to bishop's landing square can be captured
     if dragon_buff >= 5:
-        adjacent_squares = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
-        for possible_move in possible_moves:
-            for adjacent_square in adjacent_squares:
-                potential_capture_square = [possible_move[0] + adjacent_square[0], possible_move[1] + adjacent_square[1]]
-                if potential_capture_square[0] < 0 or potential_capture_square[0] > 7 or potential_capture_square[1] < 0 or potential_capture_square[1] > 7:
-                    continue
-                square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
-                if square and any(opposing_side in piece.get("type", "") for piece in square):
-                    # Only kings are added to threatening_move (for check detection).
-                    # Non-king pieces are intentionally omitted from possible_captures
-                    # because the opponent chooses which marked-for-death piece dies,
-                    # not the moving player. That resolution happens in the game update pipeline.
-                    if any("king" in piece.get("type", "") for piece in square):
-                        threatening_move.append(possible_move)
+        _add_marked_for_death_threats(possible_moves, threatening_move, opposing_side, curr_game_state["board_state"])
 
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
 
@@ -614,22 +589,8 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
             castle_moves.append([start_row, rook_targets["left"]])
         elif curr_position == [start_row, rook_cols["right"]] and not curr_game_state["castle_log"][side]["has_right_rook_moved"]:
             castle_moves.append([start_row, rook_targets["right"]])
-    # 5 dragon buff stacks: marked-for-death - enemy pieces adjacent to rook's landing square can be captured
     if dragon_buff >= 5:
-        adjacent_squares = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
-        for possible_move in possible_moves:
-            for adjacent_square in adjacent_squares:
-                potential_capture_square = [possible_move[0] + adjacent_square[0], possible_move[1] + adjacent_square[1]]
-                if potential_capture_square[0] < 0 or potential_capture_square[0] > 7 or potential_capture_square[1] < 0 or potential_capture_square[1] > 7:
-                    continue
-                square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
-                if square and any(opposing_side in piece.get("type", "") for piece in square):
-                    # Only kings are added to threatening_move (for check detection).
-                    # Non-king pieces are intentionally omitted from possible_captures
-                    # because the opponent chooses which marked-for-death piece dies,
-                    # not the moving player. That resolution happens in the game update pipeline.
-                    if any("king" in piece.get("type", "") for piece in square):
-                        threatening_move.append(possible_move)
+        _add_marked_for_death_threats(possible_moves, threatening_move, opposing_side, curr_game_state["board_state"])
 
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move, "castle_moves": castle_moves})
 
@@ -687,22 +648,8 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
             possible_position[0] += direction[0]
             possible_position[1] += direction[1]
             
-    # 5 dragon buff stacks: marked-for-death - enemy pieces adjacent to queen's landing square can be captured
     if dragon_buff >= 5:
-        adjacent_squares = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
-        for possible_move in possible_moves:
-            for adjacent_square in adjacent_squares:
-                potential_capture_square = [possible_move[0] + adjacent_square[0], possible_move[1] + adjacent_square[1]]
-                if potential_capture_square[0] < 0 or potential_capture_square[0] > 7 or potential_capture_square[1] < 0 or potential_capture_square[1] > 7:
-                    continue
-                square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
-                if square and any(opposing_side in piece.get("type", "") for piece in square):
-                    # Only kings are added to threatening_move (for check detection).
-                    # Non-king pieces are intentionally omitted from possible_captures
-                    # because the opponent chooses which marked-for-death piece dies,
-                    # not the moving player. That resolution happens in the game update pipeline.
-                    if any("king" in piece.get("type", "") for piece in square):
-                        threatening_move.append(possible_move)
+        _add_marked_for_death_threats(possible_moves, threatening_move, opposing_side, curr_game_state["board_state"])
 
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
 
@@ -785,22 +732,8 @@ def get_moves_for_king(curr_game_state, prev_game_state, curr_position):
             ((rook_dragon_buff(start_row, 7) >= 4 and dragon_buff >= 4) or is_path_clear(4, 7))):
             castle_moves.append([start_row, 6])
     
-    # 5 dragon buff stacks: marked-for-death - enemy pieces adjacent to king's landing square can be captured
     threatening_move = []
     if dragon_buff >= 5:
-        adjacent_squares = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
-        for possible_move in possible_moves:
-            for adjacent_square in adjacent_squares:
-                potential_capture_square = [possible_move[0] + adjacent_square[0], possible_move[1] + adjacent_square[1]]
-                if potential_capture_square[0] < 0 or potential_capture_square[0] > 7 or potential_capture_square[1] < 0 or potential_capture_square[1] > 7:
-                    continue
-                square = curr_game_state["board_state"][potential_capture_square[0]][potential_capture_square[1]]
-                if square and any(opposing_side in piece.get("type", "") for piece in square):
-                    # Only kings are added to threatening_move (for check detection).
-                    # Non-king pieces are intentionally omitted from possible_captures
-                    # because the opponent chooses which marked-for-death piece dies,
-                    # not the moving player. That resolution happens in the game update pipeline.
-                    if any("king" in piece.get("type", "") for piece in square):
-                        threatening_move.append(possible_move)
+        _add_marked_for_death_threats(possible_moves, threatening_move, opposing_side, curr_game_state["board_state"])
 
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move, "castle_moves": castle_moves}, is_king=True)

@@ -1,6 +1,6 @@
 # League of Chess - Developer Documentation
 
-Last Updated: 2026-02-13
+Last Updated: 2026-02-28
 
 > **Keep this file current.** Update the relevant sections whenever you change game mechanics, add/rename modules, restructure directories, change dependencies, or shift development priorities. See [Maintaining This Document](#maintaining-this-document) for the update checklist.
 
@@ -154,7 +154,7 @@ more-chess/
 ### Piece-Specific Mechanics
 
 #### Pawns
-- Average piece value compared per team (excl. pawns): Knight/Bishop=3, Rook=5, Queen=9
+- Average piece value compared per team (Pawn=1, Knight/Bishop=3, Rook=5, Queen=9)
 - +2 avg point advantage: pawns can capture enemy pawns directly in front (not just diagonal)
 - +3 avg point advantage: your pawns are immune to capture by enemy pawns
 
@@ -193,11 +193,11 @@ Universal mechanics: moving adjacent/onto a monster deals 1 damage; pieces stayi
   5. (Elder Dragon, 3 turns) Marked-for-death: pieces can be captured by occupying an adjacent square; opponent chooses which threatened piece dies
 
 #### Board Herald
-- Spawns turns 10 and 20 on a5; individual buff to capturing piece (permanent until captured)
+- Spawns turns 10 and 20 on a5; 4-turn individual buff to capturing piece
 - Adjacent ally pawns can capture 1 square directly forward
 
 #### Baron Nashor
-- Spawns every 15 turns after turn 20 on a5; 5-turn team-wide pawn buff:
+- Spawns every 15 turns after turn 20 on a5; 4-turn team-wide pawn buff:
   - Pawns can capture 1 square forward; pawns immune to enemy pawn capture
   - Negates enemy +3 advantage pawn immunity
 
@@ -311,7 +311,7 @@ Ports: `80` = frontend (Nginx), `8080` = backend (FastAPI). Requires `.env` at p
 
 ## Testing Strategy
 
-121 test functions across 18 files. Unit tests use `mocks/empty_game.py` (isolated, no DB); integration tests use `mocks/starting_game.py` + FastAPI test client. `test_utils.py` provides `select_and_move_white/black_piece()` helpers.
+Unit tests use `mocks/empty_game.py` (isolated, no DB); integration tests use `mocks/starting_game.py` + FastAPI test client. `test_utils.py` provides `select_and_move_white/black_piece()` helpers.
 
 ### Test Coverage
 
@@ -347,8 +347,6 @@ pytest -v -s -x -k "dragon"         # verbose, print, stop-on-fail, filter
 
 ### Test Quality Metrics
 
-- **Total Tests:** 121 test functions
-- **Test Files:** 18 files (6 unit, 12 integration/support)
 - **Coverage Focus:** Backend game logic (100% of core mechanics tested)
 - **Test Execution Time:** ~5-10 seconds for full suite (fast feedback loop)
 - **Test Isolation:** Each test uses fresh game state from mocks (no shared state)
@@ -366,6 +364,9 @@ Current focus: neutral monster buff implementation, marked-for-death mechanics v
 
 - Stalemate detection fix (side-to-move logic)
 - Marked-for-death mechanic validation (bishop 3-stack, 5-dragon-stack)
+- 5-dragon-stack marked-for-death adjacent capture implemented for all piece types
+- Knight dragon buff path collision bug fix (or → and)
+- Dragon buff stack unit tests implemented for bishop, rook, queen, king (34 tests)
 - Baron Nashor buff + check validation
 - Pawn advantage calculation fix (average piece value)
 - Turn skip edge cases (all pieces stunned)
@@ -381,11 +382,12 @@ Current focus: neutral monster buff implementation, marked-for-death mechanics v
 ### Current Priorities
 
 1. Finalize Neutral Monster Buff Implementation
-2. Improve Code Maintainability
-3. Complete Frontend Buff Visualization
-4. Shop and Pawn Exchange Finalization
-5. Develop CPU Opponent
-6. Production Readiness
+2. Split `moves.py` into per-piece modules
+3. Add type annotations, module/function docstrings, and TypedDicts (especially `GameState`) to reduce AI tool token usage and improve maintainability
+4. Complete Frontend Buff Visualization
+5. Shop and Pawn Exchange Finalization
+6. Develop CPU Opponent
+7. Production Readiness
 
 ---
 
@@ -472,6 +474,18 @@ game_state = {
 - Integration: `mocks/starting_game.py`, FastAPI test client, `select_and_move_*()` helpers
 - Always `copy.deepcopy()` mock states; fixtures in `conftest.py`
 
+**ASCII Board Diagram Convention (unit tests):**
+- First row of diagrams = white case (`side='white'` in the loop)
+- Second row of diagrams = black case (`side='black'` in the loop)
+- A second column is only used when showing piece movement from the first column (before → after)
+- Piece abbreviations: `wp` (white pawn), `bp` (black pawn), `wk` (white knight), `bk` (black knight), `wK` (white king), `bK` (black king), `wb` (white bishop), `wr` (white rook), `wQ` (white queen), `nd` (neutral dragon), `ss` (sword in stone), etc.
+
+### Commit Messages
+
+- One sentence, no co-author notes
+- Start with a verb (e.g. "Implement", "Fix", "Add", "Remove")
+- Describe what changed and why in a single line
+
 ### Code Organization Principles
 
 **Key Conventions:**
@@ -485,7 +499,7 @@ game_state = {
 
 ## Maintaining This Document
 
-Update this file whenever you change architecture, game mechanics, modules, workflow, tests, or priorities.
+**IMPORTANT — this applies to all contributors including AI agents:** Update this file as part of the same task/commit whenever you change architecture, game mechanics, modules, workflow, tests, or priorities. Do not defer CLAUDE.md updates to a separate task. If you implemented something, record it here before closing the task.
 
 ### Update Triggers Checklist
 
@@ -494,7 +508,7 @@ Update this file whenever you change architecture, game mechanics, modules, work
 - [ ] Changed directory structure → Section 3
 - [ ] New dependency → Section 2
 - [ ] Modified build/test process → Section 6
-- [ ] New test suite → Section 7
+- [ ] New test suite or significant test additions → Section 7 (update counts and stub notes)
 - [ ] Completed major feature → Section 8
 - [ ] Changed common pattern → Section 9
-- [ ] Any update → bump "Last Updated" timestamp
+- [ ] Any update → bump "Last Updated" timestamp to today's date

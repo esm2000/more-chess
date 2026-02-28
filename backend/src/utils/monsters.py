@@ -1,6 +1,7 @@
 import copy
 
-from .board_analysis import get_neutral_monster_slain_position
+from src.log import logger
+from .board_analysis import get_neutral_monster_slain_positions
 
 
 MONSTER_INFO = {
@@ -45,8 +46,10 @@ def spawn_neutral_monsters(game_state):
                 piece = game_state["board_state"][monster_position_row][monster_position_col][i]
                 if "king" in piece.get("type", ""):
                     if "white" in piece["type"]:
+                        logger.info(f"WHITE DEFEAT set to True: King killed by neutral monster spawn at position [{monster_position_row}][{monster_position_col}]")
                         game_state["white_defeat"] = True
                     else:
+                        logger.info(f"BLACK DEFEAT set to True: King killed by neutral monster spawn at position [{monster_position_row}][{monster_position_col}]")
                         game_state["black_defeat"] = True
                     i += 1
                 else:
@@ -54,11 +57,6 @@ def spawn_neutral_monsters(game_state):
                     game_state["board_state"][monster_position_row][monster_position_col].pop(i)
 
             game_state["board_state"][monster_position_row][monster_position_col] = monster_piece
-
-            if monster == "neutral_baron_nashor":
-                for i in range(len(game_state["board_state"][monster_position_row][monster_position_col])):
-                    if game_state["board_state"][monster_position_row][monster_position_col][i].get("type") == "neutral_board_herald":
-                        game_state["board_state"][monster_position_row][monster_position_col].pop(i)
                         
 
 def carry_out_neutral_monster_attacks(game_state):
@@ -84,6 +82,10 @@ def carry_out_neutral_monster_attacks(game_state):
                                 if neutral_kill_mark == game_state["turn_count"]:
                                     # if a king gets captured that's game over
                                     if "king" in piece["type"]:
+                                        if side == "black":
+                                            logger.info(f"BLACK DEFEAT set to True: King killed by neutral monster attack at position [{i}][{j}]")
+                                        else:
+                                            logger.info(f"WHITE DEFEAT set to True: King killed by neutral monster attack at position [{i}][{j}]")
                                         game_state["black_defeat"] = side == "black"
                                         game_state["white_defeat"] = side == "white"
                                         k += 1
@@ -101,28 +103,32 @@ def carry_out_neutral_monster_attacks(game_state):
 
 
 
-def damage_neutral_monsters(new_game_state, moved_pieces):
+def damage_neutral_monsters(new_game_state, moved_pieces, capture_positions):
     for moved_piece in moved_pieces:
         # if a piece is on the same square or adjacent to neutral monsters, they should damage or kill them
         if moved_piece["previous_position"][0] is not None and moved_piece["current_position"][0] is not None:
             for neutral_monster in MONSTER_INFO:
+                neutral_monster_info = MONSTER_INFO[neutral_monster]
                 if is_neutral_monster_spawned(neutral_monster,new_game_state["board_state"]):
-                    row_diff = abs(moved_piece["current_position"][0] - MONSTER_INFO[neutral_monster]["position"][0])
-                    col_diff = abs(moved_piece["current_position"][1] - MONSTER_INFO[neutral_monster]["position"][1])
+                    row_diff = abs(moved_piece["current_position"][0] - neutral_monster_info["position"][0])
+                    col_diff = abs(moved_piece["current_position"][1] - neutral_monster_info["position"][1])
+                    damage = 2 if moved_piece["piece"].get("dragon_buff", 0) >= 2 else 1
                     if row_diff in [-1, 0, 1] and col_diff in [-1, 0, 1]:
-                        for i, piece in enumerate(new_game_state["board_state"][MONSTER_INFO[neutral_monster]["position"][0]][MONSTER_INFO[neutral_monster]["position"][1]]):
+                        for i, piece in enumerate(new_game_state["board_state"][neutral_monster_info["position"][0]][neutral_monster_info["position"][1]]):
                             if piece.get("type", "") == neutral_monster:
-                                new_game_state["board_state"][MONSTER_INFO[neutral_monster]["position"][0]][MONSTER_INFO[neutral_monster]["position"][1]][i]["health"] = piece["health"] - 1
+                                new_game_state["board_state"][neutral_monster_info["position"][0]][neutral_monster_info["position"][1]][i]["health"] = piece["health"] - damage
                     
-                                if new_game_state["board_state"][MONSTER_INFO[neutral_monster]["position"][0]][MONSTER_INFO[neutral_monster]["position"][1]][i]["health"] < 1:
-                                    neutral_monster_piece = new_game_state["board_state"][MONSTER_INFO[neutral_monster]["position"][0]][MONSTER_INFO[neutral_monster]["position"][1]].pop(i)
+                                if new_game_state["board_state"][neutral_monster_info["position"][0]][neutral_monster_info["position"][1]][i]["health"] < 1:
+                                    neutral_monster_piece = new_game_state["board_state"][neutral_monster_info["position"][0]][neutral_monster_info["position"][1]].pop(i)
                                     new_game_state["captured_pieces"][moved_piece["side"]].append(neutral_monster)
                                     moved_pieces.append({
                                         "piece": neutral_monster_piece,
                                         "side": "neutral",
-                                        "previous_position": MONSTER_INFO[neutral_monster]["position"],
+                                        "previous_position": neutral_monster_info["position"],
                                         "current_position": [None, None]
                                     })
+                                    # Add capture information so handle_neutral_monster_buffs can find the captor
+                                    capture_positions.append([moved_piece["current_position"], neutral_monster_info["position"]])
 
 
 
@@ -179,14 +185,131 @@ def is_neutral_monster_spawned(neutral_monster_type, board_state):
 
 
 def is_neutral_monster_killed(moved_pieces):
-    neutral_monster_slain_position = get_neutral_monster_slain_position(moved_pieces)
-    was_neutral_monster_killed = False
+    neutral_monster_slain_positions = get_neutral_monster_slain_positions(moved_pieces)
 
     for moved_piece in moved_pieces:
-        if neutral_monster_slain_position:
+        if neutral_monster_slain_positions:
             if moved_piece["side"] != "neutral" and \
-            moved_piece["current_position"][0] is not None and \
-            abs(moved_piece["current_position"][0] - neutral_monster_slain_position[0]) in [0, 1] and \
-            abs(moved_piece["current_position"][1] - neutral_monster_slain_position[1]) in [0, 1]:
-                was_neutral_monster_killed = True
-    return was_neutral_monster_killed
+            moved_piece["current_position"][0] is not None:
+                # Check if the piece is adjacent to ANY slain position
+                for slain_position in neutral_monster_slain_positions:
+                    if abs(moved_piece["current_position"][0] - slain_position[0]) in [0, 1] and \
+                    abs(moved_piece["current_position"][1] - slain_position[1]) in [0, 1]:
+                        return True
+    return False
+
+
+def handle_neutral_monster_buffs(moved_pieces, capture_positions, new_game_state, is_valid_game_state):
+    # mark new buffs for any side that has captured a neutral monster
+    # and apply buff if board herald buff acquired
+    for moved_piece in moved_pieces:
+        if moved_piece["side"] == "neutral" and moved_piece["current_position"][0] is None and moved_piece["previous_position"][0] is not None:
+            captor = None
+            captor_position = None
+
+            for capture_info in capture_positions:
+                if capture_info[1] != moved_piece["previous_position"]:
+                    continue
+                captor_position = capture_info[0]
+                square = new_game_state["board_state"][captor_position[0]][captor_position[1]] or []
+
+                if square:
+                    captor = square[0]
+
+            if not captor:
+                neutral_monster_type = moved_piece["piece"].get("type", "Unknown")
+                logger.error(f'Unable to find captor of {neutral_monster_type} (slain at {moved_piece["previous_position"]})')
+                is_valid_game_state = False
+            else:
+                side = "white" if "white" in captor.get("type", "") else "black"
+                neutral_monster_type = moved_piece["piece"]["type"].replace("neutral_", "")
+                if neutral_monster_type == "dragon":
+                    if new_game_state["neutral_buff_log"][side]["dragon"]["stacks"] < 5:
+                        new_game_state["neutral_buff_log"][side]["dragon"]["stacks"] += 1
+
+                    new_game_state["neutral_buff_log"][side]["dragon"]["turn"] = new_game_state["turn_count"]
+                elif neutral_monster_type == "baron_nashor":
+                    new_game_state["neutral_buff_log"][side]["baron_nashor"]["active"] = True
+                    new_game_state["neutral_buff_log"][side]["baron_nashor"]["turn"] = new_game_state["turn_count"]
+                elif neutral_monster_type == "board_herald":
+                    new_game_state["neutral_buff_log"][side]["board_herald"]["active"] = True
+                    new_game_state["neutral_buff_log"][side]["board_herald"]["turn"] = new_game_state["turn_count"]
+
+                    # grant board herald buff to captor if neutral_monster slain was board_herald
+                    new_game_state["board_state"][captor_position[0]][captor_position[1]][0]["board_herald_buff"] = True
+                else:
+                    new_game_state["neutral_buff_log"][side][neutral_monster_type] = True
+
+    # grant and expire neutral monster buffs using neutral buff log
+    for side in new_game_state["neutral_buff_log"]:
+        baron_log = new_game_state["neutral_buff_log"][side]["baron_nashor"]
+        if isinstance(baron_log, bool):
+            # Compatibility for older game states that tracked baron as a bool.
+            baron_log = {
+                "active": baron_log,
+                "turn": new_game_state["turn_count"] if baron_log else 0
+            }
+            new_game_state["neutral_buff_log"][side]["baron_nashor"] = baron_log
+
+        if baron_log["active"]:
+            # baron nashor buff lasts 4 game turns (8 half-turns)
+            baron_expired = new_game_state["turn_count"] > baron_log["turn"] + 8
+            if baron_expired:
+                baron_log["active"] = False
+
+            for row in range(len(new_game_state["board_state"])):
+                for col in range(len(new_game_state["board_state"][0])):
+                    square = new_game_state["board_state"][row][col] or []
+
+                    for piece in square:
+                        if piece["type"] == f"{side}_pawn":
+                            if baron_expired:
+                                piece.pop("baron_nashor_buff", None)
+                            else:
+                                piece["baron_nashor_buff"] = True
+
+        board_herald_log = new_game_state["neutral_buff_log"][side]["board_herald"]
+        if isinstance(board_herald_log, bool):
+            # Compatibility for older game states that tracked board herald as a bool.
+            board_herald_log = {
+                "active": board_herald_log,
+                "turn": new_game_state["turn_count"] if board_herald_log else 0
+            }
+            new_game_state["neutral_buff_log"][side]["board_herald"] = board_herald_log
+
+        if board_herald_log["active"]:
+            # board herald buff lasts 4 game turns (8 half-turns)
+            board_herald_expired = new_game_state["turn_count"] > board_herald_log["turn"] + 8
+            if board_herald_expired:
+                board_herald_log["active"] = False
+
+                for row in range(len(new_game_state["board_state"])):
+                    for col in range(len(new_game_state["board_state"][0])):
+                        square = new_game_state["board_state"][row][col] or []
+
+                        for piece in square:
+                            if side in piece["type"]:
+                                piece.pop("board_herald_buff", None)
+
+        if new_game_state["neutral_buff_log"][side]["dragon"]["stacks"]:
+            for row in range(len(new_game_state["board_state"])):
+                for col in range(len(new_game_state["board_state"][0])):
+                    square = new_game_state["board_state"][row][col] or []
+
+                    for piece in square:
+                        if new_game_state["neutral_buff_log"][side]["dragon"]["stacks"] == 1:
+                            if piece["type"] == f"{side}_pawn":
+                                piece["dragon_buff"] = new_game_state["neutral_buff_log"][side]["dragon"]["stacks"]
+                        elif new_game_state["neutral_buff_log"][side]["dragon"]["stacks"] >= 2 and new_game_state["neutral_buff_log"][side]["dragon"]["stacks"] <= 4:
+                            if side in piece["type"]:
+                                piece["dragon_buff"] = new_game_state["neutral_buff_log"][side]["dragon"]["stacks"]
+                        elif new_game_state["neutral_buff_log"][side]["dragon"]["stacks"] == 5:
+                            if side in piece["type"]:
+                                # fifth dragon stack only lasts 3 turns
+                                # three turns is covered by 6 turns ahead)
+                                if new_game_state["turn_count"] <= new_game_state["neutral_buff_log"][side]["dragon"]["turn"] + 6:
+                                    piece["dragon_buff"] = 5
+                                else:
+                                    piece["dragon_buff"] = 4
+                                
+    return is_valid_game_state

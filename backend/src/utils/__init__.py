@@ -4,7 +4,7 @@ from .board_analysis import (
     get_piece_value, 
     get_move_counts,
     evaluate_current_position,
-    get_neutral_monster_slain_position
+    get_neutral_monster_slain_positions
 )
 
 # Game state functions  
@@ -29,6 +29,7 @@ from .validation import (
     invalidate_game_if_monster_has_moved,
     invalidate_game_if_too_much_gold_is_spent,
     invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array,
+    invalidate_game_if_no_marked_for_death_pieces_have_been_selected,
     check_for_disappearing_pieces,
     check_if_pawn_exchange_is_required,
     check_if_pawn_exhange_is_possibly_being_carried_out,
@@ -49,7 +50,7 @@ from .piece_mechanics import (
 
 # Game scoring functions  
 from .game_scoring import (
-    get_piece_value_for_each_side,
+    get_average_piece_value_for_each_side,
     update_gold_count,
     update_capture_point_advantage,
     reassign_pawn_buffs
@@ -80,7 +81,8 @@ from .monsters import (
     damage_neutral_monsters,
     heal_neutral_monsters,
     is_neutral_monster_spawned,
-    is_neutral_monster_killed
+    is_neutral_monster_killed,
+    handle_neutral_monster_buffs
 )
 
 # Check and checkmate functions

@@ -39,7 +39,7 @@ def get_unsafe_positions_for_kings(old_game_state, new_game_state):
         
         positions = [tuple(possible_move) for possible_move in moves_info["possible_moves"]]
         positions += [tuple(possible_capture[0]) for possible_capture in moves_info["possible_captures"]]
-        # TODO: is it possible for this to be used ever?
+        # only populated when king has 5 dragon stacks and enemy king is adjacent to a landing square
         positions += [tuple(move) for move in moves_info["threatening_move"]]
 
         possible_king_locations[side] = list(set(positions + possible_king_locations[side]))
@@ -134,12 +134,28 @@ def manage_check_status(old_game_state, new_game_state):
 
 
 # conditionally mutates new_game_state
+def _has_marked_for_death_pieces(game_state, side):
+    """Check if the given side has any pieces marked for death on the board."""
+    for row in game_state["board_state"]:
+        for square in row:
+            for piece in square or []:
+                if side in piece.get("type", "") and piece.get("marked_for_death", False):
+                    return True
+    return False
+
+
 def end_game_on_checkmate(old_game_state, new_game_state):
     side_that_should_be_moving_next_turn = "white" if old_game_state["turn_count"] % 2 else "black"
-    
+
+    # Don't declare checkmate if the defender has marked-for-death pieces to surrender —
+    # surrendering an ally piece adjacent to the king could open an escape square.
+    if _has_marked_for_death_pieces(new_game_state, side_that_should_be_moving_next_turn):
+        return
+
     if new_game_state["check"][side_that_should_be_moving_next_turn] and \
     not can_king_move(old_game_state, new_game_state) and \
     not can_other_pieces_prevent_check(side_that_should_be_moving_next_turn, old_game_state, new_game_state):
+        logger.info(f"{side_that_should_be_moving_next_turn.upper()} DEFEAT set to True: Checkmate - King in check with no escape moves and no pieces can prevent check")
         new_game_state[f"{side_that_should_be_moving_next_turn}_defeat"] = True
 
 
@@ -151,7 +167,6 @@ def can_king_move(old_game_state, new_game_state, turn_incremented=False):
         side_that_should_be_moving_next_turn = "white" if new_game_turn_count % 2 else "black"
 
     output = False
-    unsafe_positions = get_unsafe_positions_for_kings(old_game_state, new_game_state)
     for i in range(len(new_game_state["board_state"])):
         for j in range(len(new_game_state["board_state"][0])):
             square = new_game_state["board_state"][i][j]
@@ -159,15 +174,13 @@ def can_king_move(old_game_state, new_game_state, turn_incremented=False):
             if square:
                 for piece in square:
                     if piece.get("type", "") == f"{side_that_should_be_moving_next_turn}_king":
-                        output = len(
-                            [
-                                move for move in moves.get_moves_for_king(
-                                    new_game_state,
-                                    old_game_state,
-                                    [i, j]
-                                )["possible_moves"] if move not in unsafe_positions[side_that_should_be_moving_next_turn]
-                            ]
-                        ) > 0
+                        moves_info = moves.get_moves_for_king(
+                            new_game_state,
+                            old_game_state,
+                            [i, j]
+                        )
+                        moves_info = trim_king_moves(moves_info, old_game_state, new_game_state, side_that_should_be_moving_next_turn)
+                        output = len(moves_info["possible_moves"]) > 0
     return output
 
 
@@ -230,12 +243,32 @@ def trim_moves(moves_info, unsafe_position_for_one_side):
 
 
 def invalidate_game_if_player_moves_and_is_in_check(is_valid_game_state, old_game_state, new_game_state, moved_pieces):
+    are_pieces_marked_for_death_in_old_game = False
+    are_pieces_marked_for_death_in_new_game = False
+
+    for row in range(len(old_game_state["board_state"])):
+        for col in range(len(old_game_state["board_state"])):
+            old_square = old_game_state["board_state"][row][col] or []
+            new_square = new_game_state["board_state"][row][col] or []
+
+            for piece in old_square:
+                if piece.get("marked_for_death", False):
+                    are_pieces_marked_for_death_in_old_game = True
+
+            for piece in new_square:
+                if piece.get("marked_for_death", False):
+                    are_pieces_marked_for_death_in_new_game = True
+    
     for moved_piece in moved_pieces:
         if moved_piece["previous_position"][0] is not None and moved_piece["previous_position"][1] is not None:
             side = moved_piece["side"]
             if side == "neutral":
                 continue
-            if new_game_state["check"][side] and not is_check_due_to_neutral_monster_spawn_this_turn(old_game_state, new_game_state, side):
+            # prevent the game from being invalidated from a player being in check after disposing of their marked for death
+            # piece players with marked for death pieces must choose which piece to lose before moving their king out of check
+            if new_game_state["check"][side] \
+                and not is_check_due_to_neutral_monster_spawn_this_turn(old_game_state, new_game_state, side) \
+                and not (are_pieces_marked_for_death_in_old_game and not are_pieces_marked_for_death_in_new_game):
                 logger.error(f"{side} moved but is in check")
                 is_valid_game_state = False
     return is_valid_game_state

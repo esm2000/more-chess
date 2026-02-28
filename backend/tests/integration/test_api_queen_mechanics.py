@@ -257,33 +257,65 @@ def test_queen_turn_reset_limitations(game):
 
 def test_skip_one_turn_if_all_non_king_pieces_are_stunned(game):
     # test that when all non-king pieces are stunned that a turn is skipped (with turn check enabled)
-    game = clear_game(game)
-    game_on_next_turn = copy.deepcopy(game)
+    for side in ["white"]:
+        opposite_side = "white" if side == "black" else "black"
+        
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
 
-    game_on_next_turn["board_state"][2][2] = [{"type": "black_pawn"}]
-    game_on_next_turn["board_state"][2][4] = [{"type": "black_pawn"}]
+        game_on_next_turn["board_state"][1][0] = [{"type": f"{side}_bishop"}]
+        game_on_next_turn["board_state"][2][0] = [{"type": f"{side}_rook"}]
+        game_on_next_turn["board_state"][6][7] = [{"type": f"{side}_queen"}]
+        game_on_next_turn["board_state"][7][0] = [{"type": f"{side}_king"}]
 
-    game_on_next_turn["board_state"][6][7] = [{"type": "white_queen"}]
-    
-    game_state = api.GameState(**game_on_next_turn)
-    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
-    
-    assert game["turn_count"] == 0
+        game_on_next_turn["board_state"][0][0] = [{"type": f"{opposite_side}_king"}]
+        game_on_next_turn["board_state"][0][1] = [{"type": f"{opposite_side}_pawn"}]
+        game_on_next_turn["board_state"][1][1] = [{"type": f"{opposite_side}_pawn"}]
 
-    game = select_and_move_white_piece(game=game, from_row=6, from_col=7, to_row=2, to_col=3)
+        if side == "black":
+            game_on_next_turn["turn_count"] = 1
 
-    assert game["turn_count"] == 2
-    assert game["board_state"][2][2][0].get("is_stunned", False)
-    assert game["board_state"][2][4][0].get("is_stunned", False)
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-    with pytest.raises(HTTPException):
-        game = select_black_piece(game=game, row=2, col=2)
+        if side == "white":
+            assert game["turn_count"] == 0
+            game = select_and_move_white_piece(game=game, from_row=6, from_col=7, to_row=1, to_col=2)
+            assert game["turn_count"] == 2
+        else:
+            assert game["turn_count"] == 1
+            game = select_and_move_black_piece(game=game, from_row=6, from_col=7, to_row=1, to_col=2)
+            assert game["turn_count"] == 3
+        
+        assert not game["board_state"][0][0][0].get("is_stunned", False)
+        assert game["board_state"][0][1][0].get("is_stunned", False)
+        assert game["board_state"][1][1][0].get("is_stunned", False)
 
-    with pytest.raises(HTTPException):
-        game = move_black_piece(game=game, from_row=2, from_col=2, to_row=3, to_col=2)
+        assert not game["white_defeat"]
+        assert not game["black_defeat"]
+        
+        
+        if side == "white":
+            with pytest.raises(HTTPException):
+                game = select_black_piece(game=game, row=1, col=1)
 
-    game = select_and_move_white_piece(game=game, from_row=2, from_col=3, to_row=6, to_col=7)
+            with pytest.raises(HTTPException):
+                game = move_black_piece(game=game, from_row=1, from_col=1, to_row=2, to_col=1)
 
-    assert game["turn_count"] == 3
-    assert not game["board_state"][2][2][0].get("is_stunned", False)
-    assert not game["board_state"][2][4][0].get("is_stunned", False)
+            game = select_and_move_white_piece(game=game, from_row=7, from_col=0, to_row=6, to_col=0)
+
+            assert game["turn_count"] == 3
+        else:
+            with pytest.raises(HTTPException):
+                game = select_white_piece(game=game, row=1, col=1)
+
+            with pytest.raises(HTTPException):
+                game = move_white_piece(game=game, from_row=1, from_col=1, to_row=2, to_col=1)
+
+            game = select_and_move_black_piece(game=game, from_row=7, from_col=0, to_row=6, to_col=0)
+
+            assert game["turn_count"] == 4
+
+        assert not game["board_state"][0][0][0].get("is_stunned", False)
+        assert not game["board_state"][0][1][0].get("is_stunned", False)
+        assert not game["board_state"][1][1][0].get("is_stunned", False)

@@ -1,7 +1,8 @@
 import collections
 
 import src.moves as moves
-from .check_checkmate import can_king_move
+from src.log import logger
+from .check_checkmate import can_king_move, _has_marked_for_death_pieces
 
 
 # conditionally mutates new_game_state
@@ -18,6 +19,7 @@ def handle_draw_conditions(old_game_state, new_game_state):
                     piece_log[piece_type] += 1
 
     if "white_king" in piece_log and "black_king" in piece_log and len(piece_log) == 2:
+        logger.info("BOTH DEFEATS set to True: Only kings remaining on board")
         new_game_state["white_defeat"] = True
         new_game_state["black_defeat"] = True
 
@@ -43,7 +45,9 @@ def handle_draw_conditions(old_game_state, new_game_state):
                     elif not moves_info["possible_moves"] and "king" in piece_type:
                         is_king_immobile = True
     
-    if only_king_can_move and is_king_immobile:
+    if only_king_can_move and is_king_immobile and \
+    not _has_marked_for_death_pieces(new_game_state, side_that_should_be_moving_next_turn):
+        logger.info("BOTH DEFEATS set to True: Only king can move and king is immobile")
         new_game_state["white_defeat"] = True
         new_game_state["black_defeat"] = True
 
@@ -57,13 +61,22 @@ def handle_draw_conditions(old_game_state, new_game_state):
 def tie_game_if_no_moves_are_possible_next_turn(old_game_state, new_game_state):
     # if one or both sides have already lost no reason to continue
     if new_game_state["white_defeat"] or new_game_state["black_defeat"]:
-        return 
-    
+        return
+
+    # if all non-king pieces are stunned, skip the turn instead of tying
+    all_stunned = are_all_non_king_pieces_stunned(new_game_state, reverse=True)
+    if all_stunned:
+        return
+
     old_game_turn_count = old_game_state["turn_count"]
     new_game_turn_count = new_game_state["turn_count"]
-    side_that_should_be_moving_next_turn = "white" if old_game_turn_count % 2 else "black"
+    side_that_should_be_moving_next_turn = "white" if not new_game_turn_count % 2 else "black"
 
-    if can_king_move(old_game_state, new_game_state, turn_incremented=old_game_turn_count != new_game_turn_count):
+    # if the side has marked-for-death pieces to surrender, they have a valid action
+    if _has_marked_for_death_pieces(new_game_state, side_that_should_be_moving_next_turn):
+        return
+
+    if can_king_move(old_game_state, new_game_state, turn_incremented=old_game_turn_count == new_game_turn_count):
         return
     
     tie_game = True
@@ -75,34 +88,45 @@ def tie_game_if_no_moves_are_possible_next_turn(old_game_state, new_game_state):
                 for piece in square:
                     if side_that_should_be_moving_next_turn in piece.get("type", "") and \
                         "king" not in piece.get("type", ""):
-                        tie_game = len(
-                                moves.get_moves(
-                                    old_game_state,
-                                    new_game_state,
-                                    [i, j],
-                                    piece
-                                )["possible_moves"]
-                        ) == 0
+                        if len(moves.get_moves(
+                                old_game_state,
+                                new_game_state,
+                                [i, j],
+                                piece
+                            )["possible_moves"]) > 0:
+                            tie_game = False
+                            break
             if not tie_game:
                 break
+        if not tie_game:
+            break
     
     if tie_game:
+        logger.info("BOTH DEFEATS set to True: No moves possible for next turn (tie game)")
         new_game_state["white_defeat"] = True
         new_game_state["black_defeat"] = True    
         
 
 # new game's turn count is representative of what side should be moving next turn (even is white, odd is black)
-def are_all_non_king_pieces_stunned(new_game_state):
+def are_all_non_king_pieces_stunned(new_game_state, reverse=False):
     new_game_turn_count = new_game_state["turn_count"]
     side_that_should_be_moving_next_turn = "white" if not new_game_turn_count % 2 else "black"
-    output = True
+    if reverse:
+        side_that_should_be_moving_next_turn = "white" if side_that_should_be_moving_next_turn == "black" else "black"
+
+    has_non_king_pieces = False
+    all_stunned = True
+
     for i in range(len(new_game_state["board_state"])):
         for j in range(len(new_game_state["board_state"][0])):
             square = new_game_state["board_state"][i][j]
             if square:
                 for piece in square:
                     if piece.get("type", "").split("_")[0] == side_that_should_be_moving_next_turn and \
-                    "king" not in piece.get("type", "") and \
-                    not piece.get("is_stunned", False):
-                        output = False
-    return output
+                    "king" not in piece.get("type", ""):
+                        has_non_king_pieces = True
+                        if not piece.get("is_stunned", False):
+                            all_stunned = False
+
+    # Only return True if there are actually non-king pieces AND they're all stunned
+    return has_non_king_pieces and all_stunned

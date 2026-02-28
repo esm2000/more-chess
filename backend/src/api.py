@@ -20,7 +20,8 @@ from src.utils.game_update_pipeline import (
     handle_captures_and_combat,
     update_game_metrics,
     handle_endgame_conditions,
-    finalize_game_state
+    finalize_game_state,
+    unmark_all_pieces_marked_for_death
 )
 
 router = APIRouter(prefix="/api")
@@ -44,6 +45,7 @@ class GameState(BaseModel, extra=Extra.allow):
     neutral_attack_log: dict
     check: dict
     castle_log: dict
+    neutral_buff_log: dict
 
 
 @router.post("/game", status_code=201)
@@ -98,6 +100,11 @@ def update_game_state(id, state: GameState, response: Response, player=True):
     is_valid_game_state, gold_spent = validate_moves_and_pieces(
         old_game_state, new_game_state, moved_pieces, capture_positions, is_valid_game_state
     )
+
+    # if game state is still valid while marked for death pieces are present that is indicative of 
+    # one piece being chosen for sacrifice (validate_moves_and_pieces), so unmark all pieces
+    if is_valid_game_state:
+        unmark_all_pieces_marked_for_death(new_game_state)
     
     # Handle pawn exchanges
     is_pawn_exchange_required_this_turn, is_pawn_exchange_possibly_being_carried_out = handle_pawn_exchanges(

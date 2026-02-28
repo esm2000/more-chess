@@ -98,6 +98,80 @@ def process_possible_moves_dict(curr_game_state, curr_position, side, possible_m
     return possible_moves_dict
 
 
+def _add_marked_for_death_threats(possible_moves, threatening_move, opposing_side, board_state):
+    """5-dragon-stack marked-for-death: add king threats for squares adjacent to landing squares.
+    Only kings are added to threatening_move (for check detection). Non-king pieces are
+    intentionally omitted from possible_captures because the opponent chooses which
+    marked-for-death piece dies. That resolution happens in the game update pipeline."""
+    adjacent_deltas = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
+    for possible_move in possible_moves:
+        for delta in adjacent_deltas:
+            adj = [possible_move[0] + delta[0], possible_move[1] + delta[1]]
+            if adj[0] < 0 or adj[0] > 7 or adj[1] < 0 or adj[1] > 7:
+                continue
+            square = board_state[adj[0]][adj[1]]
+            if square and any(opposing_side in piece.get("type", "") for piece in square):
+                if any("king" in piece.get("type", "") for piece in square):
+                    threatening_move.append(possible_move)
+
+
+def _can_ignore_ally_collision(square, side, dragon_buff):
+    """Check if dragon buff allows passing through allies on this square."""
+    if dragon_buff == 3:
+        return any(piece.get("type") == f"{side}_pawn" for piece in square or [])
+    if dragon_buff >= 4:
+        return any(side in piece.get("type") for piece in square or [])
+    return False
+
+
+def _is_path_clear(squares, side, opposing_side, dragon_buff):
+    """Check if all squares in a path are passable given dragon buff tier."""
+    def is_square_passable(square):
+        if not square:
+            return True
+        has_neutral = any("neutral" in piece.get("type", "") for piece in square)
+        if dragon_buff >= 4:
+            return (has_neutral and all(opposing_side not in piece.get("type", "") for piece in square)) or \
+                   any(side in piece.get("type", "") for piece in square)
+        elif dragon_buff == 3:
+            return (has_neutral and all(opposing_side not in piece.get("type", "") for piece in square)) or \
+                   any(f"{side}_pawn" == piece.get("type", "") for piece in square)
+        else:
+            return has_neutral and all(side not in piece.get("type", "") and opposing_side not in piece.get("type", "") for piece in square)
+    return all(is_square_passable(square) for square in squares)
+
+
+def _is_diagonal_path_blocked(squares, side, dragon_buff):
+    """Check if any intermediate square blocks a diagonal capture path."""
+    for s in squares:
+        if not s:
+            continue
+        if dragon_buff >= 4:
+            if not all(side in p.get("type", "") for p in s):
+                return True
+        elif dragon_buff == 3:
+            if not all(f"{side}_pawn" == p.get("type", "") for p in s):
+                return True
+        else:
+            return True
+    return False
+
+
+def _is_baron_immune(square, opposing_side, baron_buff_active):
+    """Check if an opposing pawn on this square is immune due to baron buff."""
+    return not baron_buff_active and \
+           any(piece.get("baron_nashor_buff") and f"{opposing_side}_pawn" == piece.get("type") for piece in square)
+
+
+def _add_forward_capture(possible_moves, possible_captures, threatening_move, target_square, move_position, opposing_side):
+    """Add a forward capture or king threat based on what's on the target square."""
+    if any(f"{opposing_side}_king" == piece.get("type", "") for piece in target_square) and not threatening_move:
+        threatening_move.append(move_position)
+    elif any(opposing_side in piece.get("type", "") for piece in target_square):
+        possible_moves.append(move_position)
+        possible_captures.append([move_position, move_position])
+
+
 def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
     evaluate_current_position(curr_position, curr_game_state)
     piece_in_play = None
@@ -111,64 +185,126 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
 
     if not piece_in_play:
         raise Exception(f"No pawn found at position {curr_position}")
-    # TODO: check and record if game-wide buffs are active 
+ 
+    # check to see if a piece with the board herald buff is nearby 
+    board_herald_buff_active = False
+    baron_buff_active = False
+    dragon_buff = 0
+
+    deltas = [(0, 0), (1, 0), (0, 1), (-1, 0), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
+    for delta in deltas:
+        position = [curr_position[0] + delta[0], curr_position[1] + delta[1]]
+
+        if position[0] > 7 or position[0] < 0 or position[1] > 7 or position[1] < 0:
+            continue
+
+        square = curr_game_state["board_state"][position[0]][position[1]] or []
+
+        for piece in square:
+            if side in piece.get("type", "") and piece.get("board_herald_buff", False):
+                board_herald_buff_active = True
     
+    baron_buff_active = piece_in_play.get("baron_nashor_buff", False)
+
     # check and record what buffs that the pawn has 
-    pawn_buff = piece.get("pawn_buff", 0)
+    pawn_buff = piece_in_play.get("pawn_buff", 0)
+    dragon_buff = piece_in_play.get("dragon_buff", 0)
+    
     
     possible_moves = []
     possible_captures = []
     threatening_move = []
+    
+    pawn_range = 2 if dragon_buff >= 1 else 1
     # if square ahead is blank or only has neutral monsters add to list of possible moves
-    row_ahead = curr_position[0] + (-1 if side == "white" else 1)
-    if row_ahead > -1 and row_ahead < 8:
-        
-        square_ahead = curr_game_state["board_state"][row_ahead][curr_position[1]]
-        is_square_ahead_free = not square_ahead or any("neutral" in piece.get("type", "None") for piece in square_ahead)
-        
-        if is_square_ahead_free:
-            possible_moves.append([row_ahead, curr_position[1]])
+    for distance in range(1, pawn_range+1):
+        row_ahead = curr_position[0] + (-distance if side == "white" else distance)
+        if row_ahead > -1 and row_ahead < 8:
+            modifier = -1 if side == "white" else 1
+            squares_ahead = [curr_game_state["board_state"][curr_position[0] + (modifier*d)][curr_position[1]] or [] for d in range(1, distance+1)]
+            
+            are_squares_ahead_free = _is_path_clear(squares_ahead, side, opposing_side, dragon_buff)
 
-            two_rows_ahead = curr_position[0] + (-2 if side == "white" else 2)
-            if two_rows_ahead > -1 and two_rows_ahead < 8:
-                # if pawn is in starting square include square two squares ahead if square ahead is blank or neutral monster is present
-                starting_row = 6 if side == "white" else 1
-                square_two_squares_ahead = curr_game_state["board_state"][two_rows_ahead][curr_position[1]]
-                is_square_two_squares_ahead_free = not square_two_squares_ahead or any(["neutral" in piece_in_square.get("type") for piece_in_square in square_two_squares_ahead])
-                if curr_position[0] == starting_row and is_square_two_squares_ahead_free:
-                    possible_moves.append([two_rows_ahead, curr_position[1]])
+            if len(squares_ahead) == 1:
+                are_squares_leading_to_square_ahead_free = True
+            else:
+                are_squares_leading_to_square_ahead_free = _is_path_clear(squares_ahead[:-1], side, opposing_side, dragon_buff)
+            
+            if are_squares_ahead_free:
+                extra_row_ahead = curr_position[0] + (-distance - 1 if side == "white" else distance + 1)
+                if extra_row_ahead > -1 and extra_row_ahead < 8:
+                    # if pawn is in starting square include square two squares ahead if square ahead is blank or neutral monster is present
+                    starting_row = 6 if side == "white" else 1
+                    square_extra_row_ahead = curr_game_state["board_state"][extra_row_ahead][curr_position[1]] or []
+                    is_square_two_squares_ahead_free = not square_extra_row_ahead or any(["neutral" in piece_in_square.get("type") for piece_in_square in square_extra_row_ahead])
+                    if curr_position[0] == starting_row and is_square_two_squares_ahead_free:
+                        possible_moves.append([extra_row_ahead, curr_position[1]])
+                
+                # are_squares_ahead_free can be True if dragon_buff is 3 and there is a ally pawn in the path
+                if dragon_buff == 3 and \
+                    any(f"{side}_pawn" == piece.get("type") for piece in (curr_game_state["board_state"][row_ahead][curr_position[1]] or [])):
+                    continue
+                    
+                if dragon_buff >= 4 and \
+                    any(side in piece.get("type") for piece in (curr_game_state["board_state"][row_ahead][curr_position[1]] or [])):
+                    continue
 
-        # if capture point advantage is +2 or pawn buff = 1 and enemy pawn is present on square ahead add to list of possible moves
-        if pawn_buff >= 1 and \
-        not is_square_ahead_free and \
-        any(piece.get("type", "None") == f"{opposing_side}_pawn" and piece.get("pawn_buff", 0) < 1 for piece in square_ahead):
-            possible_moves.append([row_ahead, curr_position[1]])
-            possible_captures.append([[row_ahead, curr_position[1]], [row_ahead, curr_position[1]]])
+                possible_moves.append([row_ahead, curr_position[1]])
+            
+            # not having the baron buff and an opposing pawn having the baron buff makes the opposing pawn immune
+            if not _is_baron_immune(squares_ahead[-1], opposing_side, baron_buff_active):
+                move_position = [row_ahead, curr_position[1]]
 
-        # check if diagonally forward adjacent squares have enemy non-king piece or neutral monster or a non pawn-buffed (2) pawn 
-        # and add it to list of possible moves
-        diagonal_forward_adjacent_positions = [
-            [row_ahead, curr_position[1] - 1], [row_ahead, curr_position[1] + 1]
-        ]
+                # if capture point advantage is +2 or pawn buff = 1 and enemy pawn is present on square ahead add to list of possible moves
+                if pawn_buff >= 1 and \
+                not are_squares_ahead_free and \
+                are_squares_leading_to_square_ahead_free and \
+                any(piece.get("type", "None") == f"{opposing_side}_pawn" and piece.get("pawn_buff", 0) < 1 for piece in squares_ahead[-1]):
+                    possible_moves.append(move_position)
+                    possible_captures.append([move_position, move_position])
 
-        for diagonal_forward_adjacent_position in diagonal_forward_adjacent_positions:
-            if diagonal_forward_adjacent_position[1] < 0 or diagonal_forward_adjacent_position[1] > 7:
-                continue
+                # if the board herald buff is active and enemy piece is present on square ahead add to list of possible moves
+                if board_herald_buff_active and \
+                not are_squares_ahead_free and \
+                are_squares_leading_to_square_ahead_free:
+                    _add_forward_capture(possible_moves, possible_captures, threatening_move, squares_ahead[-1], move_position, opposing_side)
 
-            square = curr_game_state["board_state"][diagonal_forward_adjacent_position[0]][diagonal_forward_adjacent_position[1]]
+                # if the baron nashor buff is active and enemy piece is present on square ahead add to list of possible moves
+                if baron_buff_active and \
+                not are_squares_ahead_free and \
+                are_squares_leading_to_square_ahead_free and \
+                not any(piece.get("baron_nashor_buff") and f"{opposing_side}_pawn" == piece.get("type") for piece in squares_ahead[-1]):
+                    _add_forward_capture(possible_moves, possible_captures, threatening_move, squares_ahead[-1], move_position, opposing_side)
 
-            if not square:
-                continue
+            # check if diagonally forward adjacent squares have enemy non-king piece or neutral monster or a non pawn-buffed (2) pawn 
+            # and add it to list of possible moves
+            diagonal_forward_adjacent_positions = [
+                [row_ahead, curr_position[1] - distance], [row_ahead, curr_position[1] + distance]
+            ]
 
-            if all((opposing_side in piece.get("type", "") or "neutral" in piece.get("type", "")) and \
-                   not ("pawn" in piece.get("type", "") and piece.get("pawn_buff", 0) > 1) \
-                   for piece in square):
-                if any("king" in piece.get('type', '') for piece in square):
-                    threatening_move.append(diagonal_forward_adjacent_position)
-                else:
-                    possible_moves.append(diagonal_forward_adjacent_position)
-                    if not all("neutral" in piece.get("type", "") and piece.get("health", 0) != 1 for piece in square):
-                        possible_captures.append([diagonal_forward_adjacent_position, diagonal_forward_adjacent_position])
+            for i, diagonal_forward_adjacent_position in enumerate(diagonal_forward_adjacent_positions):
+                modifier = -1 if not i else 1
+                if diagonal_forward_adjacent_position[1] < 0 or diagonal_forward_adjacent_position[1] > 7:
+                    continue
+
+                square = curr_game_state["board_state"][diagonal_forward_adjacent_position[0]][diagonal_forward_adjacent_position[1]]
+                row_modifier = -1 if side == "white" else 1
+                squares_ahead = [curr_game_state["board_state"][curr_position[0]+(d*row_modifier)][curr_position[1]+(d*modifier)] or [] for d in range(1, distance+1)]
+
+                if not square or _is_diagonal_path_blocked(squares_ahead[:-1], side, dragon_buff):
+                    continue
+
+                # not having the baron buff and an opposing pawn having the baron buff makes the opposing pawn immune
+                if not _is_baron_immune(square, opposing_side, baron_buff_active):
+                    if all((opposing_side in piece.get("type", "") or "neutral" in piece.get("type", "")) and \
+                        not ("pawn" in piece.get("type", "") and piece.get("pawn_buff", 0) > 1) \
+                        for piece in square):
+                        if any("king" in piece.get('type', '') for piece in square):
+                            threatening_move.append(diagonal_forward_adjacent_position)
+                        else:
+                            possible_moves.append(diagonal_forward_adjacent_position)
+                            if not all("neutral" in piece.get("type", "") and piece.get("health", 0) != 1 for piece in square):
+                                possible_captures.append([diagonal_forward_adjacent_position, diagonal_forward_adjacent_position])
 
     # En passant
     # if side is black and on row 4 or side is white and on row 3
@@ -181,22 +317,33 @@ def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
     for lateral_position in lateral_positions:
         if lateral_position[1] < 0 or lateral_position[1] > 7:
             continue
-        lateral_square = curr_game_state["board_state"][lateral_position[0]][lateral_position[1]]
-        opposing_starting_position = [6 if opposing_side == "white" else 1, lateral_position[1]]
-        if prev_game_state:
-            prev_opposing_starting_square = prev_game_state["board_state"][opposing_starting_position[0]][opposing_starting_position[1]]
-        else:
-            prev_opposing_starting_square = []
-        curr_opposing_starting_square = curr_game_state["board_state"][opposing_starting_position[0]][opposing_starting_position[1]]
-        
-        if ((side == "black" and curr_position[0] == 4) or (side == "white" and curr_position[0] == 3)) and \
-        (lateral_square and any(piece.get("type", "None") == f"{opposing_side}_pawn" for piece in lateral_square)) and \
-        (prev_opposing_starting_square and any(piece.get("type", "None") == f"{opposing_side}_pawn" for piece in prev_opposing_starting_square)) and \
-        (not curr_opposing_starting_square or all(piece.get("type", "None") != f"{opposing_side}_pawn" for piece in curr_opposing_starting_square)) and \
-        (all("king" not in piece.get("type", "None") for piece in (curr_game_state["board_state"][curr_position[0]][lateral_position[1]] or []))):
-            possible_moves.append([curr_position[0] + (-1 if side == "white" else 1), lateral_position[1]])
-            possible_captures.append([[curr_position[0] + (-1 if side == "white" else 1), lateral_position[1]], [curr_position[0] , lateral_position[1]]])
-    
+        lateral_square = curr_game_state["board_state"][lateral_position[0]][lateral_position[1]] or []
+
+        # not having the baron buff and an opposing pawn having the baron buff makes the opposing pawn immune
+        if not _is_baron_immune(lateral_square, opposing_side, baron_buff_active):
+            opposing_starting_position = [6 if opposing_side == "white" else 1, lateral_position[1]]
+            if prev_game_state:
+                prev_opposing_starting_square = prev_game_state["board_state"][opposing_starting_position[0]][opposing_starting_position[1]]
+            else:
+                prev_opposing_starting_square = []
+            curr_opposing_starting_square = curr_game_state["board_state"][opposing_starting_position[0]][opposing_starting_position[1]]
+            
+            en_passant_dest_row = curr_position[0] + (-1 if side == "white" else 1)
+            if en_passant_dest_row < 0 or en_passant_dest_row > 7:
+                continue
+            destination_square = curr_game_state["board_state"][en_passant_dest_row][lateral_position[1]] or []
+            if ((side == "black" and curr_position[0] == 4) or (side == "white" and curr_position[0] == 3)) and \
+            (lateral_square and any(piece.get("type", "None") == f"{opposing_side}_pawn" for piece in lateral_square)) and \
+            (prev_opposing_starting_square and any(piece.get("type", "None") == f"{opposing_side}_pawn" for piece in prev_opposing_starting_square)) and \
+            (not curr_opposing_starting_square or all(piece.get("type", "None") != f"{opposing_side}_pawn" for piece in curr_opposing_starting_square)) and \
+            (not destination_square) and \
+            (all("king" not in piece.get("type", "None") for piece in destination_square)):
+                possible_moves.append([en_passant_dest_row, lateral_position[1]])
+                possible_captures.append([[en_passant_dest_row, lateral_position[1]], [curr_position[0] , lateral_position[1]]])
+
+    if dragon_buff >= 5:
+        _add_marked_for_death_threats(possible_moves, threatening_move, opposing_side, curr_game_state["board_state"])
+
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
 
 
@@ -217,6 +364,9 @@ def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
     possible_moves = []
     possible_captures = []
     threatening_move = []
+
+    dragon_buff = piece_in_play.get("dragon_buff", 0)
+
     # relative_positions represent all possible moves knight can take
     relative_positions = [[1, -2], [1, 2], [2, -1], [2, 1], [-1, -2],  [-1, 2], [-2, -1], [-2, 1]]
     
@@ -249,7 +399,12 @@ def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
         # check if path positions are free
         for i, path_positions in enumerate([path_1_positions, path_2_positions]):
             for path_position in path_positions:
-                if curr_game_state["board_state"][path_position[0]][path_position[1]] or curr_game_state["sword_in_the_stone_position"] == path_position:
+                square = curr_game_state["board_state"][path_position[0]][path_position[1]]
+
+                if (square \
+                    and not (dragon_buff == 3 and all(piece.get('type') == f"{side}_pawn" for piece in square)) \
+                    and not (dragon_buff >= 4 and all(side in piece.get('type') for piece in square))) \
+                    or curr_game_state["sword_in_the_stone_position"] == path_position:
                     if not i:
                         path_1_free = False
                     else:
@@ -277,8 +432,11 @@ def get_moves_for_knight(curr_game_state, prev_game_state, curr_position):
                         if piece.get("health", 0) == 1:
                             possible_captures.append([potential_position, potential_position])
 
+    if dragon_buff >= 5:
+        _add_marked_for_death_threats(possible_moves, threatening_move, opposing_side, curr_game_state["board_state"])
+
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
-                    
+
 def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
     evaluate_current_position(curr_position, curr_game_state)
     piece_in_play = None
@@ -297,6 +455,7 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
     possible_captures = []
     threatening_move = []
 
+    dragon_buff = piece_in_play.get("dragon_buff", 0)
 
     directions = [[1, 1], [1, -1], [-1, -1], [-1, 1]]
     for direction in directions:
@@ -304,12 +463,12 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
         while possible_position[0] >= 0 and possible_position[0] <= 7 and possible_position[1] >= 0 and possible_position[1] <= 7:
             if not curr_game_state["board_state"][possible_position[0]][possible_position[1]] and possible_position != curr_game_state["sword_in_the_stone_position"]:
                 possible_moves.append(possible_position.copy())
-            else:
+            elif not _can_ignore_ally_collision(curr_game_state["board_state"][possible_position[0]][possible_position[1]], side, dragon_buff):
                 # check for a piece from the same side or sword in stone buff, break out of the current loop if there's one present
                 if possible_position == curr_game_state["sword_in_the_stone_position"] or any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                     break
                 # check for a piece from the opposing side, add piece's position to the possible_moves and possible_captures
-                # (UNLESS IT'S A KING) and break out of the current loop 
+                # (UNLESS IT'S A KING) and break out of the current loop
                 if any(opposing_side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                     if all(f"{opposing_side}_king" != piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                         possible_moves.append(possible_position.copy())
@@ -317,7 +476,7 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
                     else:
                         threatening_move.append(possible_position)
                     break
-                # check for a neutral monster, add monster's position to possible_moves and only add monster's position 
+                # check for a neutral monster, add monster's position to possible_moves and only add monster's position
                 # to possible_captures if it has a health of 1. Then break
                 if any("neutral" in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                     possible_moves.append(possible_position.copy())
@@ -349,6 +508,9 @@ def get_moves_for_bishop(curr_game_state, prev_game_state, curr_position):
                     else:
                         possible_captures.append([possible_move, potential_capture_square])
 
+    if dragon_buff >= 5:
+        _add_marked_for_death_threats(possible_moves, threatening_move, opposing_side, curr_game_state["board_state"])
+
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
 
 
@@ -376,6 +538,8 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
 
     if current_turn_count >= 15:
         range_limit += (current_turn_count - 10) // 5
+
+    dragon_buff = piece_in_play.get("dragon_buff", 0)
     
     directions = [[0, 1], [1, 0], [0, -1], [-1, 0]]
     for direction in directions:
@@ -384,12 +548,12 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
         while possible_position[0] >= 0 and possible_position[0] <= 7 and possible_position[1] >= 0 and possible_position[1] <= 7 and range_count <= range_limit:
             if not curr_game_state["board_state"][possible_position[0]][possible_position[1]] and possible_position != curr_game_state["sword_in_the_stone_position"]:
                 possible_moves.append(possible_position.copy())
-            else:
+            elif not _can_ignore_ally_collision(curr_game_state["board_state"][possible_position[0]][possible_position[1]], side, dragon_buff):
                 # check for a piece from the same side or sword in stone buff, break out of the current loop if there's one present
                 if possible_position == curr_game_state["sword_in_the_stone_position"] or any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                     break
                 # check for a piece from the opposing side, add piece's position to the possible_moves and possible_captures
-                # (UNLESS IT'S A KING) and break out of the current loop 
+                # (UNLESS IT'S A KING) and break out of the current loop
                 if any(opposing_side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                     if all(f"{opposing_side}_king" != piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                         possible_moves.append(possible_position.copy())
@@ -397,7 +561,7 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
                     else:
                         threatening_move.append(possible_position.copy())
                     break
-                # check for a neutral monster, add monster's position to possible_moves and only add monster's position 
+                # check for a neutral monster, add monster's position to possible_moves and only add monster's position
                 # to possible_captures if it has a health of 1. Then break
                 if any("neutral" in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                     possible_moves.append(possible_position.copy())
@@ -425,6 +589,9 @@ def get_moves_for_rook(curr_game_state, prev_game_state, curr_position):
             castle_moves.append([start_row, rook_targets["left"]])
         elif curr_position == [start_row, rook_cols["right"]] and not curr_game_state["castle_log"][side]["has_right_rook_moved"]:
             castle_moves.append([start_row, rook_targets["right"]])
+    if dragon_buff >= 5:
+        _add_marked_for_death_threats(possible_moves, threatening_move, opposing_side, curr_game_state["board_state"])
+
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move, "castle_moves": castle_moves})
 
 
@@ -445,6 +612,8 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
     possible_moves = []
     possible_captures = []
     threatening_move = []
+
+    dragon_buff = piece_in_play.get("dragon_buff", 0)
     
     directions = [[0, 1], [1, 0], [0, -1], [-1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]]
     for direction in directions:
@@ -452,12 +621,12 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
         while possible_position[0] >= 0 and possible_position[0] <= 7 and possible_position[1] >= 0 and possible_position[1] <= 7:
             if not curr_game_state["board_state"][possible_position[0]][possible_position[1]] and possible_position != curr_game_state["sword_in_the_stone_position"]:
                 possible_moves.append(possible_position.copy())
-            else:
+            elif not _can_ignore_ally_collision(curr_game_state["board_state"][possible_position[0]][possible_position[1]], side, dragon_buff):
                 # check for a piece from the same side or sword in stone buff, break out of the current loop if there's one present
                 if possible_position == curr_game_state["sword_in_the_stone_position"] or any(side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                     break
                 # check for a piece from the opposing side, add piece's position to the possible_moves and possible_captures
-                # (UNLESS IT'S A KING) and break out of the current loop 
+                # (UNLESS IT'S A KING) and break out of the current loop
                 if any(opposing_side in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                     if all(f"{opposing_side}_king" != piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                         possible_moves.append(possible_position.copy())
@@ -465,7 +634,7 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
                     else:
                         threatening_move.append(possible_position.copy())
                     break
-                # check for a neutral monster, add monster's position to possible_moves and only add monster's position 
+                # check for a neutral monster, add monster's position to possible_moves and only add monster's position
                 # to possible_captures if it has a health of 1. Then break
                 if any("neutral" in piece["type"] for piece in curr_game_state["board_state"][possible_position[0]][possible_position[1]]):
                     possible_moves.append(possible_position.copy())
@@ -475,7 +644,10 @@ def get_moves_for_queen(curr_game_state, prev_game_state, curr_position):
                     break
             possible_position[0] += direction[0]
             possible_position[1] += direction[1]
-            
+
+    if dragon_buff >= 5:
+        _add_marked_for_death_threats(possible_moves, threatening_move, opposing_side, curr_game_state["board_state"])
+
     return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move})
 
 
@@ -498,6 +670,8 @@ def get_moves_for_king(curr_game_state, prev_game_state, curr_position):
     possible_moves = []
     possible_captures = []
     castle_moves = []
+
+    dragon_buff = piece_in_play.get("dragon_buff", 0)
     
     directions = [[0, 1], [1, 0], [0, -1], [-1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]]
     for direction in directions:
@@ -524,21 +698,39 @@ def get_moves_for_king(curr_game_state, prev_game_state, curr_position):
     
     # Only allow castling if king is in its starting position and hasn't moved
     if curr_position == king_start and not curr_game_state["castle_log"][side]["has_king_moved"]:
-        # Helper function to check if a rook is present on a specific square
         def rook_present(row, col):
             return any(
-                "rook" in piece.get("type", "")
+                piece.get("type", "") == f"{side}_rook" 
                 for piece in curr_game_state["board_state"][row][col] or []
             )
+        
+        def rook_dragon_buff(row, col):
+            dragon_buff = 0
+            for piece in curr_game_state["board_state"][row][col] or []:
+                if piece.get("type", "") == f"{side}_rook":
+                    dragon_buff = piece.get("dragon_buff", 0)
+            return dragon_buff
 
-        # Check for left (queenside) rook
+        def is_path_clear(start_col, end_col):
+            min_col = min(start_col, end_col)
+            max_col = max(start_col, end_col)
+            for col in range(min_col + 1, max_col):
+                if curr_game_state["board_state"][start_row][col]:
+                    return False
+            return True
+
         if (rook_present(start_row, 0) and 
-            not curr_game_state["castle_log"][side]["has_left_rook_moved"]):
-            castle_moves.append([start_row, 2])  # King moves to column 2
+            not curr_game_state["castle_log"][side]["has_left_rook_moved"] and
+            ((rook_dragon_buff(start_row, 0)  >= 4 and dragon_buff >= 4) or is_path_clear(4, 0))):
+            castle_moves.append([start_row, 2])
 
-        # Check for right (kingside) rook
         if (rook_present(start_row, 7) and 
-            not curr_game_state["castle_log"][side]["has_right_rook_moved"]):
-            castle_moves.append([start_row, 6])  # King moves to column 6
+            not curr_game_state["castle_log"][side]["has_right_rook_moved"] and
+            ((rook_dragon_buff(start_row, 7) >= 4 and dragon_buff >= 4) or is_path_clear(4, 7))):
+            castle_moves.append([start_row, 6])
     
-    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": [], "castle_moves": castle_moves}, is_king=True)
+    threatening_move = []
+    if dragon_buff >= 5:
+        _add_marked_for_death_threats(possible_moves, threatening_move, opposing_side, curr_game_state["board_state"])
+
+    return process_possible_moves_dict(curr_game_state, curr_position, side, {"possible_moves": possible_moves, "possible_captures": possible_captures, "threatening_move": threatening_move, "castle_moves": castle_moves}, is_king=True)

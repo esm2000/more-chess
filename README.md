@@ -34,7 +34,7 @@ To run unit tests navigate to root directory of folder and run the following in 
 % PYTHONPATH="$PWD/backend" pytest
 ```
 
-Use `PYTHONPATH="$PWD/backend" pytest -o log_cli=true` if you need to debug.
+Use `PYTHONPATH="$PWD/backend" pytest -o log_cli=true --log-cli-level=DEBUG` if you need to debug.
 
 ## Patch Notes
 There are quite a few changes here that will dramatically alter gameplay, especially large buffs to Bishops and Queens as well as some nerf for Knights and Rooks.
@@ -108,11 +108,11 @@ Every 10 turns, the Dragon spawns on the h4 square. Capturing dragon grants a st
 
 *Board Herald: 5 hp*
 
-Every 10 turns, spawns on the a5 square. Grants a buff only to the piece who captured it. Pawns adjacent to the piece can capture other pawns and pieces 1 square in front of them.
+Every 10 turns, spawns on the a5 square. Grants a 4-turn buff only to the piece who captured it. Pawns adjacent to the piece can capture other pawns and pieces 1 square in front of them.
 
 *Baron Nashor: 10 hp*
 
-Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all pawns. All ally pawns can capture other pawns and pieces 1 square in front of them. Additionally they cannot be captured by other pawns. If enemy pawns currently are immune to your pawns, Baron buff negates this for the duration of the buff.
+Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff to all pawns. All ally pawns can capture other pawns and pieces 1 square in front of them. Additionally they cannot be captured by other pawns. If enemy pawns currently are immune to your pawns, Baron buff negates this for the duration of the buff.
 
 #### Credits
 
@@ -141,10 +141,12 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * win + loss screens ✅
 * checkmate protection status effect ✅
 * shop (with light/normal green square for shop square) ✅
+* Add a "Surrender Piece" button to choose which piece to give up after being marked for death amid five dragon buff stacks for the enemy (remember to add piece to captured pieces array)
 * Ensure the player can deselect a selected piece
 * rename game to League of Chess
+* for consistency add recursion to convertKeysToSnakeCase() and convertKeysToCamelCase()
 * provide button so that player can choose what piece to lose when facing five dragon stacks
-* provide UI to indicate neutral monster buffs (color tint + number for stacked buffs)
+* provide UI to indicate neutral monster buffs (color tint + number for stacked buffs) + (board herld buff spreading to pawn must be handled on frontend)
 * change favicon and website/tab title
 * add castle button
 * make victory and defeat UI transparent
@@ -154,7 +156,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * shop rework 
 * pawn exchange
 * visual cue for a player being able to go again
-* visual cue for turn being skipped
+* visual cue for turn being skipped (this might be optional since pieces themselves are stunned and user should be able to parse that all their pieces are stunned and king can't move while CPU goes)
 * redo assets for rules
 * give player option to switch between chess sprites and league sprites (make league sprites default (with button [chess piece] <-> [league character]))
 * settle all TODOs
@@ -177,7 +179,9 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
         - getPossibleMovesForKing() ✅
     - add check and checkmate logic ✅
     - handle possibility that a piece can move to a square containing a neutral monster and another piece (where it captures the other piece and damages the neutral monster) ✅
-    - neutral monster buff implementation
+    - neutral monster buff implementation ✅
+    - split moves.py into per-piece modules
+    - add type annotations, module/function docstrings, and TypedDicts (especially GameState) to improve code maintainability
     - finalize shop and pawn exchange logic (and UI)
     - expand getPossibleMoves() to be able to dynamically take into consideration neutral monster buffs (while finalizing UI)
     - clean up PUT game endpoint for easier readibility and maintainability
@@ -195,9 +199,10 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all
 * Restructure project for deployment ✅
 * Dockerize project with Dockerfile ✅
 * Add database setup to instructions in README
+* change backend code to only use "pure functions" and remove side effects
 * Un-nest the code (extraction and inversion) - https://www.youtube.com/watch?v=CFRhGnuXG-4&t=40s
 * Clean up and refactor code
-* Linting
+* Linting (Black for Python backend)
 * Proofread and finalize README
 * Create a Kubernetes deployment script and a configuration file
 * Deploy

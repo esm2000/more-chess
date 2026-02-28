@@ -26,10 +26,14 @@ const GameStateContext = createContext({
     latestMovement: null,
     queenReset: false,
     check: {white: false, black: false},
-    // for consistency add recursion to convertKeysToSnakeCase()
+    // TODO: for consistency add recursion to convertKeysToSnakeCase()
     castleLog: {
         white: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false},
         black: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false}
+    },
+    neutralBuffLog: {
+        white: {dragon: {stacks:0, turn: 0}, boardHerald: {active: false, turn: 0}, baronNashor: {active: false, turn: 0}},
+        black: {dragon: {stacks:0, turn: 0}, boardHerald: {active: false, turn: 0}, baronNashor: {active: false, turn: 0}}
     }
 })
 
@@ -111,6 +115,10 @@ export function GameStateProvider({children}) {
         castleLog: {
             white: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false},
             black: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false}
+        },
+        neutralBuffLog: {
+            white: {dragon: {stacks:0, turn: 0}, boardHerald: {active: false, turn: 0}, baronNashor: {active: false, turn: 0}},
+            black: {dragon: {stacks:0, turn: 0}, boardHerald: {active: false, turn: 0}, baronNashor: {active: false, turn: 0}}
         }
     }
     const [gameState, setGameState] = useState(initGameState);

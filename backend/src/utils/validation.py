@@ -195,8 +195,11 @@ def invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_gam
         if moved_piece["current_position"][0] is None:
             try:
                 captured_pieces_array.remove(moved_piece["piece"]['type'])
-            except ValueError as e:
-                if not ("pawn" in moved_piece["piece"]["type"] and is_pawn_exchange_possibly_being_carried_out[moved_piece["side"]]):
+            except ValueError:
+                number_of_surrendered_marked_for_death_pieces = len([mp for mp in moved_pieces if mp["piece"].get("marked_for_death", False) and mp["current_position"][0] is None])
+
+                if not ("pawn" in moved_piece["piece"]["type"] and is_pawn_exchange_possibly_being_carried_out[moved_piece["side"]]) and \
+                    not (number_of_surrendered_marked_for_death_pieces == 1 and moved_piece["piece"].get("marked_for_death", False) and moved_piece["current_position"][0] is None):
                     logger.error(f"Captured piece {moved_piece['piece']['type']} has not been recorded as a captured piece")
                     is_valid_game_state = False
     
@@ -204,6 +207,40 @@ def invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_gam
         logger.error(f"There are extra captured pieces not accounted for: {captured_pieces_array}")
         is_valid_game_state = False
     
+    return is_valid_game_state
+
+
+def invalidate_game_if_no_marked_for_death_pieces_have_been_selected(old_game_state, new_game_state, is_valid_game_state):
+    marked_for_death_pieces = {}
+    
+    for row in range(len(old_game_state["board_state"])):
+        for col in range(len(old_game_state["board_state"][row])):
+            square = old_game_state["board_state"][row][col] or []
+
+            for piece in square:
+                if piece.get("marked_for_death", False):
+                    marked_for_death_pieces[(row, col)] = piece.get('type')
+
+    # skip if there are no marked for death pieces in the previous game state or if a piece was selected for death last turn
+    if marked_for_death_pieces:
+        for row in range(len(new_game_state["board_state"])):
+            for col in range(len(new_game_state["board_state"][row])):
+                square = new_game_state["board_state"][row][col] or []
+
+                for piece in square:
+                    if piece.get("marked_for_death", False):
+                        # if there is an additional marked for death piece or a diffent marked for death piece, invalidate game state
+                        if (row, col) not in marked_for_death_pieces or piece.get("type", "") != marked_for_death_pieces[(row, col)]:
+                            logger.error(f"Unexpected marked for death piece {piece.get('type', '')} at [{row}, {col}] or piece type mismatch")
+                            is_valid_game_state = False
+                        else:
+                            del marked_for_death_pieces[(row, col)]
+        
+        # if one piece was not selected for death invalidate game state
+        if len(marked_for_death_pieces) != 1:
+            logger.error(f"Expected exactly one piece to be selected for death, but {len(marked_for_death_pieces)} pieces remain marked")
+            is_valid_game_state = False
+
     return is_valid_game_state
 
 
@@ -247,11 +284,20 @@ def check_for_disappearing_pieces(
                     if any("king" in piece.get("type") for piece in (new_game_state["board_state"][row][col] or [])):
                         logger.error(f"A king cannot be exchanged for a pawn")
                         is_valid_game_state = False
-            
-            if not captured_piece_accounted_for and new_game_state["bishop_special_captures"]:
-                # check to see if piece was captured via full bishop debuff stacked
-                if moved_piece["piece"]["type"] == new_game_state["bishop_special_captures"][0]["type"]:
-                    captured_piece_accounted_for = True
+                
+                # check to see if marked for death piece was surrendered
+                if moved_piece["piece"].get("marked_for_death", False) and moved_piece["current_position"][0] is None:
+                    number_of_surrendered_marked_for_death_pieces = len([mp for mp in moved_pieces if mp["piece"].get("marked_for_death", False) and mp["current_position"][0] is None])
+
+                    if number_of_surrendered_marked_for_death_pieces > 1:
+                        logger.error(f"More than one marked for death pieces ({number_of_surrendered_marked_for_death_pieces}) have been sacrificed")
+                    else:
+                        captured_piece_accounted_for = True
+
+                if new_game_state["bishop_special_captures"]:
+                    # check to see if piece was captured via full bishop debuff stacked
+                    if moved_piece["piece"]["type"] == new_game_state["bishop_special_captures"][0]["type"]:
+                        captured_piece_accounted_for = True
                       
             if not captured_piece_accounted_for:
                 logger.error(f"Piece {moved_piece['piece']['type']} on {moved_piece['previous_position']} has disappeared from board without being captured")
@@ -273,6 +319,7 @@ def check_if_pawn_exchange_is_required(old_game_state, new_game_state, moved_pie
     if is_pawn_exchange_required_this_turn:
         for moved_piece in moved_pieces:
             if moved_piece["side"] == side_that_should_not_be_moving and moved_piece["current_position"][0] is not None:
+                logger.error(f"Pawn exchange required but {moved_piece['side']} moved pieces instead of completing exchange")
                 is_valid_game_state = False
     return is_pawn_exchange_required_this_turn, is_valid_game_state
 

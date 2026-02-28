@@ -108,7 +108,7 @@ Every 10 turns, the Dragon spawns on the h4 square. Capturing dragon grants a st
 
 *Board Herald: 5 hp*
 
-Every 10 turns, spawns on the a5 square. Grants a buff only to the piece who captured it. Pawns adjacent to the piece can capture other pawns and pieces 1 square in front of them.
+Every 10 turns, spawns on the a5 square. Grants a 4-turn buff only to the piece who captured it. Pawns adjacent to the piece can capture other pawns and pieces 1 square in front of them.
 
 *Baron Nashor: 10 hp*
 

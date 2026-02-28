@@ -276,12 +276,12 @@ def test_five_dragon_stacks_and_death_mark_capture_flow_with_multiple_pieces_mar
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-        assert not game["neutral_buff_log"][side]["board_herald"]
+        assert not game["neutral_buff_log"][side]["board_herald"]["active"]
         assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
-        assert not game["neutral_buff_log"][opposite_side]["board_herald"]
+        assert not game["neutral_buff_log"][opposite_side]["board_herald"]["active"]
         assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         if side == "white":
@@ -336,12 +336,12 @@ def test_five_dragon_stacks_and_death_mark_capture_flow_with_single_piece_marked
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-        assert not game["neutral_buff_log"][side]["board_herald"]
+        assert not game["neutral_buff_log"][side]["board_herald"]["active"]
         assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
-        assert not game["neutral_buff_log"][opposite_side]["board_herald"]
+        assert not game["neutral_buff_log"][opposite_side]["board_herald"]["active"]
         assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         if side == "white":
@@ -395,12 +395,12 @@ def test_that_not_choosing_a_piece_to_die_invalidates_game_state(game):
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
-        assert not game["neutral_buff_log"][side]["board_herald"]
+        assert not game["neutral_buff_log"][side]["board_herald"]["active"]
         assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
-        assert not game["neutral_buff_log"][opposite_side]["board_herald"]
+        assert not game["neutral_buff_log"][opposite_side]["board_herald"]["active"]
         assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         if side == "white":

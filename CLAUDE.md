@@ -193,7 +193,7 @@ Universal mechanics: moving adjacent/onto a monster deals 1 damage; pieces stayi
   5. (Elder Dragon, 3 turns) Marked-for-death: pieces can be captured by occupying an adjacent square; opponent chooses which threatened piece dies
 
 #### Board Herald
-- Spawns turns 10 and 20 on a5; individual buff to capturing piece (permanent until captured)
+- Spawns turns 10 and 20 on a5; 4-turn individual buff to capturing piece
 - Adjacent ally pawns can capture 1 square directly forward
 
 #### Baron Nashor

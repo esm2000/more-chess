@@ -231,15 +231,26 @@ def handle_neutral_monster_buffs(moved_pieces, capture_positions, new_game_state
                 elif neutral_monster_type == "baron_nashor":
                     new_game_state["neutral_buff_log"][side]["baron_nashor"]["active"] = True
                     new_game_state["neutral_buff_log"][side]["baron_nashor"]["turn"] = new_game_state["turn_count"]
+                elif neutral_monster_type == "board_herald":
+                    new_game_state["neutral_buff_log"][side]["board_herald"]["active"] = True
+                    new_game_state["neutral_buff_log"][side]["board_herald"]["turn"] = new_game_state["turn_count"]
+
+                    # grant board herald buff to captor if neutral_monster slain was board_herald
+                    new_game_state["board_state"][captor_position[0]][captor_position[1]][0]["board_herald_buff"] = True
                 else:
                     new_game_state["neutral_buff_log"][side][neutral_monster_type] = True
 
-                    # grant board herald buff to captor if neutral_monster slain was board_herald
-                    if neutral_monster_type == "board_herald":
-                        new_game_state["board_state"][captor_position[0]][captor_position[1]][0]["board_herald_buff"] = True    
-    # grant dragon and baron nashor buffs using neutral buff log (redundantly reapply all buffs just in case new pieces have been acquired through pawn exchange or the shop)
+    # grant and expire neutral monster buffs using neutral buff log
     for side in new_game_state["neutral_buff_log"]:
         baron_log = new_game_state["neutral_buff_log"][side]["baron_nashor"]
+        if isinstance(baron_log, bool):
+            # Compatibility for older game states that tracked baron as a bool.
+            baron_log = {
+                "active": baron_log,
+                "turn": new_game_state["turn_count"] if baron_log else 0
+            }
+            new_game_state["neutral_buff_log"][side]["baron_nashor"] = baron_log
+
         if baron_log["active"]:
             # baron nashor buff lasts 4 game turns (8 half-turns)
             baron_expired = new_game_state["turn_count"] > baron_log["turn"] + 8
@@ -256,6 +267,29 @@ def handle_neutral_monster_buffs(moved_pieces, capture_positions, new_game_state
                                 piece.pop("baron_nashor_buff", None)
                             else:
                                 piece["baron_nashor_buff"] = True
+
+        board_herald_log = new_game_state["neutral_buff_log"][side]["board_herald"]
+        if isinstance(board_herald_log, bool):
+            # Compatibility for older game states that tracked board herald as a bool.
+            board_herald_log = {
+                "active": board_herald_log,
+                "turn": new_game_state["turn_count"] if board_herald_log else 0
+            }
+            new_game_state["neutral_buff_log"][side]["board_herald"] = board_herald_log
+
+        if board_herald_log["active"]:
+            # board herald buff lasts 4 game turns (8 half-turns)
+            board_herald_expired = new_game_state["turn_count"] > board_herald_log["turn"] + 8
+            if board_herald_expired:
+                board_herald_log["active"] = False
+
+                for row in range(len(new_game_state["board_state"])):
+                    for col in range(len(new_game_state["board_state"][0])):
+                        square = new_game_state["board_state"][row][col] or []
+
+                        for piece in square:
+                            if side in piece["type"]:
+                                piece.pop("board_herald_buff", None)
 
         if new_game_state["neutral_buff_log"][side]["dragon"]["stacks"]:
             for row in range(len(new_game_state["board_state"])):
@@ -279,4 +313,3 @@ def handle_neutral_monster_buffs(moved_pieces, capture_positions, new_game_state
                                     piece["dragon_buff"] = 4
                                 
     return is_valid_game_state
-

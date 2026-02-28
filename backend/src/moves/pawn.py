@@ -1,3 +1,8 @@
+"""Pawn move generation."""
+
+from __future__ import annotations
+
+from src.types import GameState, MoveResult, Position
 from src.utils.board_analysis import evaluate_current_position
 from src.moves._helpers import (
     process_possible_moves_dict,
@@ -9,7 +14,8 @@ from src.moves._helpers import (
 )
 
 
-def get_moves_for_pawn(curr_game_state, prev_game_state, curr_position):
+def get_moves_for_pawn(curr_game_state: GameState, prev_game_state: GameState | None, curr_position: Position) -> MoveResult:
+    """Generate all legal moves for a pawn at curr_position."""
     evaluate_current_position(curr_position, curr_game_state)
     piece_in_play = None
 

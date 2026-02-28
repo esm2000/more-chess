@@ -19,7 +19,7 @@ def test_sword_in_the_stone_spawn(game):
             game_on_next_turn["board_state"][3][4] = [{"type": "white_pawn"}]
             game_on_next_turn["turn_count"] = turn
 
-            game_state = api.GameState(**game_on_next_turn)
+            game_state = api.GameStateRequest(**game_on_next_turn)
             game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
             
             game = select_and_move_black_piece(game=game, from_row=3, from_col=3, to_row=4, to_col=3)
@@ -50,7 +50,7 @@ def test_sword_in_the_stone_retrieval(game):
         game_on_next_turn["turn_count"] = 12 if retrieval_side == "white" else 11
         game_on_next_turn["sword_in_the_stone_position"] = [3, 4]
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
         
         if retrieval_side == "white":
@@ -74,7 +74,7 @@ def test_sword_in_the_stone_stacks(game):
         game_on_next_turn["turn_count"] = 12 if retrieval_side == "white" else 11
         game_on_next_turn["sword_in_the_stone_position"] = [3, 4]
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         if retrieval_side == "white":

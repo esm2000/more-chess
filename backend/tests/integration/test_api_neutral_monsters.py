@@ -27,7 +27,7 @@ def test_spawn_monsters(game):
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn['board_state'] = starting_game['board_state']
     game_on_next_turn["turn_count"] = 9
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
     game = select_and_move_black_piece(game=game, from_row=1, from_col=2, to_row=2, to_col=2)
@@ -38,7 +38,7 @@ def test_spawn_monsters(game):
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["turn_count"] = 34
     game_on_next_turn["sword_in_the_stone_position"] = None
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
     game = select_and_move_white_piece(game=game, from_row=6, from_col=2, to_row=5, to_col=2)
@@ -60,7 +60,7 @@ def test_neutral_monsters_cannot_move(game):
 
         game_on_next_turn["turn_count"] = 9
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         game = select_and_move_black_piece(game=game, from_row=1, from_col=0, to_row=2, to_col=0)
@@ -77,14 +77,14 @@ def test_neutral_monsters_cannot_move(game):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][4][6] = game_on_next_turn["board_state"][4][7]
         game_on_next_turn["board_state"][4][7] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response())
 
     with pytest.raises(HTTPException):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][3][1] = game_on_next_turn["board_state"][3][0]
         game_on_next_turn["board_state"][3][0] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response())
 
     game = select_and_move_white_piece(game=game, from_row=6, from_col=0, to_row=5, to_col=0)
@@ -93,14 +93,14 @@ def test_neutral_monsters_cannot_move(game):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][4][6] = game_on_next_turn["board_state"][4][7]
         game_on_next_turn["board_state"][4][7] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
     with pytest.raises(HTTPException):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][3][1] = game_on_next_turn["board_state"][3][0]
         game_on_next_turn["board_state"][3][0] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
 
@@ -124,7 +124,7 @@ def test_neutral_monsters_can_be_hurt(game):
 
         game_on_next_turn["turn_count"] = 9
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         game = select_and_move_black_piece(game=game, from_row=1, from_col=0, to_row=2, to_col=0)
@@ -145,7 +145,7 @@ def test_neutral_monsters_can_be_hurt(game):
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][4][7].append(game_on_next_turn["board_state"][6][5][0])
     game_on_next_turn["board_state"][6][5] = None
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state(game["id"], game_state, Response())
 
     assert game["board_state"][4][7][0]["health"] == 4
@@ -155,7 +155,7 @@ def test_neutral_monsters_can_be_hurt(game):
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn["board_state"][4][7].append(game_on_next_turn["board_state"][2][5][0])
     game_on_next_turn["board_state"][2][5] = None
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
     assert game["board_state"][4][7][0]["health"] == 3
@@ -184,7 +184,7 @@ def test_neutral_monster_captures_after_spawning_on_any_non_king_piece(game):
  
     game_on_next_turn["turn_count"] = 9
 
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
     
     game = select_and_move_black_piece(game=game, from_row=3, from_col=7, to_row=4, to_col=7)
@@ -212,7 +212,7 @@ def test_neutral_monster_ends_game_after_spawning_on_king(game):
     
         game_on_next_turn["turn_count"] = 9
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         game_on_next_turn = copy.deepcopy(game)
@@ -243,7 +243,7 @@ def test_neutral_monster_health_regen(game):
     game_on_next_turn["board_state"][7][7] = [{"type": "white_king"}]
     game_on_next_turn["board_state"][2][7] = [{"type": "black_pawn"}]
 
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
     
     game = select_and_move_black_piece(game=game, from_row=2, from_col=7, to_row=3, to_col=7)
@@ -280,12 +280,12 @@ def test_check_by_neutral_monster(game):
         game_on_next_turn["board_state"][0][0] = [{"type": f"black_rook"}]
         game_on_next_turn["turn_count"] = 9
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
         
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["position_in_play"] = [0, 0]
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
         game_on_next_turn = copy.deepcopy(game)
@@ -293,7 +293,7 @@ def test_check_by_neutral_monster(game):
         game_on_next_turn["board_state"][0][1] = game_on_next_turn["board_state"][0][0]
         game_on_next_turn["board_state"][0][0] = None
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=False)
         
         assert not game[f"{side}_defeat"] and not game[f"{opposite_side}_defeat"]
@@ -341,7 +341,7 @@ def test_capture_behavior_when_neutral_and_normal_piece_are_on_same_square(game)
 
             game_on_next_turn["turn_count"] = 9
 
-            game_state = api.GameState(**game_on_next_turn)
+            game_state = api.GameStateRequest(**game_on_next_turn)
             game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
             game = select_and_move_black_piece(game=game, from_row=7, from_col=0, to_row=6, to_col=0)
@@ -353,7 +353,7 @@ def test_capture_behavior_when_neutral_and_normal_piece_are_on_same_square(game)
         if test_case == "slay":
             game_on_next_turn = copy.deepcopy(game)
             game_on_next_turn["board_state"][4][7][0]["health"] = 2
-            game_state = api.GameState(**game_on_next_turn)
+            game_state = api.GameStateRequest(**game_on_next_turn)
             game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         game = select_white_piece(game=game, row=1, col=7)
@@ -363,7 +363,7 @@ def test_capture_behavior_when_neutral_and_normal_piece_are_on_same_square(game)
         game_on_next_turn["board_state"][4][7].append(white_rook)
         game_on_next_turn["board_state"][1][7] = None
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response())
         
         assert len(game["board_state"][4][7]) == 2
@@ -378,7 +378,7 @@ def test_capture_behavior_when_neutral_and_normal_piece_are_on_same_square(game)
         game_on_next_turn["board_state"][4][7].remove(white_rook)
         game_on_next_turn["board_state"][7][7] = None
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
         if test_case == "damage":
@@ -412,7 +412,7 @@ def test_buff_acquired_from_dragon_slain_stack_1(game):
 
         game_on_next_turn["turn_count"] = 2 if side == "white" else 1
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
         
         assert game["neutral_buff_log"][side]["dragon"]["stacks"] == 0
@@ -433,7 +433,7 @@ def test_buff_acquired_from_dragon_slain_stack_1(game):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][4][7].append(game_on_next_turn["board_state"][7][4][0])
         game_on_next_turn["board_state"][7][4] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), side == "white")
 
         assert len(game["board_state"][4][7]) == 1 and game["board_state"][4][7][0].get("type") == f"{side}_bishop"
@@ -491,7 +491,7 @@ def test_buff_acquired_from_dragon_slain_stack_2(game):
 
         game_on_next_turn["turn_count"] = 42 if side == "white" else 41
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
         
         assert not game["neutral_buff_log"][side]["board_herald"]["active"]
@@ -510,7 +510,7 @@ def test_buff_acquired_from_dragon_slain_stack_2(game):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][4][7].append(game_on_next_turn["board_state"][7][4][0])
         game_on_next_turn["board_state"][7][4] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), side == "white")
 
         assert len(game["board_state"][4][7]) == 1 and game["board_state"][4][7][0].get("type") == f"{side}_bishop"
@@ -566,7 +566,7 @@ def test_buff_acquired_from_dragon_slain_stack_3(game):
 
         game_on_next_turn["turn_count"] = 42 if side == "white" else 41
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
         
         assert not game["neutral_buff_log"][side]["board_herald"]["active"]
@@ -585,7 +585,7 @@ def test_buff_acquired_from_dragon_slain_stack_3(game):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][4][7].append(game_on_next_turn["board_state"][7][4][0])
         game_on_next_turn["board_state"][7][4] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), side == "white")
 
         assert len(game["board_state"][4][7]) == 1 and game["board_state"][4][7][0].get("type") == f"{side}_bishop"
@@ -631,7 +631,7 @@ def test_buff_acquired_from_dragon_slain_stack_4(game):
 
         game_on_next_turn["turn_count"] = 42 if side == "white" else 41
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
         
         assert not game["neutral_buff_log"][side]["board_herald"]["active"]
@@ -650,7 +650,7 @@ def test_buff_acquired_from_dragon_slain_stack_4(game):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][4][7].append(game_on_next_turn["board_state"][7][4][0])
         game_on_next_turn["board_state"][7][4] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), side == "white")
 
         assert len(game["board_state"][4][7]) == 1 and game["board_state"][4][7][0].get("type") == f"{side}_bishop"
@@ -696,7 +696,7 @@ def test_buff_acquired_from_dragon_slain_stack_5(game):
 
         game_on_next_turn["turn_count"] = 42 if side == "white" else 41
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
         
         assert not game["neutral_buff_log"][side]["board_herald"]["active"]
@@ -715,7 +715,7 @@ def test_buff_acquired_from_dragon_slain_stack_5(game):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][4][7].append(game_on_next_turn["board_state"][7][4][0])
         game_on_next_turn["board_state"][7][4] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), side == "white")
 
         assert len(game["board_state"][4][7]) == 1 and game["board_state"][4][7][0].get("type") == f"{side}_bishop"
@@ -761,7 +761,7 @@ def test_buff_acquired_from_dragon_slain_stack_5_duration(game):
 
         game_on_next_turn["turn_count"] = 42 if side == "white" else 41
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
         
         assert not game["neutral_buff_log"][side]["board_herald"]["active"]
@@ -781,7 +781,7 @@ def test_buff_acquired_from_dragon_slain_stack_5_duration(game):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][4][7].append(game_on_next_turn["board_state"][7][4][0])
         game_on_next_turn["board_state"][7][4] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), side == "white")
 
         assert len(game["board_state"][4][7]) == 1 and game["board_state"][4][7][0].get("type") == f"{side}_bishop"
@@ -886,7 +886,7 @@ def test_buff_acquired_from_dragon_slain_restack_5_after_expiration(game):
 
             game_on_next_turn["turn_count"] = 42 if side == "white" else 41
 
-            game_state = api.GameState(**game_on_next_turn)
+            game_state = api.GameStateRequest(**game_on_next_turn)
             game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
             
             assert not game["neutral_buff_log"][side]["board_herald"]["active"]
@@ -906,7 +906,7 @@ def test_buff_acquired_from_dragon_slain_restack_5_after_expiration(game):
             game_on_next_turn = copy.deepcopy(game)
             game_on_next_turn["board_state"][4][7].append(game_on_next_turn["board_state"][7][4][0])
             game_on_next_turn["board_state"][7][4] = None
-            game_state = api.GameState(**game_on_next_turn)
+            game_state = api.GameStateRequest(**game_on_next_turn)
             game = api.update_game_state(game["id"], game_state, Response(), side == "white")
 
             assert len(game["board_state"][4][7]) == 1 and game["board_state"][4][7][0].get("type") == f"{side}_bishop"
@@ -1013,7 +1013,7 @@ def test_buff_acquired_from_dragon_slain_restack_5_after_expiration(game):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][4][7].append(game_on_next_turn["board_state"][7][7][0])
         game_on_next_turn["board_state"][7][7] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), side == "white")
         
         assert game["board_state"][4][7][0].get("health", 0) == 3
@@ -1040,7 +1040,7 @@ def test_buff_acquired_from_dragon_slain_restack_5_after_expiration(game):
         game_on_next_turn = copy.deepcopy(game)
         piece = game_on_next_turn["board_state"][4][7].pop(piece_index)
         game_on_next_turn["board_state"][7][7] = [piece]
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), side == "white")
         
         if opposite_side == "white":
@@ -1057,7 +1057,7 @@ def test_buff_acquired_from_dragon_slain_restack_5_after_expiration(game):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][4][7].append(game_on_next_turn["board_state"][7][7][0])
         game_on_next_turn["board_state"][7][7] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
 
         game = api.update_game_state(game["id"], game_state, Response(), side == "white")
         
@@ -1088,7 +1088,7 @@ def test_buff_acquired_from_board_herald_slain(game):
 
         game_on_next_turn["turn_count"] = 22 if side == "white" else 21
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         assert game["neutral_buff_log"][side]["dragon"]["stacks"] == 0
@@ -1109,7 +1109,7 @@ def test_buff_acquired_from_board_herald_slain(game):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][3][0].append(game_on_next_turn["board_state"][1][0][0])
         game_on_next_turn["board_state"][1][0] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), side == "white")
         
         assert len(game["board_state"][3][0]) == 1 and game["board_state"][3][0][0].get("type") == f"{side}_rook"
@@ -1166,7 +1166,7 @@ def test_buff_acquired_from_board_herald_slain_duration(game):
 
         game_on_next_turn["turn_count"] = 22 if side == "white" else 21
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         # turn 0: kill board herald
@@ -1178,7 +1178,7 @@ def test_buff_acquired_from_board_herald_slain_duration(game):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][3][0].append(game_on_next_turn["board_state"][1][0][0])
         game_on_next_turn["board_state"][1][0] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), side == "white")
 
         assert game["neutral_buff_log"][side]["board_herald"]["active"]
@@ -1278,7 +1278,7 @@ def test_buff_acquired_from_baron_nashor_slain(game):
 
         game_on_next_turn["turn_count"] = 52 if side == "white" else 51
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         assert game["neutral_buff_log"][side]["dragon"]["stacks"] == 0
@@ -1299,7 +1299,7 @@ def test_buff_acquired_from_baron_nashor_slain(game):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][3][0].append(game_on_next_turn["board_state"][1][0][0])
         game_on_next_turn["board_state"][1][0] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), side == "white")
         
         assert len(game["board_state"][3][0]) == 1 and game["board_state"][3][0][0].get("type") == f"{side}_rook"
@@ -1384,7 +1384,7 @@ def test_buff_acquired_from_baron_nashor_slain_duration(game):
 
         game_on_next_turn["turn_count"] = 52 if side == "white" else 51
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         # turn 0: kill baron
@@ -1396,7 +1396,7 @@ def test_buff_acquired_from_baron_nashor_slain_duration(game):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][3][0].append(game_on_next_turn["board_state"][1][0][0])
         game_on_next_turn["board_state"][1][0] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), side == "white")
 
         assert game["neutral_buff_log"][side]["baron_nashor"]["active"]

@@ -1,3 +1,5 @@
+"""FastAPI route definitions for game CRUD, state updates, and move queries."""
+
 from bson.objectid import ObjectId
 import copy
 import datetime
@@ -7,7 +9,7 @@ from typing import Union
 
 from mocks.starting_game import starting_game
 # prevents circular import
-import src.moves as moves 
+import src.moves as moves
 from src.database import mongo_client
 from src.log import logger
 import src.utils as utils
@@ -27,7 +29,7 @@ from src.utils.game_update_pipeline import (
 router = APIRouter(prefix="/api")
 
 
-class GameState(BaseModel, extra=Extra.allow):
+class GameStateRequest(BaseModel, extra=Extra.allow):
     turn_count: int
     position_in_play: list
     board_state: list
@@ -49,7 +51,8 @@ class GameState(BaseModel, extra=Extra.allow):
 
 
 @router.post("/game", status_code=201)
-def create_game():
+def create_game() -> dict:
+    """Create a new game with the starting board state and persist to MongoDB."""
     game_state = copy.deepcopy(starting_game)
     game_database = mongo_client["game_db"]
     game_database["games"].insert_one(game_state)
@@ -58,7 +61,8 @@ def create_game():
 
 
 @router.get("/game/{id}", status_code=200)
-def retrieve_game_state(id, response: Response):
+def retrieve_game_state(id: str, response: Response) -> dict:
+    """Fetch a game state from MongoDB by ID."""
     game_database = mongo_client["game_db"]
     game_state = game_database["games"].find_one({"_id": ObjectId(id)})
     if not game_state:
@@ -69,7 +73,8 @@ def retrieve_game_state(id, response: Response):
 
 
 @router.delete("/game/{id}")
-def delete_game(id):
+def delete_game(id: str) -> dict:
+    """Delete a game from MongoDB by ID."""
     query = {"_id": ObjectId(id)}
     game_database = mongo_client["game_db"]
     game_database["games"].delete_one(query)
@@ -77,7 +82,8 @@ def delete_game(id):
 
 
 @router.put("/game/{id}", status_code=200)
-def update_game_state(id, state: GameState, response: Response, player=True):
+def update_game_state(id: str, state: GameStateRequest, response: Response, player: bool = True) -> dict:
+    """Validate and apply a full game state update (the main turn pipeline)."""
     # Prepare initial game state
     old_game_state, new_game_state, moved_pieces = prepare_game_update(id, state, retrieve_game_state)
     
@@ -138,8 +144,8 @@ def update_game_state(id, state: GameState, response: Response, player=True):
     return retrieve_game_state(id, response)
 
 
-# meant for testing purposes, not to be exposed via API endpoint
-def update_game_state_no_restrictions(id, state: GameState, response: Response):
+def update_game_state_no_restrictions(id: str, state: GameStateRequest, response: Response) -> dict:
+    """Overwrite a game state without validation (testing only, not exposed via API)."""
     new_game_state = dict(state)
     new_game_state["last_updated"] = datetime.datetime.now()
     query = {"_id": ObjectId(id)}

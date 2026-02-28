@@ -1,3 +1,5 @@
+"""Logging configuration for the League of Chess backend."""
+
 import logging
 
 logging.basicConfig(

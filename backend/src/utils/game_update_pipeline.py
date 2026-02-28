@@ -1,9 +1,19 @@
+"""Turn orchestration pipeline: validation, effects, progression, and finalization."""
+
+from __future__ import annotations
+
+from typing import Callable
+
 from fastapi import HTTPException, Response
+from pymongo.mongo_client import MongoClient
+
 from src.log import logger
+from src.types import GameState, GoldSpent, MovedPiece, PawnExchangeStatus, Position
 import src.utils as utils
 
 
-def prepare_game_update(id, state, retrieve_game_state_func):
+def prepare_game_update(id: str, state: object, retrieve_game_state_func: Callable) -> tuple[GameState, GameState | None, list[MovedPiece] | None]:
+    """Load old state, compute moved pieces. Returns (old, None, None) if game already ended."""
     new_game_state = dict(state)
     old_game_state = retrieve_game_state_func(id, Response())
     
@@ -24,7 +34,8 @@ def prepare_game_update(id, state, retrieve_game_state_func):
     return old_game_state, new_game_state, moved_pieces
 
 
-def apply_special_piece_effects(old_game_state, new_game_state, moved_pieces):
+def apply_special_piece_effects(old_game_state: GameState, new_game_state: GameState, moved_pieces: list[MovedPiece]) -> bool:
+    """Apply queen reset validation, adjacent captures, bishop energize, and queen stun."""
     is_valid_game_state = True
     
     # Queen reset validation
@@ -41,7 +52,8 @@ def apply_special_piece_effects(old_game_state, new_game_state, moved_pieces):
     return is_valid_game_state
 
 
-def manage_turn_progression(old_game_state, new_game_state, moved_pieces, is_valid_game_state, capture_positions):
+def manage_turn_progression(old_game_state: GameState, new_game_state: GameState, moved_pieces: list[MovedPiece], is_valid_game_state: bool, capture_positions: list[list[Position]]) -> tuple[bool, bool]:
+    """Handle bishop debuff, position-in-play, marked-for-death, queen reset, and turn increment."""
     should_increment_turn_count = True
     
     # Bishop debuff stack handling
@@ -86,7 +98,8 @@ def manage_turn_progression(old_game_state, new_game_state, moved_pieces, is_val
     return is_valid_game_state, should_increment_turn_count
 
 
-def validate_moves_and_pieces(old_game_state, new_game_state, moved_pieces, capture_positions, is_valid_game_state):
+def validate_moves_and_pieces(old_game_state: GameState, new_game_state: GameState, moved_pieces: list[MovedPiece], capture_positions: list[list[Position]], is_valid_game_state: bool) -> tuple[bool, GoldSpent]:
+    """Run all move/piece validators and return (is_valid, gold_spent)."""
     # Core move validation
     is_valid_game_state = utils.check_to_see_if_more_than_one_piece_has_moved(
         old_game_state,
@@ -129,7 +142,8 @@ def validate_moves_and_pieces(old_game_state, new_game_state, moved_pieces, capt
     return is_valid_game_state, gold_spent
 
 
-def handle_pawn_exchanges(old_game_state, new_game_state, moved_pieces, is_valid_game_state):
+def handle_pawn_exchanges(old_game_state: GameState, new_game_state: GameState, moved_pieces: list[MovedPiece], is_valid_game_state: bool) -> tuple[bool, PawnExchangeStatus]:
+    """Check for and process pawn promotion exchanges. Returns (is_required, exchange_status)."""
     is_pawn_exchange_required_this_turn, is_valid_game_state = utils.check_if_pawn_exchange_is_required(
         old_game_state, new_game_state, moved_pieces, is_valid_game_state
     )
@@ -150,8 +164,9 @@ def handle_pawn_exchanges(old_game_state, new_game_state, moved_pieces, is_valid
     return is_pawn_exchange_required_this_turn, is_pawn_exchange_possibly_being_carried_out
 
 
-def handle_captures_and_combat(old_game_state, new_game_state, moved_pieces, is_valid_game_state, 
-                               capture_positions, is_pawn_exchange_possibly_being_carried_out):
+def handle_captures_and_combat(old_game_state: GameState, new_game_state: GameState, moved_pieces: list[MovedPiece], is_valid_game_state: bool,
+                               capture_positions: list[list[Position]], is_pawn_exchange_possibly_being_carried_out: PawnExchangeStatus) -> bool:
+    """Validate captures, damage monsters, and apply neutral monster buffs."""
     # Check for disappearing pieces
     is_valid_game_state = utils.check_for_disappearing_pieces(
         old_game_state, new_game_state, moved_pieces, is_valid_game_state, 
@@ -183,7 +198,8 @@ def handle_captures_and_combat(old_game_state, new_game_state, moved_pieces, is_
     return is_valid_game_state
 
 
-def update_game_metrics(old_game_state, new_game_state, moved_pieces, gold_spent):
+def update_game_metrics(old_game_state: GameState, new_game_state: GameState, moved_pieces: list[MovedPiece], gold_spent: GoldSpent) -> None:
+    """Update gold, capture advantage, pawn buffs, monster attacks, and spawns."""
     utils.update_gold_count(old_game_state, new_game_state, gold_spent)
     utils.update_capture_point_advantage(new_game_state)
     utils.reassign_pawn_buffs(new_game_state)
@@ -195,7 +211,8 @@ def update_game_metrics(old_game_state, new_game_state, moved_pieces, gold_spent
     utils.spawn_neutral_monsters(new_game_state)
 
 
-def handle_endgame_conditions(old_game_state, new_game_state, moved_pieces, is_valid_game_state, should_increment_turn_count):
+def handle_endgame_conditions(old_game_state: GameState, new_game_state: GameState, moved_pieces: list[MovedPiece], is_valid_game_state: bool, should_increment_turn_count: bool) -> bool:
+    """Check/checkmate detection, marked-for-death application, stun skip, and monster healing."""
     # Check and checkmate logic
     utils.manage_check_status(old_game_state, new_game_state)
 
@@ -262,7 +279,8 @@ def handle_endgame_conditions(old_game_state, new_game_state, moved_pieces, is_v
     return is_valid_game_state
 
 
-def finalize_game_state(old_game_state, new_game_state, moved_pieces, player, is_pawn_exchange_required_this_turn, mongo_client, id):
+def finalize_game_state(old_game_state: GameState, new_game_state: GameState, moved_pieces: list[MovedPiece], player: bool, is_pawn_exchange_required_this_turn: bool, mongo_client: MongoClient, id: str) -> None:
+    """Record moves, set position in play, compute legal moves, handle draws/items, and persist."""
     # Record movement
     utils.record_moved_pieces_this_turn(new_game_state, moved_pieces)
     
@@ -287,7 +305,8 @@ def finalize_game_state(old_game_state, new_game_state, moved_pieces, player, is
     utils.perform_game_state_update(new_game_state, mongo_client, id)
 
 
-def unmark_all_pieces_marked_for_death(new_game_state):
+def unmark_all_pieces_marked_for_death(new_game_state: GameState) -> None:
+    """Clear marked_for_death flag on all pieces after a valid sacrifice selection."""
     for row in range(len(new_game_state["board_state"])):
         for col in range(len(new_game_state["board_state"][row])):
             square = new_game_state["board_state"][row][col] or []

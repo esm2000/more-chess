@@ -181,7 +181,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
     - handle possibility that a piece can move to a square containing a neutral monster and another piece (where it captures the other piece and damages the neutral monster) ✅
     - neutral monster buff implementation ✅
     - split moves.py into per-piece modules ✅
-    - add type annotations, module/function docstrings, and TypedDicts (especially GameState) to improve code maintainability
+    - add type annotations, module/function docstrings, and TypedDicts (especially GameState) to improve code maintainability ✅
     - finalize shop and pawn exchange logic (and UI)
     - expand getPossibleMoves() to be able to dynamically take into consideration neutral monster buffs (while finalizing UI)
     - clean up PUT game endpoint for easier readibility and maintainability

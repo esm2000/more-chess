@@ -26,7 +26,7 @@ def test_pawn_exchange(game):
                 game_on_next_turn["board_state"][0][5] = [{"type": f"black_king"}]
                 game_on_next_turn["turn_count"] = 1
         
-            game_state = api.GameState(**game_on_next_turn)
+            game_state = api.GameStateRequest(**game_on_next_turn)
             game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
             if side == "white":
@@ -57,7 +57,7 @@ def test_pawn_exchange(game):
                     game_on_next_turn["board_state"][0][3] = [{"type": f"white_{piece_type}"}]
                 else:
                     game_on_next_turn["board_state"][7][3] = [{"type": f"black_{piece_type}"}]
-                game_state = api.GameState(**game_on_next_turn)
+                game_state = api.GameStateRequest(**game_on_next_turn)
                 game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
                 turn_count_for_end_of_pawn_exhange = game["turn_count"]
 
@@ -73,7 +73,7 @@ def test_pawn_exchange(game):
                         game_on_next_turn["board_state"][0][3] = [{"type": f"white_{piece_type}"}]
                     else:
                         game_on_next_turn["board_state"][7][3] = [{"type": f"black_{piece_type}"}]
-                    game_state = api.GameState(**game_on_next_turn)
+                    game_state = api.GameStateRequest(**game_on_next_turn)
                     game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
 
 
@@ -103,7 +103,7 @@ def test_pawn_forward_capture_available_when_capture_point_advantage_is_at_least
             game_on_next_turn["board_state"][5][3] = [{"type": "white_pawn"}]
             game_on_next_turn["turn_count"] = 1
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         if side == "white":
@@ -134,7 +134,7 @@ def test_pawn_forward_capture_available_when_capture_point_advantage_is_at_least
             game_on_next_turn["board_state"][4][3] = [{"type": "black_pawn"}]
             game_on_next_turn["turn_count"] = 1
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         if side == "white":
@@ -172,7 +172,7 @@ def test_pawn_immunity_when_capture_point_advantage_is_at_least_three(game):
             game_on_next_turn["board_state"][4][3] = [{"type": "white_pawn"}]
             game_on_next_turn["turn_count"] = 0  # white's turn to select attacking pawn
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         if side == "white":
@@ -205,7 +205,7 @@ def test_pawn_immunity_when_capture_point_advantage_is_at_least_three(game):
             game_on_next_turn["board_state"][3][0] = [{"type": "white_rook"}]
             game_on_next_turn["turn_count"] = 70  # high turn count for rook range
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         if side == "white":

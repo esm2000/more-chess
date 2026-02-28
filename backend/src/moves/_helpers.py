@@ -1,9 +1,15 @@
+"""Shared move generation helpers — file control, dragon buff collision, baron immunity."""
+
+from __future__ import annotations
+
 import copy
 
+from src.types import BoardState, GameState, MoveResult, Piece, Position
 from src.utils.piece_mechanics import enable_adjacent_bishop_captures
 
 # moves list is either list of possible moves or list of possible captures
-def filter_moves_for_file_control(moves_list, curr_position, is_capture=False):
+def filter_moves_for_file_control(moves_list: list, curr_position: Position, is_capture: bool = False) -> None:
+    """Remove vertical moves that cross the center file boundary."""
     center_squares = [
         [2, 2], [2, 3], [2, 4], [2, 5],
         [3, 2], [3, 3], [3, 4], [3, 5],
@@ -26,7 +32,8 @@ def filter_moves_for_file_control(moves_list, curr_position, is_capture=False):
         index += 1
 
 
-def process_possible_moves_dict(curr_game_state, curr_position, side, possible_moves_dict, is_king=False):
+def process_possible_moves_dict(curr_game_state: GameState, curr_position: Position, side: str, possible_moves_dict: MoveResult, is_king: bool = False) -> MoveResult:
+    """Post-process moves: apply bishop captures, file control, sword filtering, dedup."""
     possible_moves_dict = enable_adjacent_bishop_captures(curr_game_state, side, possible_moves_dict)
 
     # remove moves and captures that involve moving to a sword in stone buff unless we're dealing with a king
@@ -51,7 +58,7 @@ def process_possible_moves_dict(curr_game_state, curr_position, side, possible_m
     return possible_moves_dict
 
 
-def _add_marked_for_death_threats(possible_moves, threatening_move, opposing_side, board_state):
+def _add_marked_for_death_threats(possible_moves: list[Position], threatening_move: list[Position], opposing_side: str, board_state: BoardState) -> None:
     """5-dragon-stack marked-for-death: add king threats for squares adjacent to landing squares.
     Only kings are added to threatening_move (for check detection). Non-king pieces are
     intentionally omitted from possible_captures because the opponent chooses which
@@ -68,7 +75,7 @@ def _add_marked_for_death_threats(possible_moves, threatening_move, opposing_sid
                     threatening_move.append(possible_move)
 
 
-def _can_ignore_ally_collision(square, side, dragon_buff):
+def _can_ignore_ally_collision(square: list[Piece] | None, side: str, dragon_buff: int) -> bool:
     """Check if dragon buff allows passing through allies on this square."""
     if dragon_buff == 3:
         return any(piece.get("type") == f"{side}_pawn" for piece in square or [])
@@ -77,7 +84,7 @@ def _can_ignore_ally_collision(square, side, dragon_buff):
     return False
 
 
-def _is_path_clear(squares, side, opposing_side, dragon_buff):
+def _is_path_clear(squares: list[list[Piece] | None], side: str, opposing_side: str, dragon_buff: int) -> bool:
     """Check if all squares in a path are passable given dragon buff tier."""
     def is_square_passable(square):
         if not square:
@@ -94,7 +101,7 @@ def _is_path_clear(squares, side, opposing_side, dragon_buff):
     return all(is_square_passable(square) for square in squares)
 
 
-def _is_diagonal_path_blocked(squares, side, dragon_buff):
+def _is_diagonal_path_blocked(squares: list[list[Piece] | None], side: str, dragon_buff: int) -> bool:
     """Check if any intermediate square blocks a diagonal capture path."""
     for s in squares:
         if not s:
@@ -110,13 +117,13 @@ def _is_diagonal_path_blocked(squares, side, dragon_buff):
     return False
 
 
-def _is_baron_immune(square, opposing_side, baron_buff_active):
+def _is_baron_immune(square: list[Piece], opposing_side: str, baron_buff_active: bool) -> bool:
     """Check if an opposing pawn on this square is immune due to baron buff."""
     return not baron_buff_active and \
            any(piece.get("baron_nashor_buff") and f"{opposing_side}_pawn" == piece.get("type") for piece in square)
 
 
-def _add_forward_capture(possible_moves, possible_captures, threatening_move, target_square, move_position, opposing_side):
+def _add_forward_capture(possible_moves: list[Position], possible_captures: list[list[Position]], threatening_move: list[Position], target_square: list[Piece], move_position: Position, opposing_side: str) -> None:
     """Add a forward capture or king threat based on what's on the target square."""
     if any(f"{opposing_side}_king" == piece.get("type", "") for piece in target_square) and not threatening_move:
         threatening_move.append(move_position)

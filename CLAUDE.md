@@ -73,6 +73,7 @@ more-chess/
 ├── backend/
 │   ├── src/
 │   │   ├── api.py               # FastAPI route definitions
+│   │   ├── types.py             # TypedDicts and type aliases
 │   │   ├── moves/                # Move generation package
 │   │   │   ├── __init__.py      # Dispatcher + re-exports
 │   │   │   ├── _helpers.py      # Shared move generation helpers
@@ -129,6 +130,7 @@ more-chess/
 |------|---------|
 | `backend/server.py` | FastAPI entry point |
 | `backend/src/api.py` | REST API route definitions |
+| `backend/src/types.py` | TypedDicts and type aliases (GameState, Piece, MoveResult, etc.) |
 | `backend/src/moves/` | Move generation package (one module per piece type) |
 | `backend/src/moves/__init__.py` | Move dispatcher (`get_moves()`) + re-exports |
 | `backend/src/moves/_helpers.py` | Shared helpers (file control, dragon buff, baron immunity) |
@@ -220,6 +222,7 @@ Universal mechanics: moving adjacent/onto a monster deals 1 damage; pieces stayi
 | Module | Primary Responsibility | Key Functions |
 |--------|----------------------|---------------|
 | `src/api.py` | FastAPI routes | endpoints: game CRUD, buy_piece, moves |
+| `src/types.py` | TypedDicts & type aliases | `GameState`, `Piece`, `MoveResult`, `MovedPiece`, `Position`, `BoardState` |
 | `src/moves/` | Move generation package | `get_moves` (dispatcher in `__init__.py`), per-piece modules: `pawn.py`, `knight.py`, `bishop.py`, `rook.py`, `queen.py`, `king.py`; shared helpers in `_helpers.py` |
 | `src/database.py` | MongoDB connection | exports `mongo_client` |
 | `src/log.py` | Logging | exports `logger` |
@@ -393,7 +396,8 @@ Current focus: neutral monster buff implementation, marked-for-death mechanics v
 ### Current Priorities
 
 1. Finalize Neutral Monster Buff Implementation
-2. Add type annotations, module/function docstrings, and TypedDicts (especially `GameState`) to reduce AI tool token usage and improve maintainability
+2. ~~Split `moves.py` into per-piece modules~~ ✅ Done — split into `src/moves/` package with per-piece modules
+3. ~~Add type annotations, module/function docstrings, and TypedDicts~~ ✅ Done — `src/types.py` created, all backend modules annotated with types and docstrings
 4. Complete Frontend Buff Visualization
 5. Shop and Pawn Exchange Finalization
 6. Develop CPU Opponent
@@ -495,6 +499,16 @@ game_state = {
 - One sentence, no co-author notes
 - Start with a verb (e.g. "Implement", "Fix", "Add", "Remove")
 - Describe what changed and why in a single line
+
+### Type Annotations and Docstrings
+
+**Key Conventions:**
+- All type definitions live in `src/types.py` — import from there, never redefine
+- `GameState` is a TypedDict (`total=False`); `GameStateRequest` is the Pydantic model in `api.py`
+- Use `from __future__ import annotations` in files that use `X | None` union syntax in function signatures
+- Use `Optional[X]` (not `X | None`) in type aliases and TypedDict fields for Python 3.9 runtime compatibility
+- Every module has a one-line module docstring; every public function has a concise docstring
+- Only add `Mutates:` / `Returns:` annotations for functions with non-obvious side effects
 
 ### Code Organization Principles
 

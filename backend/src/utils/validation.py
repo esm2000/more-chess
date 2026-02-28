@@ -1,6 +1,9 @@
+"""API input validation: move legality, turn order, gold limits, piece disappearance checks."""
+
 import traceback
 
 from src.log import logger
+from src.types import GameState, GoldSpent, MovedPiece, PawnExchangeStatus, Position
 import src.moves as moves
 from .check_checkmate import trim_king_moves
 from .monsters import MONSTER_INFO
@@ -9,14 +12,14 @@ from .board_analysis import get_piece_value
 
 INVALID_GAME_STATE_ERROR_MESSAGE = "New game state is invalid"
 
-# if more than one pieces for one side has moved and its not a castle, invalidate
 def check_to_see_if_more_than_one_piece_has_moved(
-        old_game_state, 
-        new_game_state, 
-        moved_pieces,
-        capture_positions,
-        is_valid_game_state
-):
+        old_game_state: GameState,
+        new_game_state: GameState,
+        moved_pieces: list[MovedPiece],
+        capture_positions: list[list[Position]],
+        is_valid_game_state: bool
+) -> bool:
+    """Validate move counts per side, castling legality, and individual move legality."""
     for side in old_game_state["captured_pieces"]:
         count_of_pieces_on_new_state = 0
         has_king_moved = False
@@ -139,8 +142,8 @@ def check_to_see_if_more_than_one_piece_has_moved(
     return is_valid_game_state
 
 
-# old game's turn count is representative of what side should be moving (even is white, odd is black)
-def invalidate_game_if_wrong_side_moves(moved_pieces, is_valid_game_state, old_game_turn_count):
+def invalidate_game_if_wrong_side_moves(moved_pieces: list[MovedPiece], is_valid_game_state: bool, old_game_turn_count: int) -> bool:
+    """Invalidate if the wrong side moved (even turns = white, odd = black)."""
     side_that_should_be_moving = "white" if not old_game_turn_count % 2 else "black"
     for side in [piece_info["side"] for piece_info in moved_pieces if piece_info["current_position"][0] is not None]:
         if side != side_that_should_be_moving and side != "neutral":
@@ -149,15 +152,16 @@ def invalidate_game_if_wrong_side_moves(moved_pieces, is_valid_game_state, old_g
     return is_valid_game_state
 
 
-def invalidate_game_if_more_than_one_side_moved(move_count_for_white, move_count_for_black, is_valid_game_state):
-    # if more than one side has pieces that's moved, invalidate 
+def invalidate_game_if_more_than_one_side_moved(move_count_for_white: int, move_count_for_black: int, is_valid_game_state: bool) -> bool:
+    """Invalidate if both sides moved pieces in the same turn."""
     if move_count_for_white > 0 and move_count_for_black > 0: 
         logger.error("More than one side have pieces that have moved")
         is_valid_game_state = False
     return is_valid_game_state
 
 
-def invalidate_game_if_stunned_piece_moves(moved_pieces, is_valid_game_state):
+def invalidate_game_if_stunned_piece_moves(moved_pieces: list[MovedPiece], is_valid_game_state: bool) -> bool:
+    """Invalidate if a stunned piece moved."""
     for moved_piece in moved_pieces:
         # if piece has a origin and a destination (not spawned or captured) and is stunned, invalidate 
         if moved_piece["current_position"][0] is not None \
@@ -168,7 +172,8 @@ def invalidate_game_if_stunned_piece_moves(moved_pieces, is_valid_game_state):
     return is_valid_game_state
 
 
-def invalidate_game_if_monster_has_moved(is_valid_game_state, moved_pieces):
+def invalidate_game_if_monster_has_moved(is_valid_game_state: bool, moved_pieces: list[MovedPiece]) -> bool:
+    """Invalidate if a neutral monster changed position."""
     for moved_piece in moved_pieces:
         if moved_piece["side"] == "neutral" and moved_piece["current_position"][0] is not None and moved_piece["previous_position"][0] is not None:
             logger.error("A neutral monster has moved")
@@ -176,7 +181,8 @@ def invalidate_game_if_monster_has_moved(is_valid_game_state, moved_pieces):
     return is_valid_game_state
 
 
-def invalidate_game_if_too_much_gold_is_spent(old_game_state, gold_spent, is_valid_game_state):
+def invalidate_game_if_too_much_gold_is_spent(old_game_state: GameState, gold_spent: GoldSpent, is_valid_game_state: bool) -> bool:
+    """Invalidate if a side spent more gold than they have."""
     for side in old_game_state["gold_count"]:
         if gold_spent[side] > old_game_state["gold_count"][side]:
             logger.error(f"More gold has been spent for {side} than {side} currently has ({gold_spent[side]} gold vs. {old_game_state['gold_count'][side]} gold)")
@@ -184,9 +190,8 @@ def invalidate_game_if_too_much_gold_is_spent(old_game_state, gold_spent, is_val
     return is_valid_game_state
 
 
-# if any new pieces in the captured pieces array have not been captured this turn, invalidate
-# (it's imperative that this code section is placed after we've updated captured_pieces)
-def invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_game_state, new_game_state, moved_pieces, is_valid_game_state, is_pawn_exchange_possibly_being_carried_out):
+def invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_game_state: GameState, new_game_state: GameState, moved_pieces: list[MovedPiece], is_valid_game_state: bool, is_pawn_exchange_possibly_being_carried_out: PawnExchangeStatus) -> bool:
+    """Invalidate if captured_pieces contains entries not accounted for by this turn's moves."""
     captured_pieces_array = new_game_state["captured_pieces"]["white"].copy() + new_game_state["captured_pieces"]["black"].copy() + new_game_state["graveyard"]
     for captured_piece in old_game_state["captured_pieces"]["white"] + old_game_state["captured_pieces"]["black"] + old_game_state["graveyard"]:
         captured_pieces_array.remove(captured_piece)
@@ -210,7 +215,8 @@ def invalidate_game_when_unexplained_pieces_are_in_captured_pieces_array(old_gam
     return is_valid_game_state
 
 
-def invalidate_game_if_no_marked_for_death_pieces_have_been_selected(old_game_state, new_game_state, is_valid_game_state):
+def invalidate_game_if_no_marked_for_death_pieces_have_been_selected(old_game_state: GameState, new_game_state: GameState, is_valid_game_state: bool) -> bool:
+    """Invalidate if marked-for-death pieces exist but exactly one wasn't selected for sacrifice."""
     marked_for_death_pieces = {}
     
     for row in range(len(old_game_state["board_state"])):
@@ -245,13 +251,14 @@ def invalidate_game_if_no_marked_for_death_pieces_have_been_selected(old_game_st
 
 
 def check_for_disappearing_pieces(
-    old_game_state, 
-    new_game_state, 
-    moved_pieces, 
-    is_valid_game_state, 
-    capture_positions, 
-    is_pawn_exchange_possibly_being_carried_out
-):
+    old_game_state: GameState,
+    new_game_state: GameState,
+    moved_pieces: list[MovedPiece],
+    is_valid_game_state: bool,
+    capture_positions: list[list[Position]],
+    is_pawn_exchange_possibly_being_carried_out: PawnExchangeStatus
+) -> bool:
+    """Invalidate if any captured piece cannot be explained by a captor, monster, exchange, or sacrifice."""
     for moved_piece in moved_pieces:
         # if any piece captured this turn doesn't have a captor, invalidate (keep in mind that adjacent 
         # capturing is possible so positions in moved_pieces shouldn't be relied on as crutch)
@@ -305,7 +312,8 @@ def check_for_disappearing_pieces(
     return is_valid_game_state
 
 
-def check_if_pawn_exchange_is_required(old_game_state, new_game_state, moved_pieces, is_valid_game_state):
+def check_if_pawn_exchange_is_required(old_game_state: GameState, new_game_state: GameState, moved_pieces: list[MovedPiece], is_valid_game_state: bool) -> tuple[bool, bool]:
+    """Return (is_required, is_valid) — True if a pawn reached the promotion rank this turn."""
     side_that_should_be_moving = "white" if not old_game_state["turn_count"] % 2 else "black"
     side_that_should_not_be_moving = "black" if side_that_should_be_moving == "white" else "white"
 
@@ -324,7 +332,8 @@ def check_if_pawn_exchange_is_required(old_game_state, new_game_state, moved_pie
     return is_pawn_exchange_required_this_turn, is_valid_game_state
 
 
-def check_if_pawn_exhange_is_possibly_being_carried_out(old_game_state, new_game_state, moved_pieces):
+def check_if_pawn_exhange_is_possibly_being_carried_out(old_game_state: GameState, new_game_state: GameState, moved_pieces: list[MovedPiece]) -> PawnExchangeStatus:
+    """Detect if a pawn disappeared and was replaced by a same-side piece (exchange in progress)."""
     is_pawn_exchange_possibly_being_carried_out = {"white": False, "black": False}
 
     for side in old_game_state["captured_pieces"]:
@@ -340,12 +349,14 @@ def check_if_pawn_exhange_is_possibly_being_carried_out(old_game_state, new_game
     return is_pawn_exchange_possibly_being_carried_out
 
 
-def should_turn_count_be_incremented_for_pawn_exchange(old_game_state, is_pawn_exchange_possibly_being_carried_out):
+def should_turn_count_be_incremented_for_pawn_exchange(old_game_state: GameState, is_pawn_exchange_possibly_being_carried_out: PawnExchangeStatus) -> bool:
+    """Return True if the moving side is carrying out a pawn exchange."""
     side_that_should_be_moving = "white" if not old_game_state["turn_count"] % 2 else "black"
     return  is_pawn_exchange_possibly_being_carried_out[side_that_should_be_moving]
 
 
-def get_gold_spent(moved_pieces):
+def get_gold_spent(moved_pieces: list[MovedPiece]) -> GoldSpent:
+    """Calculate gold spent per side from newly spawned (purchased) pieces."""
     gold_spent = {"white": 0, "black": 0}
     for moved_piece in moved_pieces:
     # if a piece has spawned without being exchanged for a pawn
@@ -357,7 +368,8 @@ def get_gold_spent(moved_pieces):
     return gold_spent
 
 
-def is_invalid_king_capture(moved_pieces):
+def is_invalid_king_capture(moved_pieces: list[MovedPiece]) -> bool:
+    """Return True if a king was captured or disappeared from the board."""
     for moved_piece in moved_pieces:
         if moved_piece["current_position"][0] is None and "king" in moved_piece["piece"]["type"]:
             return True

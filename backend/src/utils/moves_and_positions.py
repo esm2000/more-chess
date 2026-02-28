@@ -1,22 +1,25 @@
+"""Position-in-play selection, move determination, and turn-side validation."""
+
 import traceback
 
 from fastapi import HTTPException
 
 from src.log import logger
+from src.types import GameState, MovedPiece
 import src.moves as moves
 from .check_checkmate import trim_king_moves
 
 
-# determine possibleMoves if a position_in_play is not [null, null]
-def determine_possible_moves(old_game_state, new_game_state, moved_pieces, player, reset_position_in_play, is_pawn_exchange_required_this_turn):
+def determine_possible_moves(old_game_state: GameState, new_game_state: GameState, moved_pieces: list[MovedPiece], player: bool, reset_position_in_play: bool, is_pawn_exchange_required_this_turn: bool) -> None:
+    """Compute and store legal moves for the selected position_in_play."""
     has_non_neutral_piece_moved = False
     for moved_piece in moved_pieces:
         if moved_piece["side"] == "neutral":
             continue
         has_non_neutral_piece_moved = True
-    if has_non_neutral_piece_moved and reset_position_in_play: 
+    if has_non_neutral_piece_moved and reset_position_in_play:
         new_game_state["position_in_play"] = [None, None]
-    if new_game_state["position_in_play"][0] is not None: 
+    if new_game_state["position_in_play"][0] is not None:
         square = new_game_state["board_state"][new_game_state["position_in_play"][0]][new_game_state["position_in_play"][1]]
         piece_in_play = None
         for piece in square:
@@ -29,7 +32,7 @@ def determine_possible_moves(old_game_state, new_game_state, moved_pieces, playe
             error_msg = f"Invalid position_in_play in potential new game state, no piece present ({new_game_state['position_in_play']})"
             logger.error(error_msg)
             raise HTTPException(status_code=500, detail=error_msg)
-        
+
         try:
             moves_info = moves.get_moves(old_game_state, new_game_state, new_game_state["position_in_play"], piece)
             if "king" in piece.get("type", ""):
@@ -45,13 +48,14 @@ def determine_possible_moves(old_game_state, new_game_state, moved_pieces, playe
         new_game_state["possible_captures"] = []
 
 
-def was_a_new_position_in_play_selected(moved_pieces, old_game_state, new_game_state):
+def was_a_new_position_in_play_selected(moved_pieces: list[MovedPiece], old_game_state: GameState, new_game_state: GameState) -> bool:
+    """Return True if the client selected a new piece without moving any piece."""
     return not len([mp for mp in moved_pieces if mp["previous_position"][0] is not None and mp["current_position"][0] is not None]) and \
     old_game_state["position_in_play"] != new_game_state["position_in_play"]
 
 
-# assumption is that there is a valid position_in_play in the new_game_state before using this function
-def does_position_in_play_match_turn(old_game_state, new_game_state):
+def does_position_in_play_match_turn(old_game_state: GameState, new_game_state: GameState) -> bool:
+    """Return True if the position_in_play contains a piece matching the side to move."""
     side_that_should_be_moving = "white" if not old_game_state["turn_count"] % 2 else "black"
     position = new_game_state["position_in_play"]
     square = old_game_state["board_state"][position[0]][position[1]] or []
@@ -63,7 +67,7 @@ def does_position_in_play_match_turn(old_game_state, new_game_state):
     for piece in square:
         if side_that_should_be_moving in piece.get("type", ""):
             return True
-    
+
     piece_types = [piece.get("type", "unknown") for piece in square]
     logger.error(f"Position in play validation failed: {side_that_should_be_moving} cannot move pieces at {position}. Found pieces: {piece_types}")
     return False

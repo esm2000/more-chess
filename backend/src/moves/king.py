@@ -1,3 +1,8 @@
+"""King move generation."""
+
+from __future__ import annotations
+
+from src.types import GameState, MoveResult, Position
 from src.utils.board_analysis import evaluate_current_position
 from src.moves._helpers import (
     process_possible_moves_dict,
@@ -7,7 +12,8 @@ from src.moves._helpers import (
 
 # must be called with get_unsafe_positions() where unsafe positions are filtered out
 # (unable to do that within this function without circular importing in can_king_move())
-def get_moves_for_king(curr_game_state, prev_game_state, curr_position):
+def get_moves_for_king(curr_game_state: GameState, prev_game_state: GameState | None, curr_position: Position) -> MoveResult:
+    """Generate all legal moves for a king at curr_position."""
     evaluate_current_position(curr_position, curr_game_state)
     piece_in_play = None
 

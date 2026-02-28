@@ -57,11 +57,6 @@ def spawn_neutral_monsters(game_state):
                     game_state["board_state"][monster_position_row][monster_position_col].pop(i)
 
             game_state["board_state"][monster_position_row][monster_position_col] = monster_piece
-
-            if monster == "neutral_baron_nashor":
-                for i in range(len(game_state["board_state"][monster_position_row][monster_position_col])):
-                    if game_state["board_state"][monster_position_row][monster_position_col][i].get("type") == "neutral_board_herald":
-                        game_state["board_state"][monster_position_row][monster_position_col].pop(i)
                         
 
 def carry_out_neutral_monster_attacks(game_state):

@@ -226,8 +226,11 @@ def handle_neutral_monster_buffs(moved_pieces, capture_positions, new_game_state
                 if neutral_monster_type == "dragon":
                     if new_game_state["neutral_buff_log"][side]["dragon"]["stacks"] < 5:
                         new_game_state["neutral_buff_log"][side]["dragon"]["stacks"] += 1
-                    
+
                     new_game_state["neutral_buff_log"][side]["dragon"]["turn"] = new_game_state["turn_count"]
+                elif neutral_monster_type == "baron_nashor":
+                    new_game_state["neutral_buff_log"][side]["baron_nashor"]["active"] = True
+                    new_game_state["neutral_buff_log"][side]["baron_nashor"]["turn"] = new_game_state["turn_count"]
                 else:
                     new_game_state["neutral_buff_log"][side][neutral_monster_type] = True
 
@@ -236,14 +239,23 @@ def handle_neutral_monster_buffs(moved_pieces, capture_positions, new_game_state
                         new_game_state["board_state"][captor_position[0]][captor_position[1]][0]["board_herald_buff"] = True    
     # grant dragon and baron nashor buffs using neutral buff log (redundantly reapply all buffs just in case new pieces have been acquired through pawn exchange or the shop)
     for side in new_game_state["neutral_buff_log"]:
-        if new_game_state["neutral_buff_log"][side]["baron_nashor"]:
+        baron_log = new_game_state["neutral_buff_log"][side]["baron_nashor"]
+        if baron_log["active"]:
+            # baron nashor buff lasts 4 game turns (8 half-turns)
+            baron_expired = new_game_state["turn_count"] > baron_log["turn"] + 8
+            if baron_expired:
+                baron_log["active"] = False
+
             for row in range(len(new_game_state["board_state"])):
                 for col in range(len(new_game_state["board_state"][0])):
                     square = new_game_state["board_state"][row][col] or []
 
                     for piece in square:
                         if piece["type"] == f"{side}_pawn":
-                            piece["baron_nashor_buff"] = True
+                            if baron_expired:
+                                piece.pop("baron_nashor_buff", None)
+                            else:
+                                piece["baron_nashor_buff"] = True
 
         if new_game_state["neutral_buff_log"][side]["dragon"]["stacks"]:
             for row in range(len(new_game_state["board_state"])):

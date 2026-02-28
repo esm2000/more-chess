@@ -112,7 +112,7 @@ Every 10 turns, spawns on the a5 square. Grants a buff only to the piece who cap
 
 *Baron Nashor: 10 hp*
 
-Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all pawns. All ally pawns can capture other pawns and pieces 1 square in front of them. Additionally they cannot be captured by other pawns. If enemy pawns currently are immune to your pawns, Baron buff negates this for the duration of the buff.
+Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff to all pawns. All ally pawns can capture other pawns and pieces 1 square in front of them. Additionally they cannot be captured by other pawns. If enemy pawns currently are immune to your pawns, Baron buff negates this for the duration of the buff.
 
 #### Credits
 

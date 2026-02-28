@@ -448,7 +448,7 @@ def test_king_in_check_from_pawn_with_baron_nashor_buff(game):
             game_on_next_turn["board_state"][0][7] = [{"type": f"{side}_king"}]
 
         game_on_next_turn["turn_count"] = 0 if side == "white" else 1
-        game_on_next_turn["neutral_buff_log"][side]["baron_nashor"] = True
+        game_on_next_turn["neutral_buff_log"][side]["baron_nashor"] = {"active": True, "turn": game_on_next_turn["turn_count"]}
         
         game_state = api.GameState(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
@@ -484,12 +484,12 @@ def test_that_a_player_can_surrender_a_piece_due_to_five_dragon_buff_stacks_whil
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         assert not game["neutral_buff_log"][side]["board_herald"]
-        assert not game["neutral_buff_log"][side]["baron_nashor"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         if side == "white":
             game = select_and_move_white_piece(game, from_row=4, from_col=7, to_row=4, to_col=5)

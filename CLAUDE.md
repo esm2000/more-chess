@@ -1,6 +1,6 @@
 # League of Chess - Developer Documentation
 
-Last Updated: 2026-02-26
+Last Updated: 2026-02-28
 
 > **Keep this file current.** Update the relevant sections whenever you change game mechanics, add/rename modules, restructure directories, change dependencies, or shift development priorities. See [Maintaining This Document](#maintaining-this-document) for the update checklist.
 
@@ -197,7 +197,7 @@ Universal mechanics: moving adjacent/onto a monster deals 1 damage; pieces stayi
 - Adjacent ally pawns can capture 1 square directly forward
 
 #### Baron Nashor
-- Spawns every 15 turns after turn 20 on a5; 5-turn team-wide pawn buff:
+- Spawns every 15 turns after turn 20 on a5; 4-turn team-wide pawn buff:
   - Pawns can capture 1 square forward; pawns immune to enemy pawn capture
   - Negates enemy +3 advantage pawn immunity
 

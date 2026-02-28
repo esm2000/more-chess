@@ -277,12 +277,12 @@ def test_five_dragon_stacks_and_death_mark_capture_flow_with_multiple_pieces_mar
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         assert not game["neutral_buff_log"][side]["board_herald"]
-        assert not game["neutral_buff_log"][side]["baron_nashor"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         if side == "white":
             game = select_and_move_white_piece(game, from_row=4, from_col=7, to_row=4, to_col=5)
@@ -337,12 +337,12 @@ def test_five_dragon_stacks_and_death_mark_capture_flow_with_single_piece_marked
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         assert not game["neutral_buff_log"][side]["board_herald"]
-        assert not game["neutral_buff_log"][side]["baron_nashor"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         if side == "white":
             game = select_and_move_white_piece(game, from_row=4, from_col=7, to_row=4, to_col=5)
@@ -396,12 +396,12 @@ def test_that_not_choosing_a_piece_to_die_invalidates_game_state(game):
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         assert not game["neutral_buff_log"][side]["board_herald"]
-        assert not game["neutral_buff_log"][side]["baron_nashor"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         if side == "white":
             game = select_and_move_white_piece(game, from_row=4, from_col=7, to_row=4, to_col=5)

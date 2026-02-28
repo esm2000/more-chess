@@ -418,12 +418,12 @@ def test_buff_acquired_from_dragon_slain_stack_1(game):
         assert game["neutral_buff_log"][side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][side]["board_herald"]
-        assert not game["neutral_buff_log"][side]["baron_nashor"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         if side == "white":
             game = select_white_piece(game=game, row=7, col=4)
@@ -441,12 +441,12 @@ def test_buff_acquired_from_dragon_slain_stack_1(game):
         assert game["neutral_buff_log"][side]["dragon"]["stacks"] == 1
         assert game["neutral_buff_log"][side]["dragon"]["turn"] == 3 if side == "white" else 2
         assert not game["neutral_buff_log"][side]["board_herald"]
-        assert not game["neutral_buff_log"][side]["baron_nashor"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
         
         # only the pawns should gain the dragon buff
         validate_dragon_buffs(game, side, 1, [(6, 0), (6, 1)])
@@ -495,12 +495,12 @@ def test_buff_acquired_from_dragon_slain_stack_2(game):
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
         
         assert not game["neutral_buff_log"][side]["board_herald"]
-        assert not game["neutral_buff_log"][side]["baron_nashor"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         if side == "white":
             game = select_white_piece(game=game, row=7, col=4)
@@ -518,12 +518,12 @@ def test_buff_acquired_from_dragon_slain_stack_2(game):
         assert game["neutral_buff_log"][side]["dragon"]["stacks"] == 2
         assert game["neutral_buff_log"][side]["dragon"]["turn"] == 43 if side == "white" else 42
         assert not game["neutral_buff_log"][side]["board_herald"]
-        assert not game["neutral_buff_log"][side]["baron_nashor"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         # all allied pieces should gain the dragon buff
         validate_dragon_buffs(game, side, 2, [(6, 0), (6, 1), (7, 0), (7, 1), (7, 2), (7, 3), (4, 7)])
@@ -570,12 +570,12 @@ def test_buff_acquired_from_dragon_slain_stack_3(game):
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
         
         assert not game["neutral_buff_log"][side]["board_herald"]
-        assert not game["neutral_buff_log"][side]["baron_nashor"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         if side == "white":
             game = select_white_piece(game=game, row=7, col=4)
@@ -593,12 +593,12 @@ def test_buff_acquired_from_dragon_slain_stack_3(game):
         assert game["neutral_buff_log"][side]["dragon"]["stacks"] == 3
         assert game["neutral_buff_log"][side]["dragon"]["turn"] == 43 if side == "white" else 42
         assert not game["neutral_buff_log"][side]["board_herald"]
-        assert not game["neutral_buff_log"][side]["baron_nashor"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         # validate that all pieces have dragon buff of 3
         validate_dragon_buffs(game, side, 3, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 3), (7, 2)])
@@ -635,12 +635,12 @@ def test_buff_acquired_from_dragon_slain_stack_4(game):
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
         
         assert not game["neutral_buff_log"][side]["board_herald"]
-        assert not game["neutral_buff_log"][side]["baron_nashor"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         if side == "white":
             game = select_white_piece(game=game, row=7, col=4)
@@ -658,12 +658,12 @@ def test_buff_acquired_from_dragon_slain_stack_4(game):
         assert game["neutral_buff_log"][side]["dragon"]["stacks"] == 4
         assert game["neutral_buff_log"][side]["dragon"]["turn"] == 43 if side == "white" else 42
         assert not game["neutral_buff_log"][side]["board_herald"]
-        assert not game["neutral_buff_log"][side]["baron_nashor"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         # validate that all pieces have dragon buff of 4
         validate_dragon_buffs(game, side, 4, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 3), (7, 2)])
@@ -700,12 +700,12 @@ def test_buff_acquired_from_dragon_slain_stack_5(game):
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
         
         assert not game["neutral_buff_log"][side]["board_herald"]
-        assert not game["neutral_buff_log"][side]["baron_nashor"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         if side == "white":
             game = select_white_piece(game=game, row=7, col=4)
@@ -723,12 +723,12 @@ def test_buff_acquired_from_dragon_slain_stack_5(game):
         assert game["neutral_buff_log"][side]["dragon"]["stacks"] == 5
         assert game["neutral_buff_log"][side]["dragon"]["turn"] == 43 if side == "white" else 42
         assert not game["neutral_buff_log"][side]["board_herald"]
-        assert not game["neutral_buff_log"][side]["baron_nashor"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         # validate that all pieces have dragon buff of 5
         validate_dragon_buffs(game, side, 5, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 3), (7, 2)])
@@ -765,12 +765,12 @@ def test_buff_acquired_from_dragon_slain_stack_5_duration(game):
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
         
         assert not game["neutral_buff_log"][side]["board_herald"]
-        assert not game["neutral_buff_log"][side]["baron_nashor"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         # turn 0
         if side == "white":
@@ -789,12 +789,12 @@ def test_buff_acquired_from_dragon_slain_stack_5_duration(game):
         assert game["neutral_buff_log"][side]["dragon"]["stacks"] == 5
         assert game["neutral_buff_log"][side]["dragon"]["turn"] == 43 if side == "white" else 42
         assert not game["neutral_buff_log"][side]["board_herald"]
-        assert not game["neutral_buff_log"][side]["baron_nashor"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         # validate that all pieces have dragon buff of 5
         validate_dragon_buffs(game, side, 5, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 3), (7, 2)])
@@ -890,12 +890,12 @@ def test_buff_acquired_from_dragon_slain_restack_5_after_expiration(game):
             game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
             
             assert not game["neutral_buff_log"][side]["board_herald"]
-            assert not game["neutral_buff_log"][side]["baron_nashor"]
+            assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
             assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
             assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
             assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-            assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+            assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
             # turn 0
             if side == "white":
@@ -914,12 +914,12 @@ def test_buff_acquired_from_dragon_slain_restack_5_after_expiration(game):
             assert game["neutral_buff_log"][side]["dragon"]["stacks"] == 5
             assert game["neutral_buff_log"][side]["dragon"]["turn"] == 43 if side == "white" else 42
             assert not game["neutral_buff_log"][side]["board_herald"]
-            assert not game["neutral_buff_log"][side]["baron_nashor"]
+            assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
             assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
             assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
             assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-            assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+            assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
             # validate that all pieces have dragon buff of 5
             validate_dragon_buffs(game, side, 5, [(6, 0), (6, 1), (7, 0), (7, 1), (4, 7), (7, 3), (7, 2)])
@@ -1094,12 +1094,12 @@ def test_buff_acquired_from_board_herald_slain(game):
         assert game["neutral_buff_log"][side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][side]["board_herald"]
-        assert not game["neutral_buff_log"][side]["baron_nashor"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         if side == "white":
             game = select_white_piece(game=game, row=1, col=0)
@@ -1117,12 +1117,12 @@ def test_buff_acquired_from_board_herald_slain(game):
         assert game["neutral_buff_log"][side]["board_herald"]
         assert game["neutral_buff_log"][side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][side]["dragon"]["turn"] == 0
-        assert not game["neutral_buff_log"][side]["baron_nashor"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         # only the capturing piece should gain the board herald buff
         assert game["board_state"][3][0][0].get("board_herald_buff", False)
@@ -1179,12 +1179,12 @@ def test_buff_acquired_from_baron_nashor_slain(game):
         assert game["neutral_buff_log"][side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][side]["board_herald"]
-        assert not game["neutral_buff_log"][side]["baron_nashor"]
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
 
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         if side == "white":
             game = select_white_piece(game=game, row=1, col=0)
@@ -1199,7 +1199,7 @@ def test_buff_acquired_from_baron_nashor_slain(game):
         
         assert len(game["board_state"][3][0]) == 1 and game["board_state"][3][0][0].get("type") == f"{side}_rook"
 
-        assert game["neutral_buff_log"][side]["baron_nashor"]
+        assert game["neutral_buff_log"][side]["baron_nashor"]["active"]
         assert game["neutral_buff_log"][side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][side]["board_herald"]
@@ -1207,7 +1207,7 @@ def test_buff_acquired_from_baron_nashor_slain(game):
         assert game["neutral_buff_log"][opposite_side]["dragon"]["stacks"] == 0
         assert game["neutral_buff_log"][opposite_side]["dragon"]["turn"] == 0
         assert not game["neutral_buff_log"][opposite_side]["board_herald"]
-        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]
+        assert not game["neutral_buff_log"][opposite_side]["baron_nashor"]["active"]
 
         # only allied pawns should receive buff
         assert game["board_state"][6][0][0].get("baron_nashor_buff", False)
@@ -1235,3 +1235,140 @@ def test_buff_acquired_from_baron_nashor_slain(game):
         assert not game["board_state"][0][6][0].get("baron_nashor_buff", False)
         assert not game["board_state"][0][1][0].get("baron_nashor_buff", False)
         assert not game["board_state"][1][6][0].get("baron_nashor_buff", False)
+
+
+def test_buff_acquired_from_baron_nashor_slain_duration(game):
+    # Before rook kills baron:                           After rook kills baron:
+    ##    0  1  2  3  4  5  6  7                         ##    0  1  2  3  4  5  6  7
+    ## 0 |br|##|__|##|__|##|__|bK|                       ## 0 |br|##|__|##|__|##|__|bK|
+    ## 1 |wr|__|##|__|##|__|##|__|                       ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|                       ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |BN|__|##|__|##|__|##|__|                       ## 3 |wr|__|##|__|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|                       ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|                       ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |wp|wp|__|##|__|##|__|##|                       ## 6 |wp|wp|__|##|__|##|__|##|
+    ## 7 |##|__|##|wK|##|__|##|__|                       ## 7 |##|__|##|wK|##|__|##|__|
+    #
+    ##    0  1  2  3  4  5  6  7                         ##    0  1  2  3  4  5  6  7
+    ## 0 |wr|##|__|##|__|##|__|wK|                       ## 0 |wr|##|__|##|__|##|__|wK|
+    ## 1 |br|__|##|__|##|__|##|__|                       ## 1 |##|__|##|__|##|__|##|__|
+    ## 2 |__|##|__|##|__|##|__|##|                       ## 2 |__|##|__|##|__|##|__|##|
+    ## 3 |BN|__|##|__|##|__|##|__|                       ## 3 |br|__|##|__|##|__|##|__|
+    ## 4 |__|##|__|##|__|##|__|##|                       ## 4 |__|##|__|##|__|##|__|##|
+    ## 5 |##|__|##|__|##|__|##|__|                       ## 5 |##|__|##|__|##|__|##|__|
+    ## 6 |bp|bp|__|##|__|##|__|##|                       ## 6 |bp|bp|__|##|__|##|__|##|
+    ## 7 |##|__|##|bK|##|__|##|__|                       ## 7 |##|__|##|bK|##|__|##|__|
+    #
+    # After baron kill, king shuffles [7][3] <-> [7][4] while
+    # opposite king shuffles [0][7] <-> [0][6] to advance turns.
+    # Baron buff should last 4 game turns (turns 1-4) then expire on turn 5.
+    for side in ["white", "black"]:
+        opposite_side = "white" if side == "black" else "black"
+        game = clear_game(game)
+        game_on_next_turn = copy.deepcopy(game)
+
+        game_on_next_turn["board_state"][3][0] = [{"type": "neutral_baron_nashor", "health": 1}]
+
+        game_on_next_turn["board_state"][1][0] = [{"type": f"{side}_rook"}]
+        game_on_next_turn["board_state"][6][0] = [{"type": f"{side}_pawn"}]
+        game_on_next_turn["board_state"][6][1] = [{"type": f"{side}_pawn"}]
+        game_on_next_turn["board_state"][7][3] = [{"type": f"{side}_king"}]
+
+        game_on_next_turn["board_state"][0][7] = [{"type": f"{opposite_side}_king"}]
+        game_on_next_turn["board_state"][0][0] = [{"type": f"{opposite_side}_rook"}]
+
+        game_on_next_turn["turn_count"] = 52 if side == "white" else 51
+
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+        # turn 0: kill baron
+        if side == "white":
+            game = select_white_piece(game=game, row=1, col=0)
+        else:
+            game = select_black_piece(game=game, row=1, col=0)
+
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][3][0].append(game_on_next_turn["board_state"][1][0][0])
+        game_on_next_turn["board_state"][1][0] = None
+        game_state = api.GameState(**game_on_next_turn)
+        game = api.update_game_state(game["id"], game_state, Response(), side == "white")
+
+        assert game["neutral_buff_log"][side]["baron_nashor"]["active"]
+        assert game["board_state"][6][0][0].get("baron_nashor_buff", False)
+        assert game["board_state"][6][1][0].get("baron_nashor_buff", False)
+
+        if opposite_side == "white":
+            game = select_and_move_white_piece(game=game, from_row=0, from_col=7, to_row=0, to_col=6)
+        else:
+            game = select_and_move_black_piece(game=game, from_row=0, from_col=7, to_row=0, to_col=6)
+
+        # turn 1
+        if side == "white":
+            game = select_and_move_white_piece(game=game, from_row=7, from_col=3, to_row=7, to_col=4)
+        else:
+            game = select_and_move_black_piece(game=game, from_row=7, from_col=3, to_row=7, to_col=4)
+
+        assert game["neutral_buff_log"][side]["baron_nashor"]["active"]
+        assert game["board_state"][6][0][0].get("baron_nashor_buff", False)
+        assert game["board_state"][6][1][0].get("baron_nashor_buff", False)
+
+        if opposite_side == "white":
+            game = select_and_move_white_piece(game=game, from_row=0, from_col=6, to_row=0, to_col=7)
+        else:
+            game = select_and_move_black_piece(game=game, from_row=0, from_col=6, to_row=0, to_col=7)
+
+        # turn 2
+        if side == "white":
+            game = select_and_move_white_piece(game=game, from_row=7, from_col=4, to_row=7, to_col=3)
+        else:
+            game = select_and_move_black_piece(game=game, from_row=7, from_col=4, to_row=7, to_col=3)
+
+        assert game["neutral_buff_log"][side]["baron_nashor"]["active"]
+        assert game["board_state"][6][0][0].get("baron_nashor_buff", False)
+        assert game["board_state"][6][1][0].get("baron_nashor_buff", False)
+
+        if opposite_side == "white":
+            game = select_and_move_white_piece(game=game, from_row=0, from_col=7, to_row=0, to_col=6)
+        else:
+            game = select_and_move_black_piece(game=game, from_row=0, from_col=7, to_row=0, to_col=6)
+
+        # turn 3
+        if side == "white":
+            game = select_and_move_white_piece(game=game, from_row=7, from_col=3, to_row=7, to_col=4)
+        else:
+            game = select_and_move_black_piece(game=game, from_row=7, from_col=3, to_row=7, to_col=4)
+
+        assert game["neutral_buff_log"][side]["baron_nashor"]["active"]
+        assert game["board_state"][6][0][0].get("baron_nashor_buff", False)
+        assert game["board_state"][6][1][0].get("baron_nashor_buff", False)
+
+        if opposite_side == "white":
+            game = select_and_move_white_piece(game=game, from_row=0, from_col=6, to_row=0, to_col=7)
+        else:
+            game = select_and_move_black_piece(game=game, from_row=0, from_col=6, to_row=0, to_col=7)
+
+        # turn 4 (last active turn)
+        if side == "white":
+            game = select_and_move_white_piece(game=game, from_row=7, from_col=4, to_row=7, to_col=3)
+        else:
+            game = select_and_move_black_piece(game=game, from_row=7, from_col=4, to_row=7, to_col=3)
+
+        assert game["neutral_buff_log"][side]["baron_nashor"]["active"]
+        assert game["board_state"][6][0][0].get("baron_nashor_buff", False)
+        assert game["board_state"][6][1][0].get("baron_nashor_buff", False)
+
+        if opposite_side == "white":
+            game = select_and_move_white_piece(game=game, from_row=0, from_col=7, to_row=0, to_col=6)
+        else:
+            game = select_and_move_black_piece(game=game, from_row=0, from_col=7, to_row=0, to_col=6)
+
+        # turn 5 (buff should have expired)
+        if side == "white":
+            game = select_and_move_white_piece(game=game, from_row=7, from_col=3, to_row=7, to_col=4)
+        else:
+            game = select_and_move_black_piece(game=game, from_row=7, from_col=3, to_row=7, to_col=4)
+
+        assert not game["neutral_buff_log"][side]["baron_nashor"]["active"]
+        assert not game["board_state"][6][0][0].get("baron_nashor_buff", False)
+        assert not game["board_state"][6][1][0].get("baron_nashor_buff", False)

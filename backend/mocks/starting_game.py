@@ -35,12 +35,12 @@ starting_game = {
         "white": {
             "dragon": {"stacks":0, "turn": 0},
             "board_herald": False,
-            "baron_nashor": False
+            "baron_nashor": {"active": False, "turn": 0}
         },
         "black": {
             "dragon": {"stacks":0, "turn": 0},
             "board_herald": False,
-            "baron_nashor": False
+            "baron_nashor": {"active": False, "turn": 0}
         }
     },
     "board_state": [

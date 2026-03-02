@@ -31,10 +31,10 @@ To run unit tests navigate to root directory of folder and run the following in 
 % python3 -m venv env
 % source env/bin/activate
 % pip install -r backend/requirements.txt
-% PYTHONPATH="$PWD/backend" pytest
+% PYTHONPATH="$PWD/backend" pytest -n auto
 ```
 
-Use `PYTHONPATH="$PWD/backend" pytest -o log_cli=true --log-cli-level=DEBUG` if you need to debug.
+Use `PYTHONPATH="$PWD/backend" pytest -o log_cli=true --log-cli-level=DEBUG` if you need to debug (note: `-n auto` is incompatible with `-s` and log output flags, drop it when debugging).
 
 ## Patch Notes
 There are quite a few changes here that will dramatically alter gameplay, especially large buffs to Bishops and Queens as well as some nerf for Knights and Rooks.
@@ -181,7 +181,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
     - handle possibility that a piece can move to a square containing a neutral monster and another piece (where it captures the other piece and damages the neutral monster) ✅
     - neutral monster buff implementation ✅
     - split moves.py into per-piece modules ✅
-    - add type annotations, module/function docstrings, and TypedDicts (especially GameState) to improve code maintainability
+    - add type annotations, module/function docstrings, and TypedDicts (especially GameState) to improve code maintainability ✅
     - finalize shop and pawn exchange logic (and UI)
     - expand getPossibleMoves() to be able to dynamically take into consideration neutral monster buffs (while finalizing UI)
     - clean up PUT game endpoint for easier readibility and maintainability

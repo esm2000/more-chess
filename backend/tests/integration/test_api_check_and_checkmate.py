@@ -26,7 +26,7 @@ def test_check(game):
 
         game_on_next_turn["turn_count"] = 1 if side == "white" else 0
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         if opposite_side == "white":
@@ -69,7 +69,7 @@ def test_check_protection_against_check(game):
 
         game_on_next_turn["turn_count"] = 1 if side=="white" else 0
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         if opposite_side == "white":
@@ -103,7 +103,7 @@ def test_check_and_needs_a_non_king_piece_to_get_it_out_of_check_through_block(g
 
         game_on_next_turn["turn_count"] = 1 if side == "white" else 2
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         if opposite_side == "white":
@@ -153,7 +153,7 @@ def test_check_and_needs_a_non_king_piece_to_get_it_out_of_check_through_capture
 
         game_on_next_turn["turn_count"] = 1 if side == "white" else 2
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         if opposite_side == "white":
@@ -170,13 +170,13 @@ def test_check_and_needs_a_non_king_piece_to_get_it_out_of_check_through_capture
         with pytest.raises(HTTPException):
             game_on_next_turn = copy.deepcopy(game)
             game_on_next_turn["position_in_play"] = [0, 0]
-            game_state = api.GameState(**game_on_next_turn)
+            game_state = api.GameStateRequest(**game_on_next_turn)
             game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
 
             game_on_next_turn = copy.deepcopy(game)
             game_on_next_turn["board_state"][1][0] = game_on_next_turn["board_state"][0][0]
             game_on_next_turn["board_state"][0][0] = None
-            game_state = api.GameState(**game_on_next_turn)
+            game_state = api.GameStateRequest(**game_on_next_turn)
             game = api.update_game_state(game["id"], game_state, Response())
             if side == "white":
                 game = select_and_move_white_piece(game=game, from_row=0, from_col=0, to_row=1, to_col=0)
@@ -195,7 +195,7 @@ def test_check_and_needs_a_non_king_piece_to_get_it_out_of_check_through_capture
         game_on_next_turn["board_state"][0][7] = None
         game_on_next_turn["captured_pieces"][side].append(f"{opposite_side}_queen")
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
 
         assert not game["check"][f"{side}"] and not game["check"][f"{opposite_side}"]
@@ -221,7 +221,7 @@ def test_check_and_needs_a_king_piece_to_get_out_of_check_through_capture(game):
 
         game_on_next_turn["turn_count"] = 1 if side == "white" else 2
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         if opposite_side == "white":
@@ -244,7 +244,7 @@ def test_check_and_needs_a_king_piece_to_get_out_of_check_through_capture(game):
         game_on_next_turn["board_state"][0][0] = None
         game_on_next_turn["captured_pieces"][side].append(f"{opposite_side}_bishop")
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
 
         assert not game["check"][f"{side}"] and not game["check"][f"{opposite_side}"]
@@ -270,7 +270,7 @@ def test_checkmate(game):
 
         game_on_next_turn["turn_count"] = 1 if side == "white" else 2
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         if opposite_side == "white":
@@ -309,7 +309,7 @@ def test_check_protection_against_checkmate(game):
 
         game_on_next_turn["turn_count"] = 1 if side == "white" else 2
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         if opposite_side == "white":
@@ -337,12 +337,12 @@ def test_king_cant_put_itself_in_check(game):
 
         game_on_next_turn["turn_count"] = 2 if side == "white" else 1
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
         
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["position_in_play"] = [0, 0]
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
 
         if side == "white":
@@ -373,7 +373,7 @@ def test_king_cant_get_close_to_king(game):
 
         game_on_next_turn["turn_count"] = 2 if side == "white" else 1
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         if side == "white":
@@ -416,7 +416,7 @@ def test_king_in_check_from_pawn_with_board_herald_buff(game):
             "turn": game_on_next_turn["turn_count"]
         }
         
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         if side == "white":
@@ -453,7 +453,7 @@ def test_king_in_check_from_pawn_with_baron_nashor_buff(game):
         game_on_next_turn["turn_count"] = 0 if side == "white" else 1
         game_on_next_turn["neutral_buff_log"][side]["baron_nashor"] = {"active": True, "turn": game_on_next_turn["turn_count"]}
         
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         if side == "white":
@@ -483,7 +483,7 @@ def test_that_a_player_can_surrender_a_piece_due_to_five_dragon_buff_stacks_whil
         game_on_next_turn["neutral_buff_log"][side]["dragon"]["stacks"] = 5
         game_on_next_turn["neutral_buff_log"][side]["dragon"]["turn"] = 43 if side == "white" else 44
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         assert not game["neutral_buff_log"][side]["board_herald"]["active"]
@@ -511,7 +511,7 @@ def test_that_a_player_can_surrender_a_piece_due_to_five_dragon_buff_stacks_whil
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][4][4].pop()
         game_on_next_turn["captured_pieces"][side].append(f"{opposite_side}_pawn")
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), side == "white")
 
         assert not game["board_state"][3][5][0].get("marked_for_death", False)
@@ -592,7 +592,7 @@ def test_checkmate_not_declared_when_marked_for_death_surrender_opens_escape(gam
         game_on_next_turn["neutral_buff_log"][side]["dragon"]["stacks"] = 5
         game_on_next_turn["neutral_buff_log"][side]["dragon"]["turn"] = 43 if side == "white" else 44
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         # attacker moves bishop from [2][2] to [1][1], putting defender king in check
@@ -616,7 +616,7 @@ def test_checkmate_not_declared_when_marked_for_death_surrender_opens_escape(gam
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][0][1].pop()
         game_on_next_turn["captured_pieces"][side].append(f"{opposite_side}_pawn")
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), side == "white")
 
         # after surrender, still in check but king can now escape to [0][1]

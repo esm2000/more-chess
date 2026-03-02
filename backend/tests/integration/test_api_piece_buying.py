@@ -18,7 +18,7 @@ def test_buying_pieces_with_not_enough_gold_should_not_be_allowed(game):
     game_on_next_turn['board_state'][6][7] = [{"type": "white_pawn", "pawn_buff": 0}]
     game_on_next_turn['board_state'][1][0] = [{"type": "black_pawn", "pawn_buff": 0}]
 
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
     assert game["gold_count"]["white"] == 0
@@ -28,7 +28,7 @@ def test_buying_pieces_with_not_enough_gold_should_not_be_allowed(game):
     with pytest.raises(HTTPException):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][5][6] = [{"type": "white_pawn", "pawn_buff": 0}]
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response())
     
     game = select_and_move_white_piece(game=game, from_row=6, from_col=7, to_row=5, to_col=7)
@@ -37,7 +37,7 @@ def test_buying_pieces_with_not_enough_gold_should_not_be_allowed(game):
     with pytest.raises(HTTPException):
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][5][6] = [{"type": "black_pawn", "pawn_buff": 0}]
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
     assert not game["board_state"][5][6]
@@ -54,7 +54,7 @@ def test_buying_kings_and_queens_should_not_be_allowed(game):
 
     game_on_next_turn["gold_count"] = {"white": 12, "black": 12}
 
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
     # white
@@ -62,7 +62,7 @@ def test_buying_kings_and_queens_should_not_be_allowed(game):
         with pytest.raises(HTTPException):
             game_on_next_turn = copy.deepcopy(game)
             game_on_next_turn["board_state"][5][6] = [{"type": f"white_{piece}"}]
-            game_state = api.GameState(**game_on_next_turn)
+            game_state = api.GameStateRequest(**game_on_next_turn)
             game = api.update_game_state(game["id"], game_state, Response())
     
     game = select_and_move_white_piece(game=game, from_row=6, from_col=7, to_row=5, to_col=7)
@@ -72,7 +72,7 @@ def test_buying_kings_and_queens_should_not_be_allowed(game):
         with pytest.raises(HTTPException):
             game_on_next_turn = copy.deepcopy(game)
             game_on_next_turn["board_state"][5][6] = [{"type": f"black_{piece}"}]
-            game_state = api.GameState(**game_on_next_turn)
+            game_state = api.GameStateRequest(**game_on_next_turn)
             game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
 def test_buying_pieces(game):
@@ -93,13 +93,13 @@ def test_buying_pieces(game):
 
         game_on_next_turn["gold_count"] = {"white": 5, "black": 5}
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         # white
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][5][6] = [{"type": f"white_{piece}"}]
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response())
 
         assert game["gold_count"]["white"] == 5 - pieces[piece]
@@ -107,7 +107,7 @@ def test_buying_pieces(game):
         # black
         game_on_next_turn = copy.deepcopy(game)
         game_on_next_turn["board_state"][0][6] = [{"type": f"black_{piece}"}]
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
         assert game["gold_count"]["black"] == 5 - pieces[piece]
@@ -131,7 +131,7 @@ def test_buying_pieces_when_it_is_not_your_turn_not_allowed(game):
 
         game_on_next_turn["gold_count"] = {"white": 5, "black": 5}
 
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
         assert game["turn_count"] == 0
@@ -140,7 +140,7 @@ def test_buying_pieces_when_it_is_not_your_turn_not_allowed(game):
         with pytest.raises(HTTPException):
             game_on_next_turn = copy.deepcopy(game)
             game_on_next_turn["board_state"][0][6] = [{"type": f"black_{piece}"}]
-            game_state = api.GameState(**game_on_next_turn)
+            game_state = api.GameStateRequest(**game_on_next_turn)
             game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
         game = select_and_move_white_piece(game=game, from_row=6, from_col=7, to_row=5, to_col=7)
@@ -149,5 +149,5 @@ def test_buying_pieces_when_it_is_not_your_turn_not_allowed(game):
         with pytest.raises(HTTPException):
             game_on_next_turn = copy.deepcopy(game)
             game_on_next_turn["board_state"][5][6] = [{"type": f"white_{piece}"}]
-            game_state = api.GameState(**game_on_next_turn)
+            game_state = api.GameStateRequest(**game_on_next_turn)
             game = api.update_game_state(game["id"], game_state, Response())

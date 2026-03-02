@@ -24,7 +24,7 @@ def test_castle_log(game):
     game_on_next_turn["board_state"][7][4] = [{"type": "white_king"}]
     game_on_next_turn["board_state"][7][7] = [{"type": "white_rook"}]
 
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
     assert not game["castle_log"]["white"]["has_king_moved"]
@@ -114,7 +114,7 @@ def test_left_castles(game):
     game = clear_game(game)
 
     game_on_next_turn = copy.deepcopy(starting_game)
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
     game = select_and_move_white_piece(game=game, from_row=6, from_col=1, to_row=4, to_col=1)
@@ -146,7 +146,7 @@ def test_left_castles(game):
 
     game_on_next_turn["board_state"][7][3] = game_on_next_turn["board_state"][7][0]
     game_on_next_turn["board_state"][7][0] = None
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state(game["id"], game_state, Response())
 
     assert game["castle_log"]["white"]["has_king_moved"]
@@ -171,7 +171,7 @@ def test_left_castles(game):
 
     game_on_next_turn["board_state"][0][3] = game_on_next_turn["board_state"][0][0]
     game_on_next_turn["board_state"][0][0] = None
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
     assert game["castle_log"]["white"]["has_king_moved"]
@@ -193,7 +193,7 @@ def test_right_castles(game):
     game = clear_game(game)
 
     game_on_next_turn = copy.deepcopy(starting_game)
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
     game = select_and_move_white_piece(game=game, from_row=6, from_col=6, to_row=4, to_col=6)
@@ -217,7 +217,7 @@ def test_right_castles(game):
 
     game_on_next_turn["board_state"][7][5] = game_on_next_turn["board_state"][7][7]
     game_on_next_turn["board_state"][7][7] = None
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state(game["id"], game_state, Response())
 
     assert game["castle_log"]["white"]["has_king_moved"]
@@ -242,7 +242,7 @@ def test_right_castles(game):
 
     game_on_next_turn["board_state"][0][5] = game_on_next_turn["board_state"][0][7]
     game_on_next_turn["board_state"][0][7] = None
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
     assert game["castle_log"]["white"]["has_king_moved"]
@@ -271,7 +271,7 @@ def test_castle_should_not_be_allowed_when_in_check(game):
     game_on_next_turn["board_state"][7][7] = [{"type": "white_rook"}]
     game_on_next_turn["turn_count"] = 1
 
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
     game = select_and_move_black_piece(game=game, from_row=0, from_col=7, to_row=5, to_col=2)
@@ -283,7 +283,7 @@ def test_castle_should_not_be_allowed_when_in_check(game):
 
         game_on_next_turn["board_state"][7][5] = game_on_next_turn["board_state"][7][7]
         game_on_next_turn["board_state"][7][7] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response())
     
     # black
@@ -296,7 +296,7 @@ def test_castle_should_not_be_allowed_when_in_check(game):
     game_on_next_turn["board_state"][7][4] = [{"type": "white_king"}]
     game_on_next_turn["board_state"][7][7] = [{"type": "white_bishop"}]
 
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
     game = select_and_move_white_piece(game=game, from_row=7, from_col=7, to_row=2, to_col=2)
@@ -308,7 +308,7 @@ def test_castle_should_not_be_allowed_when_in_check(game):
 
         game_on_next_turn["board_state"][0][5] = game_on_next_turn["board_state"][0][7]
         game_on_next_turn["board_state"][0][7] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=False)    
 
 
@@ -326,7 +326,7 @@ def test_castle_should_not_be_allowed_after_moving_king(game):
     game_on_next_turn["board_state"][7][7] = [{"type": "white_rook"}]
     game_on_next_turn["board_state"][6][7] = [{"type": "white_pawn"}]
 
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
     game = select_and_move_white_piece(game=game, from_row=7, from_col=4, to_row=6, to_col=4)
@@ -352,7 +352,7 @@ def test_castle_should_not_be_allowed_after_moving_king(game):
 
         game_on_next_turn["board_state"][7][3] = game_on_next_turn["board_state"][7][0]
         game_on_next_turn["board_state"][7][0] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response())
 
     with pytest.raises(HTTPException):
@@ -362,7 +362,7 @@ def test_castle_should_not_be_allowed_after_moving_king(game):
 
         game_on_next_turn["board_state"][7][5] = game_on_next_turn["board_state"][7][7]
         game_on_next_turn["board_state"][7][7] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response())
 
     game = select_and_move_white_piece(game=game, from_row=6, from_col=7, to_row=5, to_col=7)
@@ -374,7 +374,7 @@ def test_castle_should_not_be_allowed_after_moving_king(game):
 
         game_on_next_turn["board_state"][0][3] = game_on_next_turn["board_state"][0][0]
         game_on_next_turn["board_state"][0][0] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
     with pytest.raises(HTTPException):
@@ -384,7 +384,7 @@ def test_castle_should_not_be_allowed_after_moving_king(game):
 
         game_on_next_turn["board_state"][0][5] = game_on_next_turn["board_state"][0][7]
         game_on_next_turn["board_state"][0][7] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
 
@@ -402,7 +402,7 @@ def test_castle_should_not_be_allowed_after_moving_rook(game):
     game_on_next_turn["board_state"][7][7] = [{"type": "white_rook"}]
     game_on_next_turn["board_state"][6][7] = [{"type": "white_pawn"}]
 
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
     game = select_and_move_white_piece(game=game, from_row=7, from_col=0, to_row=7, to_col=1)
@@ -445,7 +445,7 @@ def test_castle_should_not_be_allowed_after_moving_rook(game):
 
         game_on_next_turn["board_state"][7][3] = game_on_next_turn["board_state"][7][0]
         game_on_next_turn["board_state"][7][0] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response())
 
     with pytest.raises(HTTPException):
@@ -455,7 +455,7 @@ def test_castle_should_not_be_allowed_after_moving_rook(game):
 
         game_on_next_turn["board_state"][7][5] = game_on_next_turn["board_state"][7][7]
         game_on_next_turn["board_state"][7][7] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response())
 
     game = select_and_move_white_piece(game=game, from_row=6, from_col=7, to_row=5, to_col=7)
@@ -467,7 +467,7 @@ def test_castle_should_not_be_allowed_after_moving_rook(game):
 
         game_on_next_turn["board_state"][0][3] = game_on_next_turn["board_state"][0][0]
         game_on_next_turn["board_state"][0][0] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
     with pytest.raises(HTTPException):
@@ -477,7 +477,7 @@ def test_castle_should_not_be_allowed_after_moving_rook(game):
 
         game_on_next_turn["board_state"][0][5] = game_on_next_turn["board_state"][0][7]
         game_on_next_turn["board_state"][0][7] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
 
@@ -493,7 +493,7 @@ def test_castle_should_not_be_allowed_with_pieces_in_path(game):
     game_on_next_turn["board_state"][0][7] = [{"type": "black_rook"}]
     game_on_next_turn["board_state"][0][5] = [{"type": "black_bishop"}]
     
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
     
     with pytest.raises(HTTPException):
@@ -502,7 +502,7 @@ def test_castle_should_not_be_allowed_with_pieces_in_path(game):
         game_on_next_turn["board_state"][7][4] = None
         game_on_next_turn["board_state"][7][5] = game_on_next_turn["board_state"][7][7]
         game_on_next_turn["board_state"][7][7] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response())
         
     game = select_and_move_white_piece(game=game, from_row=7, from_col=5, to_row=6, to_col=4)
@@ -513,7 +513,7 @@ def test_castle_should_not_be_allowed_with_pieces_in_path(game):
         game_on_next_turn["board_state"][0][4] = None
         game_on_next_turn["board_state"][0][5] = game_on_next_turn["board_state"][0][7]
         game_on_next_turn["board_state"][0][7] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=False)
     
     game = clear_game(game)
@@ -527,7 +527,7 @@ def test_castle_should_not_be_allowed_with_pieces_in_path(game):
     game_on_next_turn["board_state"][0][0] = [{"type": "black_rook"}]
     game_on_next_turn["board_state"][0][1] = [{"type": "black_knight"}]
     
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
     
     with pytest.raises(HTTPException):
@@ -536,7 +536,7 @@ def test_castle_should_not_be_allowed_with_pieces_in_path(game):
         game_on_next_turn["board_state"][7][4] = None
         game_on_next_turn["board_state"][7][3] = game_on_next_turn["board_state"][7][0]
         game_on_next_turn["board_state"][7][0] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response())
         
     game = select_and_move_white_piece(game=game, from_row=7, from_col=1, to_row=5, to_col=2)
@@ -547,7 +547,7 @@ def test_castle_should_not_be_allowed_with_pieces_in_path(game):
         game_on_next_turn["board_state"][0][4] = None
         game_on_next_turn["board_state"][0][3] = game_on_next_turn["board_state"][0][0]
         game_on_next_turn["board_state"][0][0] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
 
@@ -564,7 +564,7 @@ def test_queenside_castle_should_be_allowed_with_pieces_in_path_amid_4_or_more_d
         game_on_next_turn["board_state"][0][0] = [{"type": "black_rook", "dragon_buff": dragon_buff}]
         game_on_next_turn["board_state"][0][1] = [{"type": "black_knight"}]
         
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
         
         game_on_next_turn = copy.deepcopy(game)
@@ -572,7 +572,7 @@ def test_queenside_castle_should_be_allowed_with_pieces_in_path_amid_4_or_more_d
         game_on_next_turn["board_state"][7][4] = None
         game_on_next_turn["board_state"][7][3] = game_on_next_turn["board_state"][7][0]
         game_on_next_turn["board_state"][7][0] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response())
 
         assert any([piece.get("type") == "white_king" for piece in game["board_state"][7][2] or []])
@@ -586,7 +586,7 @@ def test_queenside_castle_should_be_allowed_with_pieces_in_path_amid_4_or_more_d
         game_on_next_turn["board_state"][0][4] = None
         game_on_next_turn["board_state"][0][3] = game_on_next_turn["board_state"][0][0]
         game_on_next_turn["board_state"][0][0] = None
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
         assert any([piece.get("type") == "black_king" for piece in game["board_state"][0][2] or []])
@@ -609,7 +609,7 @@ def test_queenside_castle_should_be_not_allowed_with_pieces_in_path_amid_3_or_le
         game_on_next_turn["board_state"][0][0] = [{"type": "black_rook", "dragon_buff": dragon_buff}]
         game_on_next_turn["board_state"][0][1] = [{"type": "black_knight"}]
         
-        game_state = api.GameState(**game_on_next_turn)
+        game_state = api.GameStateRequest(**game_on_next_turn)
         game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
         
         with pytest.raises(HTTPException):
@@ -618,7 +618,7 @@ def test_queenside_castle_should_be_not_allowed_with_pieces_in_path_amid_3_or_le
             game_on_next_turn["board_state"][7][4] = None
             game_on_next_turn["board_state"][7][3] = game_on_next_turn["board_state"][7][0]
             game_on_next_turn["board_state"][7][0] = None
-            game_state = api.GameState(**game_on_next_turn)
+            game_state = api.GameStateRequest(**game_on_next_turn)
             game = api.update_game_state(game["id"], game_state, Response())
         
         game = select_and_move_white_piece(game=game, from_row=7, from_col=1, to_row=5, to_col=2)
@@ -629,5 +629,5 @@ def test_queenside_castle_should_be_not_allowed_with_pieces_in_path_amid_3_or_le
             game_on_next_turn["board_state"][0][4] = None
             game_on_next_turn["board_state"][0][3] = game_on_next_turn["board_state"][0][0]
             game_on_next_turn["board_state"][0][0] = None
-            game_state = api.GameState(**game_on_next_turn)
+            game_state = api.GameStateRequest(**game_on_next_turn)
             game = api.update_game_state(game["id"], game_state, Response(), player=False)

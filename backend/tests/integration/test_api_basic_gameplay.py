@@ -116,7 +116,7 @@ def test_moving_more_than_one_piece_should_not_be_allowed(game):
             game_on_next_turn['board_state'] = starting_game['board_state']
             if side == "black":
                 game_on_next_turn["turn_count"] = 1
-            game_state = api.GameState(**game_on_next_turn)
+            game_state = api.GameStateRequest(**game_on_next_turn)
             game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
             # same piece types
@@ -130,7 +130,7 @@ def test_moving_more_than_one_piece_should_not_be_allowed(game):
                     game_on_next_turn["board_state"][6][3] = None
                     game_on_next_turn["board_state"][5][4] = game_on_next_turn["board_state"][6][4]
                     game_on_next_turn["board_state"][6][4] = None
-                    game_state = api.GameState(**game_on_next_turn)
+                    game_state = api.GameStateRequest(**game_on_next_turn)
                     game = api.update_game_state(game["id"], game_state, Response())
 
             if side == "black":
@@ -143,7 +143,7 @@ def test_moving_more_than_one_piece_should_not_be_allowed(game):
                     game_on_next_turn["board_state"][1][5] = None
                     game_on_next_turn["board_state"][2][4] = game_on_next_turn["board_state"][1][4]
                     game_on_next_turn["board_state"][1][4] = None
-                    game_state = api.GameState(**game_on_next_turn)
+                    game_state = api.GameStateRequest(**game_on_next_turn)
                     game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
             # different piece types
@@ -160,7 +160,7 @@ def test_moving_more_than_one_piece_should_not_be_allowed(game):
 
             if side == "black":
                 game_on_next_turn["turn_count"] = 1
-            game_state = api.GameState(**game_on_next_turn)
+            game_state = api.GameStateRequest(**game_on_next_turn)
             game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
             if side == "white":
@@ -174,7 +174,7 @@ def test_moving_more_than_one_piece_should_not_be_allowed(game):
                     game_on_next_turn["board_state"][6][6] = None
                     game_on_next_turn["board_state"][5][0] = game_on_next_turn["board_state"][6][0]
                     game_on_next_turn["board_state"][6][0] = None
-                    game_state = api.GameState(**game_on_next_turn)
+                    game_state = api.GameStateRequest(**game_on_next_turn)
                     game = api.update_game_state(game["id"], game_state, Response())
 
                 # more than two pieces at once 
@@ -187,7 +187,7 @@ def test_moving_more_than_one_piece_should_not_be_allowed(game):
                     game_on_next_turn["board_state"][5][0] = game_on_next_turn["board_state"][6][0]
                     game_on_next_turn["board_state"][6][0] = None
 
-                    game_state = api.GameState(**game_on_next_turn)
+                    game_state = api.GameStateRequest(**game_on_next_turn)
                     game = api.update_game_state(game["id"], game_state, Response())
 
             if side == "black":
@@ -202,7 +202,7 @@ def test_moving_more_than_one_piece_should_not_be_allowed(game):
                     game_on_next_turn["board_state"][2][7] = game_on_next_turn["board_state"][1][7]
                     game_on_next_turn["board_state"][1][7] = None
                     
-                    game_state = api.GameState(**game_on_next_turn)
+                    game_state = api.GameStateRequest(**game_on_next_turn)
                     game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
                 # more than two pieces at once
@@ -215,7 +215,7 @@ def test_moving_more_than_one_piece_should_not_be_allowed(game):
                     game_on_next_turn["board_state"][2][7] = game_on_next_turn["board_state"][1][7]
                     game_on_next_turn["board_state"][1][7] = None
                     
-                    game_state = api.GameState(**game_on_next_turn)
+                    game_state = api.GameStateRequest(**game_on_next_turn)
                     game = api.update_game_state(game["id"], game_state, Response(), player=False)
 
 
@@ -223,7 +223,7 @@ def test_invalid_moves_should_not_be_allowed(game):
     game = clear_game(game)
     game_on_next_turn = copy.deepcopy(game)
     game_on_next_turn['board_state'] = starting_game['board_state']
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
     # white 
@@ -245,7 +245,7 @@ def test_that_two_turns_are_not_allowed_from_the_same_side(game):
     game_on_next_turn["board_state"][2][0] = [{"type": "black_pawn"}]
     game_on_next_turn["board_state"][6][0] = [{"type": "white_pawn"}]
     
-    game_state = api.GameState(**game_on_next_turn)
+    game_state = api.GameStateRequest(**game_on_next_turn)
     game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
 
     game = select_and_move_white_piece(game=game, from_row=6, from_col=0, to_row=5, to_col=0)

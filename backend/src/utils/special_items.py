@@ -1,8 +1,12 @@
+"""Sword in the Stone spawn and Divine Right buff application."""
+
 import random
 
+from src.types import GameState, MovedPiece
 
-# conditionally mutates new_game_state
-def spawn_sword_in_the_stone(old_game_state, new_game_state):
+
+def spawn_sword_in_the_stone(old_game_state: GameState, new_game_state: GameState) -> None:
+    """Spawn sword on a random empty center square every 10 turns."""
     if new_game_state["turn_count"] and not new_game_state["turn_count"] % 10 and old_game_state["turn_count"] % 10:
         row_range = range(2, 6)
         candidate_squares = []
@@ -14,7 +18,8 @@ def spawn_sword_in_the_stone(old_game_state, new_game_state):
             new_game_state["sword_in_the_stone_position"] = random.choice(candidate_squares)
 
 
-def exhaust_sword_in_the_stone(new_game_state, moved_pieces):
+def exhaust_sword_in_the_stone(new_game_state: GameState, moved_pieces: list[MovedPiece]) -> None:
+    """Grant Divine Right (check_protection) to a king that lands on the sword."""
     for moved_piece in moved_pieces:
         if new_game_state["sword_in_the_stone_position"] == moved_piece["current_position"] and \
         "king" in moved_piece["piece"].get("type"):

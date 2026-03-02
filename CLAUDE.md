@@ -44,6 +44,7 @@ Last Updated: 2026-02-28
 | MongoDB | 4.3.3 | NoSQL database (via PyMongo) |
 | Uvicorn | 0.20.0 | ASGI server |
 | Pytest | 7.2.1 | Testing framework |
+| pytest-xdist | 3.8.0 | Parallel test execution |
 | python-dotenv | 0.21.1 | Environment variable management |
 
 ### Frontend
@@ -73,6 +74,7 @@ more-chess/
 ├── backend/
 │   ├── src/
 │   │   ├── api.py               # FastAPI route definitions
+│   │   ├── types.py             # TypedDicts and type aliases
 │   │   ├── moves/                # Move generation package
 │   │   │   ├── __init__.py      # Dispatcher + re-exports
 │   │   │   ├── _helpers.py      # Shared move generation helpers
@@ -129,6 +131,7 @@ more-chess/
 |------|---------|
 | `backend/server.py` | FastAPI entry point |
 | `backend/src/api.py` | REST API route definitions |
+| `backend/src/types.py` | TypedDicts and type aliases (GameState, Piece, MoveResult, etc.) |
 | `backend/src/moves/` | Move generation package (one module per piece type) |
 | `backend/src/moves/__init__.py` | Move dispatcher (`get_moves()`) + re-exports |
 | `backend/src/moves/_helpers.py` | Shared helpers (file control, dragon buff, baron immunity) |
@@ -178,7 +181,7 @@ more-chess/
 - Bishop debuff (`bishop_debuff`): piece threatened by a bishop at turn end gains 1 stack; at 3 stacks the bishop can instantly capture it regardless of position
 
 #### Rooks
-- Starting range: 3 squares; formula: `range = 3 + floor((turn_count - 10) / 5)` for turns > 10
+- Starting range: 3 squares; formula: `range = 3 + floor((turn_count - 10) / 5)` for turns >= 15
 
 #### Queens
 - Non-capture move: all adjacent enemy pieces are stunned for 1 turn
@@ -220,6 +223,7 @@ Universal mechanics: moving adjacent/onto a monster deals 1 damage; pieces stayi
 | Module | Primary Responsibility | Key Functions |
 |--------|----------------------|---------------|
 | `src/api.py` | FastAPI routes | endpoints: game CRUD, buy_piece, moves |
+| `src/types.py` | TypedDicts & type aliases | `GameState`, `Piece`, `MoveResult`, `MovedPiece`, `Position`, `BoardState` |
 | `src/moves/` | Move generation package | `get_moves` (dispatcher in `__init__.py`), per-piece modules: `pawn.py`, `knight.py`, `bishop.py`, `rook.py`, `queen.py`, `king.py`; shared helpers in `_helpers.py` |
 | `src/database.py` | MongoDB connection | exports `mongo_client` |
 | `src/log.py` | Logging | exports `logger` |
@@ -299,7 +303,7 @@ Request/response: JSON with `snake_case` keys (backend) ↔ `camelCase` (fronten
 ### Testing
 
 ```bash
-pytest                                          # all tests
+pytest -n auto                                  # all tests (parallel)
 pytest backend/tests/unit/                     # unit tests only
 pytest backend/tests/integration/              # integration tests only
 pytest -v -s -x -k "dragon"                    # verbose, print, stop-on-fail, filter
@@ -349,7 +353,7 @@ Unit tests use `mocks/empty_game.py` (isolated, no DB); integration tests use `m
 ### Running Tests
 
 ```bash
-pytest                              # all tests
+pytest -n auto                      # all tests (parallel)
 pytest backend/tests/unit/          # unit only
 pytest backend/tests/integration/   # integration only
 pytest -v -s -x -k "dragon"         # verbose, print, stop-on-fail, filter
@@ -358,7 +362,7 @@ pytest -v -s -x -k "dragon"         # verbose, print, stop-on-fail, filter
 ### Test Quality Metrics
 
 - **Coverage Focus:** Backend game logic (100% of core mechanics tested)
-- **Test Execution Time:** ~5-10 seconds for full suite (fast feedback loop)
+- **Test Execution Time:** ~40 seconds for full suite with `pytest -n auto` (parallel via pytest-xdist)
 - **Test Isolation:** Each test uses fresh game state from mocks (no shared state)
 - **Continuous Validation:** Pytest runs in Docker build (stage 5) to prevent broken deployments
 
@@ -393,7 +397,8 @@ Current focus: neutral monster buff implementation, marked-for-death mechanics v
 ### Current Priorities
 
 1. Finalize Neutral Monster Buff Implementation
-2. Add type annotations, module/function docstrings, and TypedDicts (especially `GameState`) to reduce AI tool token usage and improve maintainability
+2. ~~Split `moves.py` into per-piece modules~~ ✅ Done — split into `src/moves/` package with per-piece modules
+3. ~~Add type annotations, module/function docstrings, and TypedDicts~~ ✅ Done — `src/types.py` created, all backend modules annotated with types and docstrings
 4. Complete Frontend Buff Visualization
 5. Shop and Pawn Exchange Finalization
 6. Develop CPU Opponent
@@ -413,6 +418,7 @@ game_state = {
     "possible_moves": [[row, col], ...],
     "possible_captures": [[[r1,c1], [r2,c2]], ...],  # [move_to, capture_at]
     "captured_pieces": {"white": [], "black": []},
+    "graveyard": [],                           # pieces removed by marked-for-death
     "gold_count": {"white": 0, "black": 0},
     "check": {"white": False, "black": False},
     "black_defeat": False, "white_defeat": False,
@@ -492,9 +498,19 @@ game_state = {
 
 ### Commit Messages
 
-- One sentence, no co-author notes
+- One sentence, no co-author notes — **never** append `Co-Authored-By` lines
 - Start with a verb (e.g. "Implement", "Fix", "Add", "Remove")
 - Describe what changed and why in a single line
+
+### Type Annotations and Docstrings
+
+**Key Conventions:**
+- All type definitions live in `src/types.py` — import from there, never redefine
+- `GameState` is a TypedDict (`total=False`); `GameStateRequest` is the Pydantic model in `api.py`
+- Use `from __future__ import annotations` in files that use `X | None` union syntax in function signatures
+- Use `Optional[X]` (not `X | None`) in type aliases and TypedDict fields for Python 3.9 runtime compatibility
+- Every module has a one-line module docstring; every public function has a concise docstring
+- Only add `Mutates:` / `Returns:` annotations for functions with non-obvious side effects
 
 ### Code Organization Principles
 

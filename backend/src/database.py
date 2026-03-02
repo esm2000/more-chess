@@ -1,3 +1,5 @@
+"""MongoDB connection and client initialization."""
+
 from dotenv import load_dotenv
 import os
 from pymongo.mongo_client import MongoClient

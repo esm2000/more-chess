@@ -1,9 +1,12 @@
+"""Queen turn-reset logic: kill/assist detection and position-in-play assignment."""
+
 from src.log import logger
+from src.types import GameState, MovedPiece
 import src.moves as moves
 
 
-# conditionally mutates new_game_state
-def reset_queen_turn_on_kill_or_assist(old_game_state, new_game_state, moved_pieces, should_increment_turn_count):
+def reset_queen_turn_on_kill_or_assist(old_game_state: GameState, new_game_state: GameState, moved_pieces: list[MovedPiece], should_increment_turn_count: bool) -> bool:
+    """Grant queen an extra turn if she killed or assisted a kill. Returns updated should_increment_turn_count."""
     moving_side = "white" if not bool(old_game_state["turn_count"] % 2) else "black"
     for i in range(len(old_game_state["board_state"])):
         row = old_game_state["board_state"][i]
@@ -12,8 +15,8 @@ def reset_queen_turn_on_kill_or_assist(old_game_state, new_game_state, moved_pie
             for piece in square:
                 if piece["type"] == f"{moving_side}_queen":
                     queen_possible_moves_and_captures = moves.get_moves_for_queen(
-                        curr_game_state=old_game_state, 
-                        prev_game_state=old_game_state.get("previous_state"), 
+                        curr_game_state=old_game_state,
+                        prev_game_state=old_game_state.get("previous_state"),
                         curr_position=[i, j]
                     )
 
@@ -30,8 +33,9 @@ def reset_queen_turn_on_kill_or_assist(old_game_state, new_game_state, moved_pie
                             logger.debug("Not incrementing turn count: queen reset triggered on kill or assist")
     return should_increment_turn_count
 
-# conditionally mutates new_game_state
-def set_queen_as_position_in_play(old_game_state, new_game_state):
+
+def set_queen_as_position_in_play(old_game_state: GameState, new_game_state: GameState) -> bool:
+    """Set position_in_play to the queen's location for the moving side. Returns True if queen not found."""
     moving_side = "white" if not bool(old_game_state["turn_count"] % 2) else "black"
     for i in range(len(new_game_state["board_state"])):
         row = new_game_state["board_state"][i]
@@ -46,11 +50,12 @@ def set_queen_as_position_in_play(old_game_state, new_game_state):
 
 
 def verify_queen_reset_turn_is_valid(
-    old_game_state,
-    new_game_state,
-    moved_pieces,
-    is_valid_game_state
-):
+    old_game_state: GameState,
+    new_game_state: GameState,
+    moved_pieces: list[MovedPiece],
+    is_valid_game_state: bool
+) -> bool:
+    """Validate that only the queen moved during a queen reset turn."""
     moving_side = "white" if not bool(old_game_state["turn_count"] % 2) else "black"
     # check for proper queen moving or that proper queen is set as the position in play
     proper_queen_found = False
@@ -66,7 +71,7 @@ def verify_queen_reset_turn_is_valid(
             else:
                 is_valid_game_state = False
                 logger.error(f"A non-queen piece moved for {moving_side} instead of the queen using its turn reset")
-    
+
     if new_game_state["position_in_play"][0] is not None:
         position_in_play = new_game_state["position_in_play"]
         square_in_play = new_game_state["board_state"][position_in_play[0]][position_in_play[1]] or []

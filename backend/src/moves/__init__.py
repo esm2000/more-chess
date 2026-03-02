@@ -1,5 +1,10 @@
+"""Move generation package — dispatches to per-piece modules."""
+
+from __future__ import annotations
+
 __all__ = ['get_moves']
 
+from src.types import GameState, MoveResult, Piece, Position
 from src.moves.pawn import get_moves_for_pawn
 from src.moves.knight import get_moves_for_knight
 from src.moves.bishop import get_moves_for_bishop
@@ -14,7 +19,8 @@ from src.moves.king import get_moves_for_king
 #   "threatening_move": [[row, col]] - position where king of opposite side is threatened by the piece in its current position
 #   "castle_moves": [[row, col]] - positions where piece can move to facilitate a castle
 # }
-def get_moves(old_game_state, new_game_state, curr_position, piece):
+def get_moves(old_game_state: GameState | None, new_game_state: GameState, curr_position: Position, piece: Piece) -> MoveResult:
+    """Dispatch move generation to the appropriate piece-type module."""
     piece_type = piece["type"]
     if "pawn" in piece_type:
         moves_info = get_moves_for_pawn(

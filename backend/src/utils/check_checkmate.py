@@ -240,7 +240,7 @@ def invalidate_game_if_player_moves_and_is_in_check(is_valid_game_state: bool, o
     are_pieces_marked_for_death_in_new_game = False
 
     for row in range(len(old_game_state["board_state"])):
-        for col in range(len(old_game_state["board_state"])):
+        for col in range(len(old_game_state["board_state"][row])):
             old_square = old_game_state["board_state"][row][col] or []
             new_square = new_game_state["board_state"][row][col] or []
 

@@ -417,6 +417,7 @@ game_state = {
     "possible_moves": [[row, col], ...],
     "possible_captures": [[[r1,c1], [r2,c2]], ...],  # [move_to, capture_at]
     "captured_pieces": {"white": [], "black": []},
+    "graveyard": [],                           # pieces removed by marked-for-death
     "gold_count": {"white": 0, "black": 0},
     "check": {"white": False, "black": False},
     "black_defeat": False, "white_defeat": False,

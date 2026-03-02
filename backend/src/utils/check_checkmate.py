@@ -89,7 +89,7 @@ def get_unsafe_positions_for_kings(old_game_state: GameState, new_game_state: Ga
                             if position[0] < 0 or position[0] >= 8 or position[1] < 0 or position[1] >= 8:
                                 continue
                             adjacent_square = ngs["board_state"][position[0]][position[1]] or []
-                            if any(["king" in p.get("type") for p in adjacent_square]):
+                            if any("king" in p.get("type") for p in adjacent_square):
                                 output[side] = output[side].union({position})
                     elif "neutral" in piece.get("type", ""):
                         for delta in adjacent_deltas:

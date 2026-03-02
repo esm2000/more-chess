@@ -68,14 +68,14 @@ def apply_queen_stun(old_game_state: GameState, new_game_state: GameState, moved
                 prev_game_state=old_game_state.get("previous_state"),
                 curr_position=moved_piece["previous_position"]
             )
-            canStun = True
+            can_stun = True
             for j, piece in enumerate(moved_pieces):
                 if i == j or piece["current_position"][0] is not None:
                     continue
                 if any(capture_positions[0] == moved_piece["current_position"] and capture_positions[1] == piece["previous_position"] for capture_positions in moves_info["possible_captures"]):
-                    canStun = False
+                    can_stun = False
                     break
-            if canStun:
+            if can_stun:
                 directions = [[0, 1], [1, 0], [0, -1], [-1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]]
                 for direction in directions:
                     row, col = moved_piece["current_position"][0] + direction[0], moved_piece["current_position"][1] + direction[1]

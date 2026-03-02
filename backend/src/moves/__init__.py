@@ -1,3 +1,5 @@
+__all__ = ['get_moves']
+
 from src.moves.pawn import get_moves_for_pawn
 from src.moves.knight import get_moves_for_knight
 from src.moves.bishop import get_moves_for_bishop

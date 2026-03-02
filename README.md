@@ -183,8 +183,8 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
     - split moves.py into per-piece modules ✅
     - add type annotations, module/function docstrings, and TypedDicts (especially GameState) to improve code maintainability ✅
     - finalize shop and pawn exchange logic (and UI)
-    - expand getPossibleMoves() to be able to dynamically take into consideration neutral monster buffs (while finalizing UI)
-    - clean up PUT game endpoint for easier readibility and maintainability
+    - expand getPossibleMoves() to be able to dynamically take into consideration neutral monster buffs (while finalizing UI) ✅
+    - clean up PUT game endpoint for easier readibility and maintainability ✅
 * Ensure player can deselect a selected piece
 * Finishing touches on frontend
 * Enhance instructions with local database setup

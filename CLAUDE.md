@@ -180,7 +180,7 @@ more-chess/
 - Bishop debuff (`bishop_debuff`): piece threatened by a bishop at turn end gains 1 stack; at 3 stacks the bishop can instantly capture it regardless of position
 
 #### Rooks
-- Starting range: 3 squares; formula: `range = 3 + floor((turn_count - 10) / 5)` for turns > 10
+- Starting range: 3 squares; formula: `range = 3 + floor((turn_count - 10) / 5)` for turns >= 15
 
 #### Queens
 - Non-capture move: all adjacent enemy pieces are stunned for 1 turn

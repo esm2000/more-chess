@@ -52,7 +52,7 @@ def determine_pieces_that_have_moved(curr_board_state: BoardState, prev_board_st
     for piece_type in moved_pieces_dict["missing"]:
         for side in ["white", "black"]:
             if len([piece for piece in moved_pieces_dict["missing"][piece_type] if piece["side"] == side]) > 1 and \
-            len([piece for piece in moved_pieces_dict["spawned"][piece_type] if piece["side"] == side]) > 1:
+            len([piece for piece in moved_pieces_dict["spawned"].get(piece_type, []) if piece["side"] == side]) > 1:
                 error_message = f"More than one {piece_type} has moved"
                 logger.error(error_message)
                 raise Exception(error_message)

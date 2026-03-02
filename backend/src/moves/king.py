@@ -1,5 +1,5 @@
+from src.utils.board_analysis import evaluate_current_position
 from src.moves._helpers import (
-    evaluate_current_position,
     process_possible_moves_dict,
     _add_marked_for_death_threats,
 )

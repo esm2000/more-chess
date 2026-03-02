@@ -1,8 +1,6 @@
 import copy
 
 from src.utils.piece_mechanics import enable_adjacent_bishop_captures
-from src.utils.board_analysis import evaluate_current_position
-
 
 # moves list is either list of possible moves or list of possible captures
 def filter_moves_for_file_control(moves_list, curr_position, is_capture=False):

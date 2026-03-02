@@ -1,3 +1,20 @@
+// Background.js — SHOP PLACEMENT REWORK NEEDED
+// ==============================================
+// Contains the board squares and piece placement logic for shop purchases.
+//
+// TODO - PLACEMENT UX REWORK:
+//   - The green "Select Position" buttons (lines 128-144) are small and hard to find
+//   - Instead: highlight valid squares with a colored overlay or pulsing border
+//     when a shop piece is selected (similar to how PossibleMove dots work)
+//   - Consider showing a ghost/transparent preview of the piece on hover
+//   - Add placement confirmation or undo option
+//
+// TODO - VALIDATION:
+//   - isValidSquare() (lines 40-64) restricts to rows 4-7, avoids bosses/sword/occupied
+//   - Backend also validates but currently no location restriction to king's starting
+//     square — this may need discussion (rules say king buys at starting square,
+//     but placement can be anywhere on your half?)
+
 import React, { useState } from 'react';
 import '../index.css';
 

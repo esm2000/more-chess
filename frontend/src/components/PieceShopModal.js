@@ -1,3 +1,19 @@
+// PieceShopModal.js — REWORK NEEDED
+// ==================================
+// Individual piece card in the shop. Currently a plain image + button.
+//
+// TODO - VISUAL REWORK:
+//   - Style as a pixel art "item card" — bordered frame, maybe parchment texture
+//   - Piece sprite should be centered and larger
+//   - Price tag should look like a pixel coin + number label, not a blue HTML button
+//   - Unaffordable pieces should be greyed out with a lock/X overlay, not just opacity
+//   - Selected piece should have a visible highlight (glow, border color change)
+//   - Piece name label ("Pawn", "Knight", etc.) should use the pixel font
+//
+// TODO - UX:
+//   - Clicking an already-selected piece should deselect it (toggle behavior)
+//   - Consider hover tooltip showing piece abilities / value
+
 import React, {useState} from 'react';
 import { GameStateContextData } from '../context/GameStateContext';
 import { IMAGE_MAP, getPiecePrice } from '../utility';

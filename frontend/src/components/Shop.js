@@ -1,3 +1,29 @@
+// Shop.js — REWORK NEEDED
+// ========================
+// Current state: functional but visually basic. Needs pixel art retro overhaul.
+//
+// TODO - VISUAL REWORK:
+//   - Replace plain HTML button/text styling with pixel art aesthetic
+//   - Add a pixel art shop counter / storefront backdrop
+//   - Piece sprites should sit on a shelf or display stand, not just float
+//   - Gold display should feel like a coin counter (pixel coin sprites, not just text)
+//   - "~ Shop ~" title could be a pixel art banner or sign
+//   - Consider a shopkeeper character sprite for personality
+//   - Close/Open button in HUD.js should also match the retro theme
+//
+// TODO - UX IMPROVEMENTS:
+//   - Show piece placement preview on the board when a piece is selected
+//   - Add a "Cancel" option to deselect a piece without placing it
+//   - Visual feedback when purchase completes (gold deduction animation, etc.)
+//   - Error state if backend rejects placement (currently no error handling)
+//   - Consider showing which squares are valid for placement while piece is selected
+//     (currently handled in Background.js via isValidSquare but the green buttons
+//      are not very discoverable)
+//
+// NOTE: The buy flow itself works — PieceShopModal sets the selected piece,
+// Background.js handles placement and sends the state update to the backend.
+// Only the visual presentation needs reworking.
+
 import React, { useState } from 'react';
 import { GameStateContextData } from '../context/GameStateContext';
 import { IMAGE_MAP, PLAYERS, getPiecePrice, determineIsMobile } from '../utility';

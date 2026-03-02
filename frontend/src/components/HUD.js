@@ -1,3 +1,14 @@
+// HUD.js — REWORK NEEDED
+// =======================
+// Heads-up display: turn counter + shop toggle.
+//
+// TODO - VISUAL REWORK:
+//   - Turn counter should use pixel font, maybe framed in a pixel art panel
+//   - Shop Open/Close button should be a pixel art icon (chest, store sign, etc.)
+//     instead of a plain green/red HTML button
+//   - Consider adding gold count display here too (always visible, not just in shop)
+//   - Layout should feel like a game HUD bar, not a plain div with text
+
 import React, {useState} from 'react';
 import { GameStateContextData } from '../context/GameStateContext';
 import Shop from './Shop';

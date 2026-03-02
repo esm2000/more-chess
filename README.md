@@ -31,10 +31,10 @@ To run unit tests navigate to root directory of folder and run the following in 
 % python3 -m venv env
 % source env/bin/activate
 % pip install -r backend/requirements.txt
-% PYTHONPATH="$PWD/backend" pytest
+% PYTHONPATH="$PWD/backend" pytest -n auto
 ```
 
-Use `PYTHONPATH="$PWD/backend" pytest -o log_cli=true --log-cli-level=DEBUG` if you need to debug.
+Use `PYTHONPATH="$PWD/backend" pytest -o log_cli=true --log-cli-level=DEBUG` if you need to debug (note: `-n auto` is incompatible with `-s` and log output flags, drop it when debugging).
 
 ## Patch Notes
 There are quite a few changes here that will dramatically alter gameplay, especially large buffs to Bishops and Queens as well as some nerf for Knights and Rooks.

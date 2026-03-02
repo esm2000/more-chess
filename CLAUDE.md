@@ -44,6 +44,7 @@ Last Updated: 2026-02-28
 | MongoDB | 4.3.3 | NoSQL database (via PyMongo) |
 | Uvicorn | 0.20.0 | ASGI server |
 | Pytest | 7.2.1 | Testing framework |
+| pytest-xdist | 3.8.0 | Parallel test execution |
 | python-dotenv | 0.21.1 | Environment variable management |
 
 ### Frontend
@@ -302,7 +303,7 @@ Request/response: JSON with `snake_case` keys (backend) ↔ `camelCase` (fronten
 ### Testing
 
 ```bash
-pytest                                          # all tests
+pytest -n auto                                  # all tests (parallel)
 pytest backend/tests/unit/                     # unit tests only
 pytest backend/tests/integration/              # integration tests only
 pytest -v -s -x -k "dragon"                    # verbose, print, stop-on-fail, filter
@@ -352,7 +353,7 @@ Unit tests use `mocks/empty_game.py` (isolated, no DB); integration tests use `m
 ### Running Tests
 
 ```bash
-pytest                              # all tests
+pytest -n auto                      # all tests (parallel)
 pytest backend/tests/unit/          # unit only
 pytest backend/tests/integration/   # integration only
 pytest -v -s -x -k "dragon"         # verbose, print, stop-on-fail, filter
@@ -361,7 +362,7 @@ pytest -v -s -x -k "dragon"         # verbose, print, stop-on-fail, filter
 ### Test Quality Metrics
 
 - **Coverage Focus:** Backend game logic (100% of core mechanics tested)
-- **Test Execution Time:** ~5-10 seconds for full suite (fast feedback loop)
+- **Test Execution Time:** ~40 seconds for full suite with `pytest -n auto` (parallel via pytest-xdist)
 - **Test Isolation:** Each test uses fresh game state from mocks (no shared state)
 - **Continuous Validation:** Pytest runs in Docker build (stage 5) to prevent broken deployments
 

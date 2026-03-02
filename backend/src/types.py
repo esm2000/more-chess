@@ -62,6 +62,17 @@ class MoveResult(TypedDict):
 
 
 # ---------------------------------------------------------------------------
+# Bishop special captures
+# ---------------------------------------------------------------------------
+
+class BishopSpecialCapture(TypedDict):
+    """A pending bishop debuff capture (3-stack instant capture)."""
+
+    position: Position
+    type: str
+
+
+# ---------------------------------------------------------------------------
 # Moved piece tracking
 # ---------------------------------------------------------------------------
 
@@ -171,7 +182,7 @@ class GameState(TypedDict, total=False):
 
     sword_in_the_stone_position: Optional[Position]
 
-    bishop_special_captures: list[dict]
+    bishop_special_captures: list[BishopSpecialCapture]
 
     queen_reset: bool
 

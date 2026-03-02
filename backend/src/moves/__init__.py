@@ -23,40 +23,43 @@ from src.moves._helpers import (
 #   "castle_moves": [[row, col]] - positions where piece can move to facilitate a castle
 # }
 def get_moves(old_game_state, new_game_state, curr_position, piece):
-    if "pawn" in piece["type"]:
+    piece_type = piece["type"]
+    if "pawn" in piece_type:
         moves_info = get_moves_for_pawn(
             curr_game_state=new_game_state,
             prev_game_state=old_game_state,
             curr_position=curr_position
         )
-    if "knight" in piece["type"]:
+    elif "knight" in piece_type:
         moves_info = get_moves_for_knight(
             curr_game_state=new_game_state,
             prev_game_state=old_game_state,
             curr_position=curr_position
         )
-    if "bishop" in piece["type"]:
+    elif "bishop" in piece_type:
         moves_info = get_moves_for_bishop(
             curr_game_state=new_game_state,
             prev_game_state=old_game_state,
             curr_position=curr_position
         )
-    if "rook" in piece["type"]:
+    elif "rook" in piece_type:
         moves_info = get_moves_for_rook(
             curr_game_state=new_game_state,
             prev_game_state=old_game_state,
             curr_position=curr_position
         )
-    if "queen" in piece["type"]:
+    elif "queen" in piece_type:
         moves_info = get_moves_for_queen(
             curr_game_state=new_game_state,
             prev_game_state=old_game_state,
             curr_position=curr_position
         )
-    if "king" in piece["type"]:
+    elif "king" in piece_type:
         moves_info = get_moves_for_king(
             curr_game_state=new_game_state,
             prev_game_state=old_game_state,
             curr_position=curr_position
         )
+    else:
+        raise ValueError(f"Unknown piece type: {piece_type}")
     return moves_info

@@ -116,6 +116,8 @@ class TimedBuffLog(TypedDict):
 
 class SideNeutralBuffLog(TypedDict):
     dragon: DragonBuffLog
+    # Legacy MongoDB docs may store board_herald/baron_nashor as plain bool
+    # instead of TimedBuffLog. monsters.py normalizes these at runtime.
     board_herald: TimedBuffLog
     baron_nashor: TimedBuffLog
 

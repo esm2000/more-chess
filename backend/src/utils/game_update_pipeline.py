@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Callable
+from typing import Callable, TYPE_CHECKING
 
 from fastapi import HTTPException, Response
 from pymongo.mongo_client import MongoClient
@@ -11,8 +11,11 @@ from src.log import logger
 from src.types import GameState, GoldSpent, MovedPiece, PawnExchangeStatus, Position
 import src.utils as utils
 
+if TYPE_CHECKING:
+    from src.api import GameStateRequest
 
-def prepare_game_update(id: str, state: object, retrieve_game_state_func: Callable) -> tuple[GameState, GameState | None, list[MovedPiece] | None]:
+
+def prepare_game_update(id: str, state: GameStateRequest, retrieve_game_state_func: Callable) -> tuple[GameState, GameState | None, list[MovedPiece] | None]:
     """Load old state, compute moved pieces. Returns (old, None, None) if game already ended."""
     new_game_state = dict(state)
     old_game_state = retrieve_game_state_func(id, Response())

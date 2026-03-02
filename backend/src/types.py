@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import Optional, TypedDict
+from typing import Literal, Optional, TypedDict
 
 
 # ---------------------------------------------------------------------------
@@ -16,7 +16,7 @@ Position = list[int]
 BoardState = list[list[Optional[list["Piece"]]]]
 """8x8 grid. Each cell is None (empty) or a list of Piece dicts."""
 
-Side = str
+Side = Literal['white', 'black', 'neutral']
 """'white', 'black', or 'neutral'."""
 
 

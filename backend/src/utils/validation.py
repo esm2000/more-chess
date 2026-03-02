@@ -332,7 +332,7 @@ def check_if_pawn_exchange_is_required(old_game_state: GameState, new_game_state
     return is_pawn_exchange_required_this_turn, is_valid_game_state
 
 
-def check_if_pawn_exhange_is_possibly_being_carried_out(old_game_state: GameState, new_game_state: GameState, moved_pieces: list[MovedPiece]) -> PawnExchangeStatus:
+def check_if_pawn_exchange_is_possibly_being_carried_out(old_game_state: GameState, new_game_state: GameState, moved_pieces: list[MovedPiece]) -> PawnExchangeStatus:
     """Detect if a pawn disappeared and was replaced by a same-side piece (exchange in progress)."""
     is_pawn_exchange_possibly_being_carried_out = {"white": False, "black": False}
 

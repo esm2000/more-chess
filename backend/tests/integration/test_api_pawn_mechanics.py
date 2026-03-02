@@ -59,9 +59,9 @@ def test_pawn_exchange(game):
                     game_on_next_turn["board_state"][7][3] = [{"type": f"black_{piece_type}"}]
                 game_state = api.GameStateRequest(**game_on_next_turn)
                 game = api.update_game_state(game["id"], game_state, Response(), player=side=="white")
-                turn_count_for_end_of_pawn_exhange = game["turn_count"]
+                turn_count_for_end_of_pawn_exchange = game["turn_count"]
 
-                assert turn_count_for_end_of_pawn_exhange == turn_count_for_pawn_exchange_initiation + 1
+                assert turn_count_for_end_of_pawn_exchange == turn_count_for_pawn_exchange_initiation + 1
                 assert len(game["board_state"][0 if side=="white"else 7][3] or []) == 1
                 assert game["board_state"][0 if side=="white" else 7][3][0]["type"] == f"{side}_{piece_type}"
                 assert game["previous_state"]["board_state"][0 if side=="white" else 7][3][0]["type"] == f"{side}_pawn"

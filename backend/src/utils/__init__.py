@@ -34,7 +34,7 @@ from .validation import (
     invalidate_game_if_no_marked_for_death_pieces_have_been_selected,
     check_for_disappearing_pieces,
     check_if_pawn_exchange_is_required,
-    check_if_pawn_exhange_is_possibly_being_carried_out,
+    check_if_pawn_exchange_is_possibly_being_carried_out,
     should_turn_count_be_incremented_for_pawn_exchange,
     get_gold_spent,
     is_invalid_king_capture

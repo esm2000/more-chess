@@ -150,7 +150,7 @@ def handle_pawn_exchanges(old_game_state: GameState, new_game_state: GameState, 
     is_pawn_exchange_required_this_turn, is_valid_game_state = utils.check_if_pawn_exchange_is_required(
         old_game_state, new_game_state, moved_pieces, is_valid_game_state
     )
-    is_pawn_exchange_possibly_being_carried_out = utils.check_if_pawn_exhange_is_possibly_being_carried_out(
+    is_pawn_exchange_possibly_being_carried_out = utils.check_if_pawn_exchange_is_possibly_being_carried_out(
         old_game_state, new_game_state, moved_pieces
     )
     

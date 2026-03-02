@@ -167,7 +167,7 @@ class GameState(TypedDict, total=False):
     check: SideBool
 
     gold_count: SideInt
-    capture_point_advantage: Optional[list]
+    capture_point_advantage: Optional[list[str | float]]
 
     sword_in_the_stone_position: Optional[Position]
 

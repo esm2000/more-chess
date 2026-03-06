@@ -20,8 +20,8 @@ cd frontend && npm start
 # Tests
 cd backend && source ../env/bin/activate
 pytest -n auto                          # all tests, parallel
-pytest backend/tests/unit/              # unit only
-pytest backend/tests/integration/       # integration only
+pytest tests/unit/                      # unit only
+pytest tests/integration/               # integration only
 pytest -v -s -x -k "dragon"            # verbose, print, stop-on-fail, filter
 
 # Docker

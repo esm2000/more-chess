@@ -64,7 +64,7 @@ more-chess/
 
 | Module | Responsibility |
 |--------|---------------|
-| `src/api.py` | FastAPI routes: game CRUD, buy_piece, moves |
+| `src/api.py` | FastAPI routes: game CRUD, moves |
 | `src/types.py` | TypedDicts & type aliases (`GameState`, `Piece`, `MoveResult`, `Position`, `BoardState`) |
 | `src/moves/__init__.py` | `get_moves()` dispatcher; per-piece modules in same package |
 | `src/moves/_helpers.py` | Shared helpers (file control, dragon buff, baron immunity) |

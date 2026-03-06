@@ -17,12 +17,12 @@ cd backend && python server.py
 # Frontend (port 3000)
 cd frontend && npm start
 
-# Tests
-cd backend && source ../env/bin/activate
-pytest -n auto                          # all tests, parallel
-pytest tests/unit/                      # unit only
-pytest tests/integration/               # integration only
-pytest -v -s -x -k "dragon"            # verbose, print, stop-on-fail, filter
+# Tests (from project root)
+source env/bin/activate
+PYTHONPATH="$PWD/backend" pytest -n auto                          # all tests, parallel
+PYTHONPATH="$PWD/backend" pytest backend/tests/unit/              # unit only
+PYTHONPATH="$PWD/backend" pytest backend/tests/integration/       # integration only
+PYTHONPATH="$PWD/backend" pytest -v -s -x -k "dragon"            # verbose, print, stop-on-fail, filter
 
 # Docker
 docker build . -t league-of-chess && docker run -p 80:80 -p 8080:8080 league-of-chess

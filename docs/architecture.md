@@ -114,7 +114,7 @@ All `get_moves_for_*()` functions return:
 ```python
 {
     "possible_moves": [[row, col], ...],
-    "possible_captures": [[[move_to], [capture_at]], ...],
+    "possible_captures": [[[r1, c1], [r2, c2]], ...],   # [move_to, capture_at]
     "threatening_move": [[row, col], ...],    # squares attacked (for check detection, not shown to player)
     "castle_moves": [[row, col], ...]         # King only; empty for other pieces
 }

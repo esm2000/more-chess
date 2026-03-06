@@ -49,11 +49,6 @@ docker build . -t league-of-chess && docker run -p 80:80 -p 8080:8080 league-of-
 - Backend: absolute imports from `src/`; Frontend: relative imports
 - Constants in ALL_CAPS
 
-### Board Representation
-- `board_state[row][col]`: row 0 = black's back rank, row 7 = white's back rank
-- Each cell is an array of piece objects (supports monster co-occupancy)
-- Positions always `[row, col]`; colors always lowercase (`"white"`, `"black"`, `"neutral"`)
-
 ### Frontend-Backend Data Flow
 - Backend uses `snake_case`; Frontend uses `camelCase`; conversion in `GameStateContext.js`
 - Frontend always sends full game state; backend validates entire pipeline before persisting
@@ -77,7 +72,7 @@ docker build . -t league-of-chess && docker run -p 80:80 -p 8080:8080 league-of-
 
 **Frontend ~75%** | **Backend ~80%** | **Production ~30%**
 
-Current focus: neutral monster buff implementation, marked-for-death validation, stalemate edge cases. See README.md roadmap for full details.
+See README.md roadmap for full details.
 
 ## Maintaining This Document
 

@@ -1,5 +1,7 @@
 # Architecture Reference
 
+Last Updated: 2026-03-05
+
 Detailed module and structure reference for League of Chess. For conventions and workflow, see [CLAUDE.md](../CLAUDE.md). For game rules, see [README.md](../README.md).
 
 ## Directory Structure
@@ -22,6 +24,7 @@ more-chess/
 │   │   ├── database.py          # MongoDB connection
 │   │   ├── log.py               # Logging
 │   │   └── utils/               # Game logic utilities
+│   │       ├── __init__.py      # Re-exports + error message constants
 │   │       ├── board_analysis.py
 │   │       ├── castle_mechanics.py
 │   │       ├── check_checkmate.py
@@ -39,6 +42,7 @@ more-chess/
 │   ├── tests/
 │   │   ├── unit/                # Unit tests (piece move generation)
 │   │   ├── integration/         # Integration tests (full API flows)
+│   │   │   └── conftest.py      # Pytest fixtures for game setup/teardown
 │   │   └── test_utils.py
 │   ├── mocks/                   # Test mock game states
 │   ├── server.py                # Entry point
@@ -65,6 +69,7 @@ more-chess/
 | Module | Responsibility |
 |--------|---------------|
 | `src/api.py` | FastAPI routes: game CRUD, moves |
+| `src/utils/__init__.py` | Re-exports, error message constants |
 | `src/types.py` | TypedDicts & type aliases (`GameState`, `Piece`, `MoveResult`, `Position`, `BoardState`) |
 | `src/moves/__init__.py` | `get_moves()` dispatcher; per-piece modules in same package |
 | `src/moves/_helpers.py` | Shared helpers (file control, dragon buff, baron immunity) |

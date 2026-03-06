@@ -34,9 +34,8 @@ docker build . -t league-of-chess && docker run -p 80:80 -p 8080:8080 league-of-
 |--------|------|---------|
 | POST | `/api/game` | Create new game |
 | GET | `/api/game/{id}` | Get game state |
-| POST | `/api/game/{id}` | Submit move (update game state) |
-| GET | `/api/moves` | Get legal moves for a piece |
-| GET | `/` | Health check |
+| PUT | `/api/game/{id}` | Submit move (update game state) |
+| DELETE | `/api/game/{id}` | Delete game |
 
 ## Conventions
 

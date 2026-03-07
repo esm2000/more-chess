@@ -3,16 +3,16 @@ import '../index.css';
 
 import { GameStateContextData }  from '../context/GameStateContext';
 
-import { 
-    determineBackgroundColor, 
-    determineColor, 
-    determineIsMobile,
-    DRAGON_POSITION, 
-    BOARD_HERALD_POSITION, 
+import {
+    determineBackgroundColor,
+    determineColor,
+    useIsMobile,
+    DRAGON_POSITION,
+    BOARD_HERALD_POSITION,
     BARON_NASHOR_POSITION,
     PLAYERS,
-    camelToSnake,
-    getPiecePrice
+    IMAGE_MAP,
+    camelToSnake
 } from '../utility';
 
 const isBossActive = (boardState, bossPosition, bossType) => {
@@ -35,7 +35,7 @@ const Square = (props) => {
 
     const backgroundColor = determineBackgroundColor(row, col, positionInPlay, possibleCaptures, isDragonActive, isHeraldActive, isBaronActive, swordInTheStonePosition)
     const color = determineColor(row, col, isDragonActive, isHeraldActive, isBaronActive)
-    const isMobile = determineIsMobile()
+    const isMobile = useIsMobile()
 
     const isValidSquare = (row, col) => {
         if (row <= 3) {
@@ -56,7 +56,7 @@ const Square = (props) => {
             return false
         }
 
-        if (boardState[row][col]) {
+        if (boardState[row][col]?.length) {
             return false
         }
     
@@ -65,22 +65,17 @@ const Square = (props) => {
 
     const handleSquareSelectionClick = () => {
         const newBoardState = [...gameState.boardState]
-        const selectedShopPieceValue = getPiecePrice(props.shopPieceSelected)
-        var newGoldCount = {...gameState.goldCount}
 
-        if (!newBoardState[row][col]) {
+        if (!newBoardState[row][col]?.length) {
             newBoardState[row][col] = [{"type": camelToSnake(props.shopPieceSelected)}]
         } else {
             // player shouldn't be allowed to place piece where another piece is present
             return
         }
 
-        newGoldCount[PLAYERS[0]] -= selectedShopPieceValue ? selectedShopPieceValue : 0
-        
         gameState.updateGameState({
-            ...gameState, 
+            ...gameState,
             boardState: newBoardState,
-            goldCount: newGoldCount
         })
         props.setShopPieceSelected(null)
     }
@@ -107,17 +102,20 @@ const Square = (props) => {
         }
     }
 
+    const [isHovering, setIsHovering] = useState(false)
+    const showHighlight = props.shopPieceSelected && isValidSquare(row, col)
+
     return (
-        <div 
-            style={{ backgroundColor }} 
+        <div
+            style={{ backgroundColor, position: 'relative' }}
             className="square"
             onClick={() => handleSquareClick()}
         >
-            <p 
+            <p
                 style={{ color, fontSize: "1vw", opacity: col === 0 ? 1 : 0 }}
                 className='label' >{8-row}</p>
-            <p 
-                style={{ 
+            <p
+                style={{
                     color,
                     alignSelf: "flex-end",
                     fontSize: "1vw",
@@ -125,23 +123,22 @@ const Square = (props) => {
                 }}
                 className='label'
             >{String.fromCharCode(97 + col)}</p>
-            {
-                props.shopPieceSelected && 
-                isValidSquare(row, col) &&
-                <button
-                    onClick={() => handleSquareSelectionClick()}
-                    style={{
-                        fontSize: `${isMobile ? 1: 0.5}vw`,
-                        height: `${isMobile ? 5: 1.75}vw`,
-                        position: "relative",
-                        right: `${isMobile ? 2.5: 1.8}vw`,
-                        top: `${isMobile ? 1: 0.5}vw`,
-                        borderRadius: `${isMobile ? 1: 0.5}vw`,
-                        borderColor: "green",
-                        backgroundColor: "green",
-                        padding: `${isMobile ? 0.5 : 0}vw ${isMobile ? 0.75: 0.375}vw`
-                    }}
-                >Select Position</button>}
+            {showHighlight && (
+                <div
+                    className="valid-square-highlight"
+                    onClick={(e) => { e.stopPropagation(); handleSquareSelectionClick(); }}
+                    onMouseEnter={() => setIsHovering(true)}
+                    onMouseLeave={() => setIsHovering(false)}
+                />
+            )}
+            {showHighlight && isHovering && (
+                <img
+                    src={IMAGE_MAP[props.shopPieceSelected]}
+                    className="ghost-piece"
+                    alt="preview"
+                    style={{ width: `${isMobile ? 3.6 : 1.8}vw`, height: `${isMobile ? 5.9 : 2.95}vw` }}
+                />
+            )}
         </div>
     )
 }

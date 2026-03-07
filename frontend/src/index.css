@@ -90,6 +90,91 @@ button {
     border-color: black
 }
 
+.pixel-panel {
+    background-color: rgb(125, 59, 2);
+    border: 0.2vw solid rgb(71, 33, 1);
+    color: white;
+    font-family: "Basic";
+    image-rendering: pixelated;
+}
+
+.pixel-btn {
+    font-family: "Basic";
+    background-color: rgb(101, 67, 33);
+    color: white;
+    border: 0.2vw solid rgb(71, 33, 1);
+    cursor: pointer;
+    image-rendering: pixelated;
+}
+
+.pixel-btn:hover {
+    background-color: rgb(140, 90, 40);
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.valid-square-highlight {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(100, 200, 100, 0.35);
+    border: 0.15vw solid rgba(100, 200, 100, 0.7);
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.ghost-piece {
+    position: absolute;
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 10;
+    top: 35%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.piece-card {
+    background-color: rgb(194, 164, 115);
+    border: 0.2vw solid rgb(71, 33, 1);
+    padding: 0.5vw;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+}
+
+.piece-card-selected {
+    border-color: rgb(255, 215, 0);
+    box-shadow: 0 0 0.5vw rgb(255, 215, 0);
+}
+
+.piece-card-locked {
+    filter: grayscale(100%);
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.gold-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3vw;
+    font-family: "Basic";
+}
+
 /* For Firefox */
 progress::-moz-progress-bar {
     background: red;
@@ -173,22 +258,47 @@ progress {
         flex-direction: column;
     }
     
+    .pixel-panel {
+        border-width: 0.4vw;
+    }
+
+    .pixel-btn {
+        border-width: 0.4vw;
+    }
+
+    .valid-square-highlight {
+        border-width: 0.3vw;
+    }
+
+    .piece-card {
+        border-width: 0.4vw;
+        padding: 1vw;
+    }
+
+    .piece-card-selected {
+        box-shadow: 0 0 1vw rgb(255, 215, 0);
+    }
+
+    .gold-display {
+        gap: 0.6vw;
+    }
+
     /* For Firefox */
     progress::-moz-progress-bar {
         background: red;
         font-size: 0.5vw;
     }
-    
+
     /* For Chrome or Safari */
     progress::-webkit-progress-value {
         background: red;
         font-size: 0.5vw;
     }
-    
+
     /* For IE10 */
     progress {
         background: red;
         font-size: 0.5vw;
     }
-    
+
 }

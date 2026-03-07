@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import Background from './Background';
 import Piece from './Piece';
@@ -8,11 +8,12 @@ import CapturedPieces from './CapturedPieces';
 import HUD from './HUD';
 import Victory from './Victory';
 import Defeat from './Defeat';
+import PawnExchangeModal from './PawnExchangeModal';
 
 
 import { GameStateContextData }  from '../context/GameStateContext';
 
-import { PLAYERS, pickSide, snakeToCamel, determineIsMobile } from '../utility';
+import { PLAYERS, pickSide, snakeToCamel, useIsMobile } from '../utility';
 
 const Board = () => {
     // positionInPlay used to figure out what piece is being moved by player
@@ -22,11 +23,33 @@ const Board = () => {
     const possibleMoves = gameState.possibleMoves
     const possibleCaptures = gameState.possibleCaptures
     const swordInTheStonePosition = gameState.swordInTheStonePosition
-    const isMobile = determineIsMobile()
+    const turnCount = gameState.turnCount
+    const isMobile = useIsMobile()
     const blackDefeat = gameState.blackDefeat
     const whiteDefeat = gameState.whiteDefeat
 
     const [shopPieceSelected, setShopPieceSelected] = useState(null)
+    const [pawnExchangePosition, setPawnExchangePosition] = useState(null)
+
+    useEffect(() => {
+        if (turnCount <= 0) {
+            setPawnExchangePosition(null)
+            return
+        }
+        if (possibleMoves.length === 0 && possibleCaptures.length === 0) {
+            for (let col = 0; col < 8; col++) {
+                const square = boardState[0]?.[col]
+                if (square?.length) {
+                    const whitePawn = square.find(piece => piece.type === "white_pawn")
+                    if (whitePawn) {
+                        setPawnExchangePosition([0, col])
+                        return
+                    }
+                }
+            }
+        }
+        setPawnExchangePosition(null)
+    }, [boardState, possibleMoves, possibleCaptures, turnCount])
 
     return(
         <div style={isMobile ? {display: "block", margin: "auto"}: null}>
@@ -42,18 +65,18 @@ const Board = () => {
                 {
                     boardState.map((pieceRow, row) => {
                         return (
-                            <div>
+                            <div key={row}>
                                 {pieceRow.map((piece_array, col) => {
-                                    if (piece_array) {  
+                                    if (piece_array?.length) {
                                         return(
-                                            piece_array.map((piece) => {
+                                            piece_array.map((piece, i) => {
                                                 return (
                                                     <Piece
                                                         side={pickSide(piece.type)}
-                                                        key={[row, col]}
-                                                        row={row} 
+                                                        key={`${row}-${col}-${i}`}
+                                                        row={row}
                                                         col={col}
-                                                        inPlay={positionInPlay[0] === row && positionInPlay[1] === col} 
+                                                        inPlay={positionInPlay[0] === row && positionInPlay[1] === col}
                                                         type={snakeToCamel(piece.type)}
                                                         pawnBuff={piece.pawn_buff}
                                                         energizeStacks={piece.energize_stacks}
@@ -61,6 +84,7 @@ const Board = () => {
                                                         bishopDebuff={piece.bishop_debuff}
                                                         checkProtection={piece.check_protection}
                                                         health={piece.health}
+                                                        shopPieceSelected={shopPieceSelected}
                                                     />
                                                 );
                                         }));
@@ -71,7 +95,7 @@ const Board = () => {
                                     // a position is represented as an array
                                     // [[position that piece in play will land in , position of enemy in danger], ...]
                                     if (!possibleCaptures.some((possibleCapture) => JSON.stringify(possibleMove).includes(JSON.stringify(possibleCapture[0]))))
-                                        if (!shopPieceSelected || (possibleMove[0] <= 3)) {
+                                        if (!shopPieceSelected) {
                                             return(
                                                 <PossibleMove 
                                                     key={'pm' + possibleMove[0].toString() + possibleMove[1].toString()}
@@ -99,6 +123,13 @@ const Board = () => {
                     <Victory isMobile={isMobile}/> : whiteDefeat ?
                     <Defeat isMobile={isMobile}/> : null
                 }
+                {pawnExchangePosition && (
+                    <PawnExchangeModal
+                        pawnPosition={pawnExchangePosition}
+                        side={PLAYERS[0]}
+                        onExchange={() => setPawnExchangePosition(null)}
+                    />
+                )}
             </div>
             <HUD 
                 shopPieceSelected={shopPieceSelected}

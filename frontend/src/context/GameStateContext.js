@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useRef, useState } from "react"
 import { PLAYERS, BASE_API_URL, convertKeysToCamelCase, convertKeysToSnakeCase } from '../utility';
 
 const GameStateContext = createContext({
@@ -68,6 +68,7 @@ export function GameStateProvider({children}) {
                 updateGameState: updateGameState
             }
             setGameState(parsedJsonResponse)
+            sessionStorage.setItem("lastUpdated", parsedJsonResponse["lastUpdated"])
         })
         .catch(exception => {
             console.log(exception);
@@ -123,13 +124,15 @@ export function GameStateProvider({children}) {
     }
     const [gameState, setGameState] = useState(initGameState);
 
-    const [intervalTime, setIntervalTime] = useState(3000);
-    
+    const fetchInProgress = useRef(false)
+
     const fetchGameState = () => {
+        if (fetchInProgress.current) return
+        fetchInProgress.current = true
+
         var url
         var method
         const gameStateId = sessionStorage.getItem("gameStateId")
-        const lastUpdated = sessionStorage.getItem("lastUpdated")
 
         if (gameStateId == null) {
             url = `${BASE_API_URL}/api/game`
@@ -137,11 +140,6 @@ export function GameStateProvider({children}) {
         } else {
             url = `${BASE_API_URL}/api/game/${gameStateId}`
             method = "GET"
-        }
-        
-        const sixSecondsAgo = Date.now() - 6000;
-        if (Date.parse(lastUpdated) < sixSecondsAgo) {
-            return
         }
 
         fetch(url, {"method": method})
@@ -159,9 +157,11 @@ export function GameStateProvider({children}) {
             setGameState(parsedResult)
             sessionStorage.setItem("gameStateId", parsedResult["id"])
             sessionStorage.setItem("lastUpdated", parsedResult["lastUpdated"])
+            fetchInProgress.current = false
         })
         .catch(exception => {
             console.log(exception);
+            fetchInProgress.current = false
         });
     }
 

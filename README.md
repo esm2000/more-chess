@@ -8,20 +8,58 @@ Roadmap is included in its own section below
 
 ## Quickstart
 
-### Prerequisites 
+### Local Development (without Docker)
+
+#### Prerequisites
+- Python 3.12 with a virtual environment
+- Node.js / npm
+- A running MongoDB instance (default: `localhost:27017`)
+
+#### Setup (first time only)
+```bash
+python3 -m venv env
+source env/bin/activate
+pip install -r backend/requirements.txt
+cd frontend && npm install
+```
+
+Create `frontend/.env.local` to point the frontend at the local backend:
+```
+REACT_APP_LOCAL=true
+```
+
+#### Running
+
+Start the backend (port 8080):
+```bash
+cd backend && python server.py
+```
+
+Start the frontend (port 3000) in a separate terminal:
+```bash
+cd frontend && npm start
+```
+
+Open http://localhost:3000 in your browser.
+
+---
+
+### Docker
+
+#### Prerequisites
 Ensure you have [Docker Desktop](docker.com) installed and opened.
 
-### Instructions
+#### Instructions
 
 (Database setup instructions to be added later...)
 
-To run locally open your terminal, navigate to the root directory of the project, and run 
+To run locally open your terminal, navigate to the root directory of the project, and run
 
 ```
 docker build . -t league-of-chess && docker run  -p 80:80 -p 8080:8080 league-of-chess
 ```
 
-You can access the game at `0.0.0.0:80` in your browser. 
+You can access the game at `0.0.0.0:80` in your browser.
 
 ### Unit Tests
 

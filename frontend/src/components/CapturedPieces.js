@@ -24,7 +24,7 @@ const CapturedPieces = (props) => {
             })}
             {
                 capturePointAdvantage?.[0] === props.side ?
-                    <p>Point Advantage: {capturePointAdvantage[1]}</p>
+                    <p>Point Advantage: {Math.round(capturePointAdvantage[1] * 10) / 10}</p>
                 : null
             }
         </div>

@@ -15,6 +15,7 @@ Chess variant with MOBA-style mechanics (modified pieces, neutral monsters, buff
 cd backend && python server.py
 
 # Frontend (port 3000)
+# Requires .env.local with REACT_APP_LOCAL=true (see frontend/.env.local)
 cd frontend && npm start
 
 # Tests (from project root)
@@ -77,4 +78,4 @@ See README.md roadmap for full details.
 
 Update CLAUDE.md in the same commit when changing conventions, workflow, or tech stack. For module/structure changes, update [docs/architecture.md](docs/architecture.md) instead. Bump "Last Updated" on changes.
 
-Last Updated: 2026-03-05
+Last Updated: 2026-03-06

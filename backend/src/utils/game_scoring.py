@@ -35,7 +35,8 @@ def update_gold_count(old_game_state: GameState, new_game_state: GameState, gold
                 result.remove(item)
         return result
 
-    for side in new_game_state["captured_pieces"]:
+    for side in ["white", "black"]:
+        new_game_state["gold_count"][side] = old_game_state["gold_count"][side]
         for piece in list_difference(new_game_state["captured_pieces"][side], old_game_state["captured_pieces"][side]):
             new_game_state["gold_count"][side] += 1
 

@@ -6,7 +6,8 @@ import PieceShopModal from './PieceShopModal';
 
 const Shop = (props) => {
     const gameState = GameStateContextData()
-    const playerGoldCount = gameState.goldCount[PLAYERS[0]] - (getPiecePrice(props.shopPieceSelected) || 0)
+    const currentGold = gameState.goldCount[PLAYERS[0]]
+    const projectedGoldCount = currentGold - (getPiecePrice(props.shopPieceSelected) || 0)
     const isMobile = useIsMobile()
 
     return(
@@ -35,32 +36,32 @@ const Shop = (props) => {
                 justifyContent: "center",
                 padding: `${isMobile ? 2 : 1}vw 0`,
                 borderBottom: `${isMobile ? 0.3 : 0.15}vw solid rgb(71, 33, 1)`,
-                cursor: playerGoldCount < 2 ? 'not-allowed' : 'default'
+                cursor: projectedGoldCount < 2 ? 'not-allowed' : 'default'
             }}>
                 <PieceShopModal
                     type="whitePawn"
-                    playerGoldCount={playerGoldCount}
+                    projectedGoldCount={projectedGoldCount}
                     isMobile={isMobile}
                     shopPieceSelected={props.shopPieceSelected}
                     setShopPieceSelected={props.setShopPieceSelected}
                 />
                 <PieceShopModal
                     type="whiteKnight"
-                    playerGoldCount={playerGoldCount}
+                    projectedGoldCount={projectedGoldCount}
                     isMobile={isMobile}
                     shopPieceSelected={props.shopPieceSelected}
                     setShopPieceSelected={props.setShopPieceSelected}
                 />
                 <PieceShopModal
                     type="whiteBishop"
-                    playerGoldCount={playerGoldCount}
+                    projectedGoldCount={projectedGoldCount}
                     isMobile={isMobile}
                     shopPieceSelected={props.shopPieceSelected}
                     setShopPieceSelected={props.setShopPieceSelected}
                 />
                 <PieceShopModal
                     type="whiteRook"
-                    playerGoldCount={playerGoldCount}
+                    projectedGoldCount={projectedGoldCount}
                     isMobile={isMobile}
                     shopPieceSelected={props.shopPieceSelected}
                     setShopPieceSelected={props.setShopPieceSelected}
@@ -78,7 +79,7 @@ const Shop = (props) => {
                         alt="gold"
                         style={{ height: `${isMobile ? 3 : 1.5}vw` }}
                     />
-                    <span>{playerGoldCount} Gold</span>
+                    <span>{projectedGoldCount} Gold</span>
                 </div>
                 {props.shopPieceSelected && (
                     <button

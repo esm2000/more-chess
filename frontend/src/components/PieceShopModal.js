@@ -5,7 +5,7 @@ import { IMAGE_MAP, getPiecePrice } from '../utility';
 const PieceShopModal = (props) => {
 
     const price = getPiecePrice(props.type)
-    const canAfford = props.playerGoldCount >= price
+    const canAfford = props.projectedGoldCount >= price
     const isSelected = props.shopPieceSelected === props.type
 
     const handleCardClick = () => {

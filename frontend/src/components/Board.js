@@ -65,15 +65,15 @@ const Board = () => {
                 {
                     boardState.map((pieceRow, row) => {
                         return (
-                            <div>
+                            <div key={row}>
                                 {pieceRow.map((piece_array, col) => {
                                     if (piece_array?.length) {
                                         return(
-                                            piece_array.map((piece) => {
+                                            piece_array.map((piece, i) => {
                                                 return (
                                                     <Piece
                                                         side={pickSide(piece.type)}
-                                                        key={[row, col]}
+                                                        key={`${row}-${col}-${i}`}
                                                         row={row}
                                                         col={col}
                                                         inPlay={positionInPlay[0] === row && positionInPlay[1] === col}

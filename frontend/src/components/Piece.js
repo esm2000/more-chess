@@ -19,6 +19,8 @@ const Piece = (props) => {
     const leftPosition = props.col * 3.7 * (isMobile ? 2: 1)
 
     const handlePieceClick = () => {
+        if (props.shopPieceSelected) return
+
         const isNeutralPiecePresent = () => {
             if (props.side === "neutral") return true
             const square = gameState.boardState[props.row]?.[props.col] || []

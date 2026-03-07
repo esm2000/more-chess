@@ -74,9 +74,9 @@ const Board = () => {
                                                     <Piece
                                                         side={pickSide(piece.type)}
                                                         key={[row, col]}
-                                                        row={row} 
+                                                        row={row}
                                                         col={col}
-                                                        inPlay={positionInPlay[0] === row && positionInPlay[1] === col} 
+                                                        inPlay={positionInPlay[0] === row && positionInPlay[1] === col}
                                                         type={snakeToCamel(piece.type)}
                                                         pawnBuff={piece.pawn_buff}
                                                         energizeStacks={piece.energize_stacks}
@@ -84,6 +84,7 @@ const Board = () => {
                                                         bishopDebuff={piece.bishop_debuff}
                                                         checkProtection={piece.check_protection}
                                                         health={piece.health}
+                                                        shopPieceSelected={shopPieceSelected}
                                                     />
                                                 );
                                         }));

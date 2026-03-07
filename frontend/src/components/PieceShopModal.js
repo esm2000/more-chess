@@ -23,7 +23,6 @@ const PieceShopModal = (props) => {
             className={cardClasses}
             onClick={handleCardClick}
             style={{
-                cursor: canAfford ? 'pointer' : 'not-allowed',
                 position: 'relative',
                 width: `${props.isMobile ? 10 : 5}vw`,
                 marginRight: `${props.isMobile ? 1.5 : 0.75}vw`,
@@ -34,10 +33,11 @@ const PieceShopModal = (props) => {
                 <img
                     src={IMAGE_MAP[props.type]}
                     alt={props.type}
+                    draggable={false}
                     style={{
                         width: `${props.isMobile ? 8 : 4}vw`,
                         display: 'block',
-                        imageRendering: 'pixelated'
+                        imageRendering: 'pixelated',
                     }}
                 />
                 {!canAfford && (
@@ -53,7 +53,6 @@ const PieceShopModal = (props) => {
                         fontFamily: 'Basic',
                         fontWeight: 'bold',
                         textShadow: '2px 2px 0 black',
-                        pointerEvents: 'none'
                     }}>X</div>
                 )}
             </div>
@@ -61,17 +60,20 @@ const PieceShopModal = (props) => {
                 fontFamily: 'Basic',
                 fontSize: `${props.isMobile ? 1.5 : 0.75}vw`,
                 margin: `${props.isMobile ? 0.4 : 0.2}vw 0`,
-                color: 'rgb(71, 33, 1)'
+                color: 'rgb(71, 33, 1)',
             }}>{props.type.replace("white", "")}</p>
             <div className="gold-display" style={{
                 justifyContent: 'center',
                 fontSize: `${props.isMobile ? 1.2 : 0.6}vw`,
-                color: 'rgb(71, 33, 1)'
+                color: 'rgb(71, 33, 1)',
             }}>
                 <img
                     src={IMAGE_MAP["goldCoin"]}
                     alt="gold"
-                    style={{ height: `${props.isMobile ? 1.5 : 0.75}vw` }}
+                    draggable={false}
+                    style={{
+                        height: `${props.isMobile ? 1.5 : 0.75}vw`,
+                    }}
                 />
                 <span>{price}</span>
             </div>

@@ -33,7 +33,8 @@ const Shop = (props) => {
                 display: "flex",
                 justifyContent: "center",
                 padding: `${isMobile ? 2 : 1}vw 0`,
-                borderBottom: `${isMobile ? 0.3 : 0.15}vw solid rgb(71, 33, 1)`
+                borderBottom: `${isMobile ? 0.3 : 0.15}vw solid rgb(71, 33, 1)`,
+                cursor: playerGoldCount < 2 ? 'not-allowed' : 'default'
             }}>
                 <PieceShopModal
                     type="whitePawn"

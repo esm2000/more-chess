@@ -1,4 +1,5 @@
 const PLAYERS = ["white", "black"]
+const PROMOTION_PIECES = ["Knight", "Bishop", "Rook", "Queen"]
 
 var BASE_API_URL
 if (process.env.REACT_APP_LOCAL === "true") {
@@ -330,8 +331,9 @@ function findThreateningBishop(boardState, side, row, col) {
 
 const determineIsMobile = () => window.matchMedia("(max-width: 1024px)").matches && window.matchMedia("(orientation: portrait)").matches
 
-export { 
-    PLAYERS, 
+export {
+    PLAYERS,
+    PROMOTION_PIECES,
     IMAGE_MAP, 
     DRAGON_POSITION,
     BOARD_HERALD_POSITION,

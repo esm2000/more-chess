@@ -1,21 +1,4 @@
-// PieceShopModal.js — REWORK NEEDED
-// ==================================
-// Individual piece card in the shop. Currently a plain image + button.
-//
-// TODO - VISUAL REWORK:
-//   - Style as a pixel art "item card" — bordered frame, maybe parchment texture
-//   - Piece sprite should be centered and larger
-//   - Price tag should look like a pixel coin + number label, not a blue HTML button
-//   - Unaffordable pieces should be greyed out with a lock/X overlay, not just opacity
-//   - Selected piece should have a visible highlight (glow, border color change)
-//   - Piece name label ("Pawn", "Knight", etc.) should use the pixel font
-//
-// TODO - UX:
-//   - Clicking an already-selected piece should deselect it (toggle behavior)
-//   - Consider hover tooltip showing piece abilities / value
-
-import React, {useState} from 'react';
-import { GameStateContextData } from '../context/GameStateContext';
+import React from 'react';
 import { IMAGE_MAP, getPiecePrice } from '../utility';
 
 
@@ -23,57 +6,74 @@ const PieceShopModal = (props) => {
 
     const price = getPiecePrice(props.type)
     const canAfford = props.playerGoldCount >= price
+    const isSelected = props.shopPieceSelected === props.type
 
-    const pieceShopModalStyle = {
-        width: `${props.isMobile ? 8: 4}vw`,
-        marginRight: `${props.isMobile ? 4: 2}vw`,
-        marginLeft: props.type === "whitePawn" ? `${props.isMobile ? 5: 2.5}vw`: 0,
-        opacity: canAfford ? 1: 0.5
-    }
-    const pieceShopTitle = {
-        marginLeft: props.type === "whitePawn" ? `${props.isMobile ? 5.7: 2.85}vw`: 0,
-        fontSize: `${props.isMobile ? 2: 1}vw`,
-        opacity: canAfford ? 1: 0.5
+    const handleCardClick = () => {
+        if (isSelected) {
+            props.setShopPieceSelected(null)
+        } else if (canAfford) {
+            props.setShopPieceSelected(props.type)
+        }
     }
 
-    const handleBuyButtonClick = () => {
-        console.log(`Buying ${props.type.replace("white", "")}`)
-        props.setShopPieceSelected(props.type)
-    }
+    const cardClasses = `piece-card${isSelected ? ' piece-card-selected' : ''}${!canAfford ? ' piece-card-locked' : ''}`
 
     return(
-        <div>
-            <img
-                src={IMAGE_MAP[props.type]}
-                style={pieceShopModalStyle}
-            /> 
-            <p 
-                style={{...pieceShopTitle, marginBottom: `${props.isMobile ? 0.4: 0.2}vw`}}
-            >{props.type.replace("white", "")}</p>
-            <div style={{display: "flex"}}>
-                
-                <button  
-                    disabled={!canAfford} 
+        <div
+            className={cardClasses}
+            onClick={handleCardClick}
+            style={{
+                cursor: canAfford ? 'pointer' : 'not-allowed',
+                position: 'relative',
+                width: `${props.isMobile ? 10 : 5}vw`,
+                marginRight: `${props.isMobile ? 1.5 : 0.75}vw`,
+                marginLeft: props.type === "whitePawn" ? `${props.isMobile ? 2 : 1}vw` : 0,
+            }}
+        >
+            <div style={{ position: 'relative' }}>
+                <img
+                    src={IMAGE_MAP[props.type]}
+                    alt={props.type}
                     style={{
-                        ...pieceShopTitle,
-                        marginLeft: props.type === "whitePawn" ? `${props.isMobile ? 4.6: 2.3}vw`: 0,
-                        marginTop: `${props.isMobile ? 1: 0.5}vw`,
-                        marginBottom: `${props.isMobile ? 8: 4}vw`,
-                        fontSize: `${props.isMobile ? 1.2: 0.6}vw`,
-                        borderRadius: `${props.isMobile ? 1: 0.5}vw`,
-                        backgroundColor: "rgb(102, 216, 242)",
-                        borderColor: "rgb(150, 216, 242)"
+                        width: `${props.isMobile ? 8 : 4}vw`,
+                        display: 'block',
+                        imageRendering: 'pixelated'
                     }}
-                    onClick={() => handleBuyButtonClick()}
-                >
-                    <img 
-                        src={IMAGE_MAP["goldCoin"]}
-                        style={{
-                            opacity: canAfford ? 1: 0.5, 
-                            marginRight: `${props.isMobile ? 0.2: 0.2}vw`,
-                            height: `${props.isMobile ? 1.5: 0.75}vw`,
-                        }} 
-                    />{price} Gold</button>
+                />
+                {!canAfford && (
+                    <div style={{
+                        position: 'absolute',
+                        top: 0, left: 0, right: 0, bottom: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        paddingTop: '85%',
+                        fontSize: `${props.isMobile ? 9 : 4.5}vw`,
+                        color: 'rgb(220, 30, 30)',
+                        fontFamily: 'Basic',
+                        fontWeight: 'bold',
+                        textShadow: '2px 2px 0 black',
+                        pointerEvents: 'none'
+                    }}>X</div>
+                )}
+            </div>
+            <p style={{
+                fontFamily: 'Basic',
+                fontSize: `${props.isMobile ? 1.5 : 0.75}vw`,
+                margin: `${props.isMobile ? 0.4 : 0.2}vw 0`,
+                color: 'rgb(71, 33, 1)'
+            }}>{props.type.replace("white", "")}</p>
+            <div className="gold-display" style={{
+                justifyContent: 'center',
+                fontSize: `${props.isMobile ? 1.2 : 0.6}vw`,
+                color: 'rgb(71, 33, 1)'
+            }}>
+                <img
+                    src={IMAGE_MAP["goldCoin"]}
+                    alt="gold"
+                    style={{ height: `${props.isMobile ? 1.5 : 0.75}vw` }}
+                />
+                <span>{price}</span>
             </div>
         </div>
     );

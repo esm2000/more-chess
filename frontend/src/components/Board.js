@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import Background from './Background';
 import Piece from './Piece';
@@ -8,6 +8,7 @@ import CapturedPieces from './CapturedPieces';
 import HUD from './HUD';
 import Victory from './Victory';
 import Defeat from './Defeat';
+import PawnExchangeModal from './PawnExchangeModal';
 
 
 import { GameStateContextData }  from '../context/GameStateContext';
@@ -22,11 +23,33 @@ const Board = () => {
     const possibleMoves = gameState.possibleMoves
     const possibleCaptures = gameState.possibleCaptures
     const swordInTheStonePosition = gameState.swordInTheStonePosition
+    const turnCount = gameState.turnCount
     const isMobile = determineIsMobile()
     const blackDefeat = gameState.blackDefeat
     const whiteDefeat = gameState.whiteDefeat
 
     const [shopPieceSelected, setShopPieceSelected] = useState(null)
+    const [pawnExchangePosition, setPawnExchangePosition] = useState(null)
+
+    useEffect(() => {
+        if (turnCount <= 0) {
+            setPawnExchangePosition(null)
+            return
+        }
+        if (possibleMoves.length === 0 && possibleCaptures.length === 0) {
+            for (let col = 0; col < 8; col++) {
+                const square = boardState[0]?.[col]
+                if (square) {
+                    const whitePawn = square.find(piece => piece.type === "white_pawn")
+                    if (whitePawn) {
+                        setPawnExchangePosition([0, col])
+                        return
+                    }
+                }
+            }
+        }
+        setPawnExchangePosition(null)
+    }, [boardState, possibleMoves, possibleCaptures, turnCount])
 
     return(
         <div style={isMobile ? {display: "block", margin: "auto"}: null}>
@@ -99,6 +122,13 @@ const Board = () => {
                     <Victory isMobile={isMobile}/> : whiteDefeat ?
                     <Defeat isMobile={isMobile}/> : null
                 }
+                {pawnExchangePosition && (
+                    <PawnExchangeModal
+                        pawnPosition={pawnExchangePosition}
+                        side={PLAYERS[0]}
+                        onExchange={() => setPawnExchangePosition(null)}
+                    />
+                )}
             </div>
             <HUD 
                 shopPieceSelected={shopPieceSelected}

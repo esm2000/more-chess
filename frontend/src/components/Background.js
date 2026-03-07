@@ -1,33 +1,17 @@
-// Background.js — SHOP PLACEMENT REWORK NEEDED
-// ==============================================
-// Contains the board squares and piece placement logic for shop purchases.
-//
-// TODO - PLACEMENT UX REWORK:
-//   - The green "Select Position" buttons (lines 128-144) are small and hard to find
-//   - Instead: highlight valid squares with a colored overlay or pulsing border
-//     when a shop piece is selected (similar to how PossibleMove dots work)
-//   - Consider showing a ghost/transparent preview of the piece on hover
-//   - Add placement confirmation or undo option
-//
-// TODO - VALIDATION:
-//   - isValidSquare() (lines 40-64) restricts to rows 4-7, avoids bosses/sword/occupied
-//   - Backend also validates but currently no location restriction to king's starting
-//     square — this may need discussion (rules say king buys at starting square,
-//     but placement can be anywhere on your half?)
-
 import React, { useState } from 'react';
 import '../index.css';
 
 import { GameStateContextData }  from '../context/GameStateContext';
 
-import { 
-    determineBackgroundColor, 
-    determineColor, 
+import {
+    determineBackgroundColor,
+    determineColor,
     determineIsMobile,
-    DRAGON_POSITION, 
-    BOARD_HERALD_POSITION, 
+    DRAGON_POSITION,
+    BOARD_HERALD_POSITION,
     BARON_NASHOR_POSITION,
     PLAYERS,
+    IMAGE_MAP,
     camelToSnake,
     getPiecePrice
 } from '../utility';
@@ -124,17 +108,20 @@ const Square = (props) => {
         }
     }
 
+    const [isHovering, setIsHovering] = useState(false)
+    const showHighlight = props.shopPieceSelected && isValidSquare(row, col)
+
     return (
-        <div 
-            style={{ backgroundColor }} 
+        <div
+            style={{ backgroundColor, position: 'relative' }}
             className="square"
             onClick={() => handleSquareClick()}
         >
-            <p 
+            <p
                 style={{ color, fontSize: "1vw", opacity: col === 0 ? 1 : 0 }}
                 className='label' >{8-row}</p>
-            <p 
-                style={{ 
+            <p
+                style={{
                     color,
                     alignSelf: "flex-end",
                     fontSize: "1vw",
@@ -142,23 +129,22 @@ const Square = (props) => {
                 }}
                 className='label'
             >{String.fromCharCode(97 + col)}</p>
-            {
-                props.shopPieceSelected && 
-                isValidSquare(row, col) &&
-                <button
-                    onClick={() => handleSquareSelectionClick()}
-                    style={{
-                        fontSize: `${isMobile ? 1: 0.5}vw`,
-                        height: `${isMobile ? 5: 1.75}vw`,
-                        position: "relative",
-                        right: `${isMobile ? 2.5: 1.8}vw`,
-                        top: `${isMobile ? 1: 0.5}vw`,
-                        borderRadius: `${isMobile ? 1: 0.5}vw`,
-                        borderColor: "green",
-                        backgroundColor: "green",
-                        padding: `${isMobile ? 0.5 : 0}vw ${isMobile ? 0.75: 0.375}vw`
-                    }}
-                >Select Position</button>}
+            {showHighlight && (
+                <div
+                    className="valid-square-highlight"
+                    onClick={(e) => { e.stopPropagation(); handleSquareSelectionClick(); }}
+                    onMouseEnter={() => setIsHovering(true)}
+                    onMouseLeave={() => setIsHovering(false)}
+                />
+            )}
+            {showHighlight && isHovering && (
+                <img
+                    src={IMAGE_MAP[props.shopPieceSelected]}
+                    className="ghost-piece"
+                    alt="preview"
+                    style={{ width: `${isMobile ? 3.6 : 1.8}vw` }}
+                />
+            )}
         </div>
     )
 }

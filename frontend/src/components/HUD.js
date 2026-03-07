@@ -1,22 +1,15 @@
-// HUD.js — REWORK NEEDED
-// =======================
-// Heads-up display: turn counter + shop toggle.
-//
-// TODO - VISUAL REWORK:
-//   - Turn counter should use pixel font, maybe framed in a pixel art panel
-//   - Shop Open/Close button should be a pixel art icon (chest, store sign, etc.)
-//     instead of a plain green/red HTML button
-//   - Consider adding gold count display here too (always visible, not just in shop)
-//   - Layout should feel like a game HUD bar, not a plain div with text
-
 import React, {useState} from 'react';
 import { GameStateContextData } from '../context/GameStateContext';
+import { IMAGE_MAP, PLAYERS, determineIsMobile } from '../utility';
 import Shop from './Shop';
 
 
 const HUD = (props) => {
     const gameState = GameStateContextData()
     const turnCount = gameState.turnCount
+    const goldCount = gameState.goldCount?.[PLAYERS[0]] || 0
+    const enemyGoldCount = gameState.goldCount?.[PLAYERS[1]] || 0
+    const isMobile = determineIsMobile()
     const [toggleShop, setToggleShop] = useState(false)
 
     const handleShopButtonClick = () => {
@@ -26,24 +19,61 @@ const HUD = (props) => {
     const isKingOnHomeSquare = gameState.boardState[7][4]?.[0].type === "white_king"
     return(
         <div>
-            <h3># of Turns: {turnCount}</h3>
-            {isKingOnHomeSquare ? 
-                <button 
-                    onClick={() => handleShopButtonClick()}
-                    style={{
-                        backgroundColor: toggleShop ? "red": "green",
-                        borderColor: toggleShop ? "red": "green",
-                        borderRadius: "0.5vw"
-                    }}    
-                >{toggleShop ? "Close": "Open"} Shop</button>:
-                null
-            }
+            <div style={{
+                backgroundColor: 'rgb(71, 33, 1)',
+                border: `${isMobile ? 0.4 : 0.2}vw solid rgb(50, 23, 0)`,
+                padding: `${isMobile ? 1.5 : 0.75}vw ${isMobile ? 2 : 1}vw`,
+                fontFamily: 'Basic',
+                color: 'white',
+                marginTop: `${isMobile ? 1 : 0.5}vw`
+            }}>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: `${isMobile ? 1 : 0.5}vw`
+                }}>
+                    <span style={{ fontSize: `${isMobile ? 2.5 : 1.25}vw` }}>Turn: {turnCount}</span>
+                    {isKingOnHomeSquare ?
+                        <button
+                            className="pixel-btn"
+                            onClick={() => handleShopButtonClick()}
+                            style={{
+                                fontSize: `${isMobile ? 1.8 : 0.9}vw`,
+                                padding: `${isMobile ? 0.6 : 0.3}vw ${isMobile ? 1.5 : 0.75}vw`,
+                                borderRadius: `${isMobile ? 0.6 : 0.3}vw`
+                            }}
+                        >{toggleShop ? "Close Shop" : "Open Shop"}</button> :
+                        null
+                    }
+                </div>
+                <div style={{ display: 'flex', gap: `${isMobile ? 3 : 1.5}vw`, alignItems: 'center' }}>
+                    <div className="gold-display" style={{ fontSize: `${isMobile ? 2 : 1}vw` }}>
+                        <span style={{ color: 'rgb(230, 233, 198)' }}>You:</span>
+                        <img
+                            src={IMAGE_MAP["goldCoin"]}
+                            alt="gold"
+                            style={{ height: `${isMobile ? 2.5 : 1.25}vw` }}
+                        />
+                        <span style={{ color: 'rgb(230, 233, 198)' }}>{goldCount}</span>
+                    </div>
+                    <div className="gold-display" style={{ fontSize: `${isMobile ? 2 : 1}vw`, opacity: 0.7 }}>
+                        <span style={{ color: 'rgb(180, 180, 180)' }}>Enemy:</span>
+                        <img
+                            src={IMAGE_MAP["goldCoin"]}
+                            alt="enemy gold"
+                            style={{ height: `${isMobile ? 2.5 : 1.25}vw`, filter: 'grayscale(100%)' }}
+                        />
+                        <span style={{ color: 'rgb(180, 180, 180)' }}>{enemyGoldCount}</span>
+                    </div>
+                </div>
+            </div>
             {
                 toggleShop ?
-                 <Shop 
+                 <Shop
                     shopPieceSelected={props.shopPieceSelected}
                     setShopPieceSelected={props.setShopPieceSelected}
-                 /> : 
+                 /> :
                  null
             }
         </div>

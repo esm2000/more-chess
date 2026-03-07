@@ -39,7 +39,7 @@ const Board = () => {
         if (possibleMoves.length === 0 && possibleCaptures.length === 0) {
             for (let col = 0; col < 8; col++) {
                 const square = boardState[0]?.[col]
-                if (square) {
+                if (square?.length) {
                     const whitePawn = square.find(piece => piece.type === "white_pawn")
                     if (whitePawn) {
                         setPawnExchangePosition([0, col])

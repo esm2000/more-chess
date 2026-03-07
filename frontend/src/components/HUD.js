@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { GameStateContextData } from '../context/GameStateContext';
 import { IMAGE_MAP, PLAYERS, useIsMobile } from '../utility';
 import Shop from './Shop';
@@ -18,6 +18,13 @@ const HUD = (props) => {
 
     const isWhiteTurn = turnCount % 2 === 0
     const isKingOnHomeSquare = gameState.boardState[7][4]?.[0]?.type === "white_king"
+
+    useEffect(() => {
+        if (!isWhiteTurn || !isKingOnHomeSquare) {
+            setToggleShop(false)
+            props.setShopPieceSelected(null)
+        }
+    }, [isWhiteTurn, isKingOnHomeSquare])
     return(
         <div>
             <div style={{

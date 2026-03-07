@@ -1,10 +1,10 @@
 import React from 'react';
 import { GameStateContextData } from '../context/GameStateContext';
-import { IMAGE_MAP, PROMOTION_PIECES, camelToSnake, determineIsMobile } from '../utility';
+import { IMAGE_MAP, PROMOTION_PIECES, camelToSnake, useIsMobile } from '../utility';
 
 const PawnExchangeModal = (props) => {
     const gameState = GameStateContextData()
-    const isMobile = determineIsMobile()
+    const isMobile = useIsMobile()
 
     const handleSelection = (pieceType) => {
         const newBoardState = [...gameState.boardState]

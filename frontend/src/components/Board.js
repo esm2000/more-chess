@@ -13,7 +13,7 @@ import PawnExchangeModal from './PawnExchangeModal';
 
 import { GameStateContextData }  from '../context/GameStateContext';
 
-import { PLAYERS, pickSide, snakeToCamel, determineIsMobile } from '../utility';
+import { PLAYERS, pickSide, snakeToCamel, useIsMobile } from '../utility';
 
 const Board = () => {
     // positionInPlay used to figure out what piece is being moved by player
@@ -24,7 +24,7 @@ const Board = () => {
     const possibleCaptures = gameState.possibleCaptures
     const swordInTheStonePosition = gameState.swordInTheStonePosition
     const turnCount = gameState.turnCount
-    const isMobile = determineIsMobile()
+    const isMobile = useIsMobile()
     const blackDefeat = gameState.blackDefeat
     const whiteDefeat = gameState.whiteDefeat
 

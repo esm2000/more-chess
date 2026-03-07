@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import { GameStateContextData } from '../context/GameStateContext';
-import { IMAGE_MAP, PLAYERS, determineIsMobile } from '../utility';
+import { IMAGE_MAP, PLAYERS, useIsMobile } from '../utility';
 import Shop from './Shop';
 
 
@@ -9,7 +9,7 @@ const HUD = (props) => {
     const turnCount = gameState.turnCount
     const goldCount = gameState.goldCount?.[PLAYERS[0]] || 0
     const enemyGoldCount = gameState.goldCount?.[PLAYERS[1]] || 0
-    const isMobile = determineIsMobile()
+    const isMobile = useIsMobile()
     const [toggleShop, setToggleShop] = useState(false)
 
     const handleShopButtonClick = () => {
@@ -26,7 +26,9 @@ const HUD = (props) => {
                 padding: `${isMobile ? 1.5 : 0.75}vw ${isMobile ? 2 : 1}vw`,
                 fontFamily: 'Basic',
                 color: 'white',
-                marginTop: `${isMobile ? 1 : 0.5}vw`
+                marginTop: `${isMobile ? 1 : 0.5}vw`,
+                width: isMobile ? '59.2vw' : '29.6vw',
+                boxSizing: 'border-box'
             }}>
                 <div style={{
                     display: 'flex',

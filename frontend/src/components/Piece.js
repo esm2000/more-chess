@@ -6,7 +6,7 @@ import {
     PLAYERS, 
     IMAGE_MAP, 
     MAX_BOSS_HEALTH, 
-    determineIsMobile, 
+    useIsMobile, 
     snakeToCamel,
     camelToSnake
 } from '../utility';
@@ -14,7 +14,7 @@ import {
 const Piece = (props) => {
     const gameState = GameStateContextData()
     const positionInPlay = gameState.positionInPlay
-    const isMobile = determineIsMobile()
+    const isMobile = useIsMobile()
     const topPosition = props.row * 3.7 * (isMobile ? 2: 1)
     const leftPosition = props.col * 3.7 * (isMobile ? 2: 1)
 

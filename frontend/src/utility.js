@@ -1,3 +1,5 @@
+import React from 'react';
+
 const PLAYERS = ["white", "black"]
 const PROMOTION_PIECES = ["Knight", "Bishop", "Rook", "Queen"]
 
@@ -329,7 +331,16 @@ function findThreateningBishop(boardState, side, row, col) {
     return null;
   }
 
-const determineIsMobile = () => window.matchMedia("(max-width: 1024px)").matches && window.matchMedia("(orientation: portrait)").matches
+const useIsMobile = () => {
+    const query = window.matchMedia("(max-width: 1024px) and (orientation: portrait)")
+    const [isMobile, setIsMobile] = React.useState(query.matches)
+    React.useEffect(() => {
+        const handler = (e) => setIsMobile(e.matches)
+        query.addEventListener('change', handler)
+        return () => query.removeEventListener('change', handler)
+    }, [])
+    return isMobile
+}
 
 export {
     PLAYERS,
@@ -349,7 +360,7 @@ export {
     convertKeysToSnakeCase,
     determineBackgroundColor,
     determineColor, 
-    determineIsMobile,
+    useIsMobile,
     capitalizeFirstLetter,
     findThreateningBishop
 };

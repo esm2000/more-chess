@@ -6,7 +6,7 @@ import { GameStateContextData }  from '../context/GameStateContext';
 import {
     determineBackgroundColor,
     determineColor,
-    determineIsMobile,
+    useIsMobile,
     DRAGON_POSITION,
     BOARD_HERALD_POSITION,
     BARON_NASHOR_POSITION,
@@ -35,7 +35,7 @@ const Square = (props) => {
 
     const backgroundColor = determineBackgroundColor(row, col, positionInPlay, possibleCaptures, isDragonActive, isHeraldActive, isBaronActive, swordInTheStonePosition)
     const color = determineColor(row, col, isDragonActive, isHeraldActive, isBaronActive)
-    const isMobile = determineIsMobile()
+    const isMobile = useIsMobile()
 
     const isValidSquare = (row, col) => {
         if (row <= 3) {

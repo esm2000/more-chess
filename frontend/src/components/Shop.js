@@ -1,21 +1,22 @@
 import React from 'react';
 import { GameStateContextData } from '../context/GameStateContext';
-import { IMAGE_MAP, PLAYERS, getPiecePrice, determineIsMobile } from '../utility';
+import { IMAGE_MAP, PLAYERS, getPiecePrice, useIsMobile } from '../utility';
 import PieceShopModal from './PieceShopModal';
 
 
 const Shop = (props) => {
     const gameState = GameStateContextData()
     const playerGoldCount = gameState.goldCount[PLAYERS[0]] - (getPiecePrice(props.shopPieceSelected) || 0)
-    const isMobile = determineIsMobile()
+    const isMobile = useIsMobile()
 
     return(
         <div
             className="pixel-panel"
             style={{
-                width: `${isMobile ? 55 : 27.15}vw`,
+                width: `${isMobile ? 59.2 : 29.6}vw`,
                 marginTop: `${isMobile ? 3 : 1.5}vw`,
                 borderWidth: `${isMobile ? 2.5 : 1.25}vw`,
+                boxSizing: 'border-box',
             }}
         >
             <div style={{

@@ -37,7 +37,7 @@ def update_gold_count(old_game_state: GameState, new_game_state: GameState, gold
 
     for side in new_game_state["captured_pieces"]:
         for piece in list_difference(new_game_state["captured_pieces"][side], old_game_state["captured_pieces"][side]):
-            new_game_state["gold_count"][side] += get_piece_value(piece) * 2
+            new_game_state["gold_count"][side] += 1
 
         new_game_state["gold_count"][side] -= gold_spent[side]
 

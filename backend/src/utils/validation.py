@@ -364,7 +364,7 @@ def get_gold_spent(moved_pieces: list[MovedPiece]) -> GoldSpent:
         if moved_piece["current_position"][0] is not None \
         and moved_piece["previous_position"][0] is None \
         and not any(p['previous_position'] == moved_piece["current_position"] for p in moved_pieces if p["previous_position"][0] is not None):          
-            gold_spent[moved_piece["side"]] += get_piece_value(moved_piece["piece"]["type"])
+            gold_spent[moved_piece["side"]] += get_piece_value(moved_piece["piece"]["type"]) * 2
     return gold_spent
 
 

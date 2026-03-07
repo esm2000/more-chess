@@ -16,7 +16,8 @@ const HUD = (props) => {
         setToggleShop(!toggleShop)
     }
 
-    const isKingOnHomeSquare = gameState.boardState[7][4]?.[0].type === "white_king"
+    const isWhiteTurn = turnCount % 2 === 0
+    const isKingOnHomeSquare = gameState.boardState[7][4]?.[0]?.type === "white_king"
     return(
         <div>
             <div style={{
@@ -34,7 +35,7 @@ const HUD = (props) => {
                     marginBottom: `${isMobile ? 1 : 0.5}vw`
                 }}>
                     <span style={{ fontSize: `${isMobile ? 2.5 : 1.25}vw` }}>Turn: {turnCount}</span>
-                    {isKingOnHomeSquare ?
+                    {isWhiteTurn && isKingOnHomeSquare ?
                         <button
                             className="pixel-btn"
                             onClick={() => handleShopButtonClick()}

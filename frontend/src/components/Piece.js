@@ -8,7 +8,6 @@ import {
     MAX_BOSS_HEALTH, 
     determineIsMobile, 
     snakeToCamel,
-    getPiecePrice,
     camelToSnake
 } from '../utility';
 
@@ -31,28 +30,21 @@ const Piece = (props) => {
             const newPositionInPlay = [null, null]
             const pieceInPlay = newBoardState[positionInPlay[0]][positionInPlay[1]].find(piece => piece.type.includes(PLAYERS[0]))
             const newCapturedPieces = {...gameState.capturedPieces}
-            var newGoldCount = {...gameState.goldCount}
-            var capturedPiece
-            var capturedPieceValue
 
             for (let i = 0; i < newBoardState[props.row][props.col]?.length; i++) {
                 if (snakeToCamel(newBoardState[props.row][props.col][i]?.type) === type) {
-                    capturedPiece = newBoardState[props.row][props.col][i]
-                    capturedPieceValue = getPiecePrice(snakeToCamel(capturedPiece.type))
-                    newCapturedPieces[PLAYERS[0]].push(capturedPiece.type)
+                    newCapturedPieces[PLAYERS[0]].push(newBoardState[props.row][props.col][i].type)
                     newBoardState[props.row][props.col].splice(i, 1);
                 }
             }
-            newGoldCount[PLAYERS[0]] += capturedPieceValue ? capturedPieceValue : 0
 
             newBoardState[props.row][props.col] = newBoardState[props.row][props.col].filter(piece => !piece.type.includes(PLAYERS[1]))
             newBoardState[props.row][props.col].push(pieceInPlay)
             newBoardState[positionInPlay[0]][positionInPlay[1]] = newBoardState[positionInPlay[0]][positionInPlay[1]]?.filter(piece => piece.type !== pieceInPlay.type)
 
             gameState.updateGameState({
-                ...gameState, 
+                ...gameState,
                 capturedPieces: newCapturedPieces,
-                goldCount: newGoldCount,
                 boardState: newBoardState,
                 positionInPlay: newPositionInPlay
             })
@@ -140,34 +132,27 @@ const Piece = (props) => {
     const handleCaptureButtonClick = () => {
         const newBoardState = [...gameState.boardState]
         const newCapturedPieces = {...gameState.capturedPieces}
-        var newGoldCount = {...gameState.goldCount}
-        var capturedPiece
-        var capturedPieceValue
-        var i = 0 
+        var i = 0
         while (i < newBoardState[props.row][props.col]?.length) {
             if (snakeToCamel(newBoardState[props.row][props.col][i]?.type) === props.type) {
-                capturedPiece = newBoardState[props.row][props.col][i]
-                capturedPieceValue = getPiecePrice(snakeToCamel(capturedPiece.type))
-                newCapturedPieces[PLAYERS[0]].push(capturedPiece.type)
+                newCapturedPieces[PLAYERS[0]].push(newBoardState[props.row][props.col][i].type)
                 newBoardState[props.row][props.col].splice(i, 1);
             }
             i++
         }
-        
+
         const newBishopSpecialCaptures = [
             {
                 position: [props.row, props.col],
-                type: camelToSnake(props.type) 
+                type: camelToSnake(props.type)
             }
         ]
-        
-        newGoldCount[PLAYERS[0]] += capturedPieceValue ? capturedPieceValue : 0
+
         gameState.updateGameState({
-            ...gameState, 
+            ...gameState,
             bishopSpecialCaptures: newBishopSpecialCaptures,
             boardState: newBoardState,
             capturedPieces: newCapturedPieces,
-            goldCount: newGoldCount
         })
         
     }
@@ -179,7 +164,8 @@ const Piece = (props) => {
         if (props.type.toLowerCase().includes('nashor')) return 'nashor_piece'
     }
 
-    const image_src = props.pawnBuff ? props.type + `${props.pawnBuff + 1}` : props.type
+    const buffedSrc = props.pawnBuff ? props.type + `${props.pawnBuff + 1}` : props.type
+    const image_src = IMAGE_MAP[buffedSrc] ? buffedSrc : props.type
 
     return(
         <div>

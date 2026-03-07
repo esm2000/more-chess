@@ -12,8 +12,7 @@ import {
     BARON_NASHOR_POSITION,
     PLAYERS,
     IMAGE_MAP,
-    camelToSnake,
-    getPiecePrice
+    camelToSnake
 } from '../utility';
 
 const isBossActive = (boardState, bossPosition, bossType) => {
@@ -57,7 +56,7 @@ const Square = (props) => {
             return false
         }
 
-        if (boardState[row][col]) {
+        if (boardState[row][col]?.length) {
             return false
         }
     
@@ -66,22 +65,17 @@ const Square = (props) => {
 
     const handleSquareSelectionClick = () => {
         const newBoardState = [...gameState.boardState]
-        const selectedShopPieceValue = getPiecePrice(props.shopPieceSelected)
-        var newGoldCount = {...gameState.goldCount}
 
-        if (!newBoardState[row][col]) {
+        if (!newBoardState[row][col]?.length) {
             newBoardState[row][col] = [{"type": camelToSnake(props.shopPieceSelected)}]
         } else {
             // player shouldn't be allowed to place piece where another piece is present
             return
         }
 
-        newGoldCount[PLAYERS[0]] -= selectedShopPieceValue ? selectedShopPieceValue : 0
-        
         gameState.updateGameState({
-            ...gameState, 
+            ...gameState,
             boardState: newBoardState,
-            goldCount: newGoldCount
         })
         props.setShopPieceSelected(null)
     }
@@ -142,7 +136,7 @@ const Square = (props) => {
                     src={IMAGE_MAP[props.shopPieceSelected]}
                     className="ghost-piece"
                     alt="preview"
-                    style={{ width: `${isMobile ? 3.6 : 1.8}vw` }}
+                    style={{ width: `${isMobile ? 3.6 : 1.8}vw`, height: `${isMobile ? 5.9 : 2.95}vw` }}
                 />
             )}
         </div>

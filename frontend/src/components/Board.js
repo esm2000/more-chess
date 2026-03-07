@@ -67,7 +67,7 @@ const Board = () => {
                         return (
                             <div>
                                 {pieceRow.map((piece_array, col) => {
-                                    if (piece_array) {  
+                                    if (piece_array?.length) {
                                         return(
                                             piece_array.map((piece) => {
                                                 return (

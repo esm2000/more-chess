@@ -9,7 +9,12 @@ const PawnExchangeModal = (props) => {
     const handleSelection = (pieceType) => {
         const newBoardState = [...gameState.boardState]
         const [row, col] = props.pawnPosition
-        newBoardState[row][col] = [{ "type": camelToSnake(props.side + pieceType) }]
+        const square = [...(newBoardState[row][col] || [])]
+        const pawnIndex = square.findIndex(p => p.type === `${props.side}_pawn`)
+        if (pawnIndex !== -1) {
+            square[pawnIndex] = { "type": camelToSnake(props.side + pieceType) }
+        }
+        newBoardState[row][col] = square
 
         gameState.updateGameState({
             ...gameState,

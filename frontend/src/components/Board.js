@@ -95,7 +95,7 @@ const Board = () => {
                                     // a position is represented as an array
                                     // [[position that piece in play will land in , position of enemy in danger], ...]
                                     if (!possibleCaptures.some((possibleCapture) => JSON.stringify(possibleMove).includes(JSON.stringify(possibleCapture[0]))))
-                                        if (!shopPieceSelected || (possibleMove[0] <= 3)) {
+                                        if (!shopPieceSelected) {
                                             return(
                                                 <PossibleMove 
                                                     key={'pm' + possibleMove[0].toString() + possibleMove[1].toString()}

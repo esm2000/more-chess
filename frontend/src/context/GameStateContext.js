@@ -128,10 +128,12 @@ export function GameStateProvider({children}) {
     const [gameState, setGameState] = useState(initGameState);
 
     const fetchInProgress = useRef(false)
+    const fetchGeneration = useRef(0)
 
     const fetchGameState = () => {
         if (fetchInProgress.current) return
         fetchInProgress.current = true
+        const currentGeneration = fetchGeneration.current
 
         var url
         var method
@@ -148,6 +150,10 @@ export function GameStateProvider({children}) {
         fetch(url, {"method": method})
         .then(response => response.json())
         .then(result => {
+            if (fetchGeneration.current !== currentGeneration) {
+                fetchInProgress.current = false
+                return
+            }
             if (method === "POST") {
                 console.log(`POST Game ID - ${result["id"]}`)
             } else {
@@ -170,6 +176,7 @@ export function GameStateProvider({children}) {
     }
 
     const restartGame = () => {
+        fetchGeneration.current += 1
         sessionStorage.removeItem("gameStateId")
         sessionStorage.removeItem("lastUpdated")
         setGameState({...initGameState, updateGameState, restartGame})

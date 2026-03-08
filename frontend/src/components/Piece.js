@@ -160,7 +160,7 @@ const Piece = (props) => {
 
     const handleCastleButtonClick = (castleMove) => {
         const newBoardState = [...gameState.boardState.map(row => row ? [...row] : row)]
-        const startRow = props.row
+        const startRow = castleMove[0]
         const kingCol = props.col
         const targetKingCol = castleMove[1]
 

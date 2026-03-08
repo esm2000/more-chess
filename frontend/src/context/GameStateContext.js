@@ -35,7 +35,8 @@ const GameStateContext = createContext({
     neutralBuffLog: {
         white: {dragon: {stacks:0, turn: 0}, boardHerald: {active: false, turn: 0}, baronNashor: {active: false, turn: 0}},
         black: {dragon: {stacks:0, turn: 0}, boardHerald: {active: false, turn: 0}, baronNashor: {active: false, turn: 0}}
-    }
+    },
+    restartGame: () => {}
 })
 
 export function GameStateContextData() {
@@ -65,8 +66,9 @@ export function GameStateProvider({children}) {
         })
         .then(jsonResponse => {
             const parsedJsonResponse = {
-                ...convertKeysToCamelCase(jsonResponse), 
-                updateGameState: updateGameState
+                ...convertKeysToCamelCase(jsonResponse),
+                updateGameState: updateGameState,
+                restartGame: restartGame
             }
             setGameState(parsedJsonResponse)
             sessionStorage.setItem("lastUpdated", parsedJsonResponse["lastUpdated"])
@@ -127,10 +129,12 @@ export function GameStateProvider({children}) {
     const [gameState, setGameState] = useState(initGameState);
 
     const fetchInProgress = useRef(false)
+    const fetchGeneration = useRef(0)
 
     const fetchGameState = () => {
         if (fetchInProgress.current) return
         fetchInProgress.current = true
+        const currentGeneration = fetchGeneration.current
 
         var url
         var method
@@ -147,14 +151,19 @@ export function GameStateProvider({children}) {
         fetch(url, {"method": method})
         .then(response => response.json())
         .then(result => {
+            if (fetchGeneration.current !== currentGeneration) {
+                fetchInProgress.current = false
+                return
+            }
             if (method === "POST") {
                 console.log(`POST Game ID - ${result["id"]}`)
             } else {
                 console.log(`GET Game ${result["id"]}`)
             }
             const parsedResult = {
-                ...convertKeysToCamelCase(result), 
-                updateGameState: updateGameState
+                ...convertKeysToCamelCase(result),
+                updateGameState: updateGameState,
+                restartGame: restartGame
             }
             setGameState(parsedResult)
             sessionStorage.setItem("gameStateId", parsedResult["id"])
@@ -165,6 +174,15 @@ export function GameStateProvider({children}) {
             console.log(exception);
             fetchInProgress.current = false
         });
+    }
+
+    const restartGame = () => {
+        fetchGeneration.current += 1
+        sessionStorage.removeItem("gameStateId")
+        sessionStorage.removeItem("lastUpdated")
+        setGameState({...initGameState, updateGameState, restartGame})
+        fetchInProgress.current = false
+        fetchGameState()
     }
 
     useEffect(() => {

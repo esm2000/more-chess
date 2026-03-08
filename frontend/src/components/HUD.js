@@ -11,6 +11,7 @@ const HUD = (props) => {
     const enemyGoldCount = gameState.goldCount?.[PLAYERS[1]] || 0
     const isMobile = useIsMobile()
     const [toggleShop, setToggleShop] = useState(false)
+    const [showRestartConfirm, setShowRestartConfirm] = useState(false)
 
     const handleShopButtonClick = () => {
         setToggleShop(!toggleShop)
@@ -18,6 +19,19 @@ const HUD = (props) => {
 
     const isWhiteTurn = turnCount % 2 === 0
     const isKingOnHomeSquare = gameState.boardState[7][4]?.[0]?.type === "white_king"
+
+    const handleConfirmRestart = () => {
+        setShowRestartConfirm(false)
+        setToggleShop(false)
+        props.setShopPieceSelected(null)
+        gameState.restartGame()
+    }
+
+    const confirmBtnStyle = {
+        fontSize: `${isMobile ? 1.4 : 0.7}vw`,
+        padding: `${isMobile ? 0.4 : 0.2}vw ${isMobile ? 1 : 0.5}vw`,
+        borderRadius: `${isMobile ? 0.6 : 0.3}vw`
+    }
 
     useEffect(() => {
         if (!isWhiteTurn || !isKingOnHomeSquare) {
@@ -57,25 +71,47 @@ const HUD = (props) => {
                         null
                     }
                 </div>
-                <div style={{ display: 'flex', gap: `${isMobile ? 3 : 1.5}vw`, alignItems: 'center' }}>
-                    <div className="gold-display" style={{ fontSize: `${isMobile ? 2 : 1}vw` }}>
-                        <span style={{ color: 'rgb(230, 233, 198)' }}>You:</span>
-                        <img
-                            src={IMAGE_MAP["goldCoin"]}
-                            alt="gold"
-                            style={{ height: `${isMobile ? 2.5 : 1.25}vw` }}
-                        />
-                        <span style={{ color: 'rgb(230, 233, 198)' }}>{goldCount}</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', gap: `${isMobile ? 3 : 1.5}vw`, alignItems: 'center' }}>
+                        <div className="gold-display" style={{ fontSize: `${isMobile ? 2 : 1}vw` }}>
+                            <span style={{ color: 'rgb(230, 233, 198)' }}>You:</span>
+                            <img
+                                src={IMAGE_MAP["goldCoin"]}
+                                alt="gold"
+                                style={{ height: `${isMobile ? 2.5 : 1.25}vw` }}
+                            />
+                            <span style={{ color: 'rgb(230, 233, 198)' }}>{goldCount}</span>
+                        </div>
+                        <div className="gold-display" style={{ fontSize: `${isMobile ? 2 : 1}vw`, opacity: 0.7 }}>
+                            <span style={{ color: 'rgb(180, 180, 180)' }}>Enemy:</span>
+                            <img
+                                src={IMAGE_MAP["goldCoin"]}
+                                alt="enemy gold"
+                                style={{ height: `${isMobile ? 2.5 : 1.25}vw`, filter: 'grayscale(100%)' }}
+                            />
+                            <span style={{ color: 'rgb(180, 180, 180)' }}>{enemyGoldCount}</span>
+                        </div>
                     </div>
-                    <div className="gold-display" style={{ fontSize: `${isMobile ? 2 : 1}vw`, opacity: 0.7 }}>
-                        <span style={{ color: 'rgb(180, 180, 180)' }}>Enemy:</span>
-                        <img
-                            src={IMAGE_MAP["goldCoin"]}
-                            alt="enemy gold"
-                            style={{ height: `${isMobile ? 2.5 : 1.25}vw`, filter: 'grayscale(100%)' }}
-                        />
-                        <span style={{ color: 'rgb(180, 180, 180)' }}>{enemyGoldCount}</span>
-                    </div>
+                    {showRestartConfirm ?
+                        <div style={{ display: 'flex', gap: `${isMobile ? 0.6 : 0.3}vw`, alignItems: 'center' }}>
+                            <span style={{ fontSize: `${isMobile ? 1.4 : 0.7}vw`, opacity: 0.8 }}>Restart?</span>
+                            <button
+                                className="pixel-btn"
+                                onClick={handleConfirmRestart}
+                                style={confirmBtnStyle}
+                            >Yes</button>
+                            <button
+                                className="pixel-btn"
+                                onClick={() => setShowRestartConfirm(false)}
+                                style={confirmBtnStyle}
+                            >No</button>
+                        </div> :
+                        <button
+                            className="pixel-btn"
+                            onClick={() => setShowRestartConfirm(true)}
+                            style={{...confirmBtnStyle, opacity: 0.7}}
+                        >Restart</button>
+                    }
                 </div>
             </div>
             {

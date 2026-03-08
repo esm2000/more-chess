@@ -108,6 +108,7 @@ const Board = () => {
                                 shopPieceSelected={shopPieceSelected}
                             />
                         );
+                    return null;
                 })}
                 {swordInTheStonePosition ? 
                     <Buff

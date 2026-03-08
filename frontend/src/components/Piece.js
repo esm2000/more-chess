@@ -223,7 +223,6 @@ const Piece = (props) => {
         left: `${leftPosition + leftOffset}vw`,
         borderRadius: `${0.3 * (isMobile ? 2 : 1)}vw`,
         padding: `${0.1 * (isMobile ? 2 : 1)}vw ${0.3 * (isMobile ? 2 : 1)}vw`,
-        fontSize: `${isMobile ? 1.4 : 0.7}vw`,
         whiteSpace: 'nowrap',
         position: 'absolute',
         textAlign: 'center',
@@ -353,11 +352,14 @@ const Piece = (props) => {
                         return (
                             <button
                                 key={`castle-${move[1]}`}
-                                style={pieceActionBtnStyle(
-                                    -(isMobile ? 2.5 : 1.25),
-                                    isQueenside ? -(isMobile ? 8 : 4) : (isMobile ? 5.5 : 2.75),
-                                    '#63bbf2', '#24a0ed'
-                                )}
+                                style={{
+                                    ...pieceActionBtnStyle(
+                                        -(isMobile ? 2.5 : 1.25),
+                                        isQueenside ? -(isMobile ? 8 : 4) : (isMobile ? 5.5 : 2.75),
+                                        '#63bbf2', '#24a0ed'
+                                    ),
+                                    fontSize: `${isMobile ? 1.4 : 0.7}vw`,
+                                }}
                                 onClick={() => handleCastleButtonClick(move)}
                             >{isQueenside ? "Castle Left" : "Castle Right"}</button>
                         )

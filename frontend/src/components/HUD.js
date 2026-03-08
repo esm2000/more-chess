@@ -11,6 +11,7 @@ const HUD = (props) => {
     const enemyGoldCount = gameState.goldCount?.[PLAYERS[1]] || 0
     const isMobile = useIsMobile()
     const [toggleShop, setToggleShop] = useState(false)
+    const [showRestartConfirm, setShowRestartConfirm] = useState(false)
 
     const handleShopButtonClick = () => {
         setToggleShop(!toggleShop)
@@ -44,28 +45,70 @@ const HUD = (props) => {
                     marginBottom: `${isMobile ? 1 : 0.5}vw`
                 }}>
                     <span style={{ fontSize: `${isMobile ? 2.5 : 1.25}vw` }}>Turn: {turnCount}</span>
-                    <div style={{ display: 'flex', gap: `${isMobile ? 1 : 0.5}vw`, alignItems: 'center' }}>
-                        {isWhiteTurn && isKingOnHomeSquare ?
-                            <button
-                                className="pixel-btn"
-                                onClick={() => handleShopButtonClick()}
-                                style={{
-                                    fontSize: `${isMobile ? 1.8 : 0.9}vw`,
-                                    padding: `${isMobile ? 0.6 : 0.3}vw ${isMobile ? 1.5 : 0.75}vw`,
-                                    borderRadius: `${isMobile ? 0.6 : 0.3}vw`
-                                }}
-                            >{toggleShop ? "Close Shop" : "Open Shop"}</button> :
-                            null
-                        }
+                    {isWhiteTurn && isKingOnHomeSquare ?
                         <button
                             className="pixel-btn"
-                            onClick={() => {
-                                if (window.confirm("Restart game?")) {
+                            onClick={() => handleShopButtonClick()}
+                            style={{
+                                fontSize: `${isMobile ? 1.8 : 0.9}vw`,
+                                padding: `${isMobile ? 0.6 : 0.3}vw ${isMobile ? 1.5 : 0.75}vw`,
+                                borderRadius: `${isMobile ? 0.6 : 0.3}vw`
+                            }}
+                        >{toggleShop ? "Close Shop" : "Open Shop"}</button> :
+                        null
+                    }
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', gap: `${isMobile ? 3 : 1.5}vw`, alignItems: 'center' }}>
+                        <div className="gold-display" style={{ fontSize: `${isMobile ? 2 : 1}vw` }}>
+                            <span style={{ color: 'rgb(230, 233, 198)' }}>You:</span>
+                            <img
+                                src={IMAGE_MAP["goldCoin"]}
+                                alt="gold"
+                                style={{ height: `${isMobile ? 2.5 : 1.25}vw` }}
+                            />
+                            <span style={{ color: 'rgb(230, 233, 198)' }}>{goldCount}</span>
+                        </div>
+                        <div className="gold-display" style={{ fontSize: `${isMobile ? 2 : 1}vw`, opacity: 0.7 }}>
+                            <span style={{ color: 'rgb(180, 180, 180)' }}>Enemy:</span>
+                            <img
+                                src={IMAGE_MAP["goldCoin"]}
+                                alt="enemy gold"
+                                style={{ height: `${isMobile ? 2.5 : 1.25}vw`, filter: 'grayscale(100%)' }}
+                            />
+                            <span style={{ color: 'rgb(180, 180, 180)' }}>{enemyGoldCount}</span>
+                        </div>
+                    </div>
+                    {showRestartConfirm ?
+                        <div style={{ display: 'flex', gap: `${isMobile ? 0.6 : 0.3}vw`, alignItems: 'center' }}>
+                            <span style={{ fontSize: `${isMobile ? 1.4 : 0.7}vw`, opacity: 0.8 }}>Restart?</span>
+                            <button
+                                className="pixel-btn"
+                                onClick={() => {
+                                    setShowRestartConfirm(false)
                                     setToggleShop(false)
                                     props.setShopPieceSelected(null)
                                     gameState.restartGame()
-                                }
-                            }}
+                                }}
+                                style={{
+                                    fontSize: `${isMobile ? 1.4 : 0.7}vw`,
+                                    padding: `${isMobile ? 0.4 : 0.2}vw ${isMobile ? 1 : 0.5}vw`,
+                                    borderRadius: `${isMobile ? 0.6 : 0.3}vw`
+                                }}
+                            >Yes</button>
+                            <button
+                                className="pixel-btn"
+                                onClick={() => setShowRestartConfirm(false)}
+                                style={{
+                                    fontSize: `${isMobile ? 1.4 : 0.7}vw`,
+                                    padding: `${isMobile ? 0.4 : 0.2}vw ${isMobile ? 1 : 0.5}vw`,
+                                    borderRadius: `${isMobile ? 0.6 : 0.3}vw`
+                                }}
+                            >No</button>
+                        </div> :
+                        <button
+                            className="pixel-btn"
+                            onClick={() => setShowRestartConfirm(true)}
                             style={{
                                 fontSize: `${isMobile ? 1.4 : 0.7}vw`,
                                 padding: `${isMobile ? 0.4 : 0.2}vw ${isMobile ? 1 : 0.5}vw`,
@@ -73,27 +116,7 @@ const HUD = (props) => {
                                 opacity: 0.7
                             }}
                         >Restart</button>
-                    </div>
-                </div>
-                <div style={{ display: 'flex', gap: `${isMobile ? 3 : 1.5}vw`, alignItems: 'center' }}>
-                    <div className="gold-display" style={{ fontSize: `${isMobile ? 2 : 1}vw` }}>
-                        <span style={{ color: 'rgb(230, 233, 198)' }}>You:</span>
-                        <img
-                            src={IMAGE_MAP["goldCoin"]}
-                            alt="gold"
-                            style={{ height: `${isMobile ? 2.5 : 1.25}vw` }}
-                        />
-                        <span style={{ color: 'rgb(230, 233, 198)' }}>{goldCount}</span>
-                    </div>
-                    <div className="gold-display" style={{ fontSize: `${isMobile ? 2 : 1}vw`, opacity: 0.7 }}>
-                        <span style={{ color: 'rgb(180, 180, 180)' }}>Enemy:</span>
-                        <img
-                            src={IMAGE_MAP["goldCoin"]}
-                            alt="enemy gold"
-                            style={{ height: `${isMobile ? 2.5 : 1.25}vw`, filter: 'grayscale(100%)' }}
-                        />
-                        <span style={{ color: 'rgb(180, 180, 180)' }}>{enemyGoldCount}</span>
-                    </div>
+                    }
                 </div>
             </div>
             {

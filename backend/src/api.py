@@ -35,6 +35,7 @@ class GameStateRequest(BaseModel, extra=Extra.allow):
     board_state: list
     possible_moves: list
     possible_captures: list
+    castle_moves: list
     captured_pieces: dict
     sword_in_the_stone_position: Union[list, None]
     capture_point_advantage: Union[list, None]

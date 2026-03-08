@@ -43,9 +43,11 @@ def determine_possible_moves(old_game_state: GameState, new_game_state: GameStat
 
         new_game_state["possible_moves"] = moves_info["possible_moves"]
         new_game_state["possible_captures"] = moves_info["possible_captures"]
+        new_game_state["castle_moves"] = moves_info.get("castle_moves", [])
     if is_pawn_exchange_required_this_turn:
         new_game_state["possible_moves"] = []
         new_game_state["possible_captures"] = []
+        new_game_state["castle_moves"] = []
 
 
 def was_a_new_position_in_play_selected(moved_pieces: list[MovedPiece], old_game_state: GameState, new_game_state: GameState) -> bool:

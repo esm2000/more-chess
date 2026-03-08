@@ -117,6 +117,40 @@ const Piece = (props) => {
         }   
     }
 
+    const handleCastleClick = () => {
+        const newBoardState = [...gameState.boardState]
+        const kingRow = props.row
+        const isQueenside = props.col === 0
+        const kingCol = 4
+        const kingTarget = isQueenside ? 2 : 6
+        const rookTarget = isQueenside ? 3 : 5
+
+        // Move king
+        const kingPiece = newBoardState[kingRow][kingCol].find(piece => piece.type.includes('king'))
+        newBoardState[kingRow][kingCol] = newBoardState[kingRow][kingCol].filter(piece => !piece.type.includes('king'))
+        if (!newBoardState[kingRow][kingTarget]) newBoardState[kingRow][kingTarget] = []
+        newBoardState[kingRow][kingTarget].push(kingPiece)
+
+        // Move rook
+        const rookPiece = newBoardState[kingRow][props.col].find(piece => piece.type.includes('rook'))
+        newBoardState[kingRow][props.col] = newBoardState[kingRow][props.col].filter(piece => !piece.type.includes('rook'))
+        if (!newBoardState[kingRow][rookTarget]) newBoardState[kingRow][rookTarget] = []
+        newBoardState[kingRow][rookTarget].push(rookPiece)
+
+        gameState.updateGameState({
+            ...gameState,
+            boardState: newBoardState,
+            positionInPlay: [null, null]
+        })
+    }
+
+    const isCastleAvailable = () => {
+        if (!props.type.toLowerCase().includes('rook')) return false
+        if (!gameState.castleMoves || gameState.castleMoves.length === 0) return false
+        const targetCol = props.col === 0 ? 2 : 6
+        return gameState.castleMoves.some(move => move[0] === props.row && move[1] === targetCol)
+    }
+
     const handleSpareButtonClick = () => {
         const newBoardState = [...gameState.boardState]
         for (let i = 0; i < newBoardState[props.row][props.col].length; i++) {
@@ -294,6 +328,30 @@ const Piece = (props) => {
                         }}
                     />);
                 }): null
+            }
+            {isCastleAvailable() ?
+                <button
+                    className={pickClassName()}
+                    style={{
+                        top: `${(topPosition + 0.75) * (isMobile ? 1: 1)}vw`,
+                        left: `${(leftPosition + 0) * (isMobile ? 1: 1)}vw`,
+                        borderRadius: `${0.4 * (isMobile ? 2: 1)}vw`,
+                        padding: `${0.15 * (isMobile ? 2: 1)}vw`,
+                        height: `${1.25 * (isMobile ? 2: 1)}vw`,
+                        width: `${4 * (isMobile ? 2: 1)}vw`,
+                        fontSize: `0.5em`,
+                        positon: "absolute",
+                        textAlign: "center",
+                        textDecoration: "none",
+                        outline: "none",
+                        borderColor: "#FFD700",
+                        color: "white",
+                        backgroundColor: "#DAA520",
+                        cursor: "pointer",
+                    }}
+                    onClick={() => handleCastleClick()}
+                >Castle</button>
+                : null
             }
         </div>
     );

@@ -56,6 +56,7 @@ def clean_possible_moves_and_possible_captures(new_game_state: GameState) -> Non
     """Clear possible_moves and possible_captures from the previous turn."""
     new_game_state["possible_moves"] = []
     new_game_state["possible_captures"] = []
+    new_game_state["castle_moves"] = []
 
 
 def prevent_client_side_updates_to_graveyard(old_game_state: GameState, new_game_state: GameState) -> None:

@@ -5,7 +5,7 @@ const PROMOTION_PIECES = ["Knight", "Bishop", "Rook", "Queen"]
 
 var BASE_API_URL
 if (process.env.REACT_APP_LOCAL === "true") {
-    BASE_API_URL = "http://0.0.0.0:8080";
+    BASE_API_URL = "http://localhost:8080";
 } else {
     var current_link = window.location.href
 

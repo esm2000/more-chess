@@ -184,8 +184,8 @@ const Piece = (props) => {
     }
 
     const handleSurrenderButtonClick = () => {
-        const newBoardState = [...gameState.boardState]
-        const newCapturedPieces = {...gameState.capturedPieces}
+        const newBoardState = [...gameState.boardState.map(row => row ? [...row] : row)]
+        const newCapturedPieces = JSON.parse(JSON.stringify(gameState.capturedPieces))
 
         for (let i = 0; i < newBoardState[props.row][props.col]?.length; i++) {
             if (snakeToCamel(newBoardState[props.row][props.col][i]?.type) === props.type) {

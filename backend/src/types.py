@@ -170,6 +170,7 @@ class GameState(TypedDict, total=False):
     board_state: BoardState
     possible_moves: list[Position]
     possible_captures: list[list[Position]]
+    castle_moves: list[Position]
     captured_pieces: SideStrList
     graveyard: list[str]
 

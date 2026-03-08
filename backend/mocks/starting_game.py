@@ -6,6 +6,7 @@ starting_game = {
     "position_in_play": [None, None],
     "possible_moves": [],
     "possible_captures": [],
+    "castle_moves": [],
     "captured_pieces": {"white": [], "black": []},
     "graveyard": [],
     "sword_in_the_stone_position": None,

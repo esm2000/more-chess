@@ -22,6 +22,7 @@ const Board = () => {
     const boardState = gameState.boardState
     const possibleMoves = gameState.possibleMoves
     const possibleCaptures = gameState.possibleCaptures
+    const castleMoves = gameState.castleMoves || []
     const swordInTheStonePosition = gameState.swordInTheStonePosition
     const turnCount = gameState.turnCount
     const isMobile = useIsMobile()
@@ -85,32 +86,29 @@ const Board = () => {
                                                         checkProtection={piece.check_protection}
                                                         health={piece.health}
                                                         shopPieceSelected={shopPieceSelected}
+                                                        markedForDeath={piece.marked_for_death}
+                                                        castleMoves={piece.type === "white_king" ? castleMoves : []}
                                                     />
                                                 );
                                         }));
                                     }
                                 })}
-                                {possibleMoves.map((possibleMove, index) => {
-                                    // possibleCaptures is an array of arrays of arrays
-                                    // a position is represented as an array
-                                    // [[position that piece in play will land in , position of enemy in danger], ...]
-                                    if (!possibleCaptures.some((possibleCapture) => JSON.stringify(possibleMove).includes(JSON.stringify(possibleCapture[0]))))
-                                        if (!shopPieceSelected) {
-                                            return(
-                                                <PossibleMove 
-                                                    key={'pm' + possibleMove[0].toString() + possibleMove[1].toString()}
-                                                    row={possibleMove[0]}
-                                                    col={possibleMove[1]}
-                                                    shopPieceSelected={shopPieceSelected}
-                                                />
-                                            );
-                                        }   
-                                })}
                             </div>
-                            
                         )
                     })
                 }
+                {!shopPieceSelected && possibleMoves.map((possibleMove) => {
+                    // Filter out possible moves that overlap with capture positions
+                    if (!possibleCaptures.some((possibleCapture) => JSON.stringify(possibleMove) === JSON.stringify(possibleCapture[0])))
+                        return(
+                            <PossibleMove
+                                key={'pm' + possibleMove[0].toString() + possibleMove[1].toString()}
+                                row={possibleMove[0]}
+                                col={possibleMove[1]}
+                                shopPieceSelected={shopPieceSelected}
+                            />
+                        );
+                })}
                 {swordInTheStonePosition ? 
                     <Buff
                         hide={boardState[swordInTheStonePosition[0]][swordInTheStonePosition[1]] ? true : false}
@@ -131,7 +129,7 @@ const Board = () => {
                     />
                 )}
             </div>
-            <HUD 
+            <HUD
                 shopPieceSelected={shopPieceSelected}
                 setShopPieceSelected={setShopPieceSelected}
             />

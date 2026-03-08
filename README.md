@@ -179,24 +179,21 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
 * win + loss screens ✅
 * checkmate protection status effect ✅
 * shop (with light/normal green square for shop square) ✅
-* Add a "Surrender Piece" button to choose which piece to give up after being marked for death amid five dragon buff stacks for the enemy (remember to add piece to captured pieces array)
+* Add a "Surrender Piece" button to choose which piece to give up after being marked for death amid five dragon buff stacks for the enemy (remember to add piece to captured pieces array) ✅
 * Ensure the player can deselect a selected piece
+* Allow user to restart game from HUD (small button in corner)
 * rename game to League of Chess
 * for consistency add recursion to convertKeysToSnakeCase() and convertKeysToCamelCase()
-* provide button so that player can choose what piece to lose when facing five dragon stacks
-* provide UI to indicate neutral monster buffs (color tint + number for stacked buffs) + (board herld buff spreading to pawn must be handled on frontend)
+* provide UI to indicate neutral monster buffs (color tint or small monster icons next to pieces + number for stacked buffs) + (board herld buff spreading to pawn must be handled on frontend)
 * change favicon and website/tab title
-* add castle button
+* add castle button ✅
 * make victory and defeat UI transparent
-* add UI for draw (if a UI is unable to be found, just add test next to defeat UI)
-* neutral monster buff UI (small monster icons next to pieces, with an accompanying number for stacked effects)
-* create a screen directing users to refresh or try again later when POST request fails
+* add UI for draw
 * shop rework 
 * pawn exchange
 * visual cue for a player being able to go again
 * visual cue for turn being skipped (this might be optional since pieces themselves are stunned and user should be able to parse that all their pieces are stunned and king can't move while CPU goes)
 * redo assets for rules
-* give player option to switch between chess sprites and league sprites (make league sprites default (with button [chess piece] <-> [league character]))
 * settle all TODOs
 
 ##### Backend 
@@ -220,7 +217,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
     - neutral monster buff implementation ✅
     - split moves.py into per-piece modules ✅
     - add type annotations, module/function docstrings, and TypedDicts (especially GameState) to improve code maintainability ✅
-    - finalize shop and pawn exchange logic (and UI)
+    - finalize shop and pawn exchange logic (and UI) ✅
     - expand getPossibleMoves() to be able to dynamically take into consideration neutral monster buffs (while finalizing UI) ✅
     - clean up PUT game endpoint for easier readibility and maintainability ✅
 * Ensure player can deselect a selected piece

@@ -188,8 +188,8 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
 * add castle button ✅
 * make victory and defeat UI transparent
 * add UI for draw
-* shop rework 
-* pawn exchange
+* shop rework ✅
+* pawn exchange ✅
 * visual cue for a player being able to go again
 * visual cue for turn being skipped (this might be optional since pieces themselves are stunned and user should be able to parse that all their pieces are stunned and king can't move while CPU goes)
 * redo assets for rules

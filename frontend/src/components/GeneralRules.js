@@ -103,7 +103,7 @@ const GeneralRules = (props) => {
                 <div style={{marginTop: "3vw"}}>
                     <ul>
                         <li>5 HP</li>
-                        <li>Every 10 turns, the Dragon spawns on the a5 square. Grants a buff only to the piece who captured it.</li>
+                        <li>Board Herald spawns on the a5 square on turn 10 and turn 20. Grants a 4-turn buff only to the piece who captured it.</li>
                         <li>Buff</li>
                         <ul>
                             <li>Pawns adjacent to the piece can capture other pawns and pieces 1 square in front of them.</li>
@@ -115,7 +115,7 @@ const GeneralRules = (props) => {
                 <div style={{marginTop: "3vw"}}>
                     <ul>
                         <li>10 HP</li>
-                        <li>Spawns on the a5 square every 15 turns after the 20th turn. Grants a buff to all pawns.</li>
+                        <li>Baron Nashor spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff to all pawns.</li>
                         <li>Buff</li>
                         <ul>
                             <li>All ally pawns can capture other pawns and pieces 1 square in front of them. Additionally they cannot be captured by other pawns. If enemy pawns currently are immune to your pawns, Baron buff negates this for the duration of the buff.</li>

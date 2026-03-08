@@ -44,18 +44,36 @@ const HUD = (props) => {
                     marginBottom: `${isMobile ? 1 : 0.5}vw`
                 }}>
                     <span style={{ fontSize: `${isMobile ? 2.5 : 1.25}vw` }}>Turn: {turnCount}</span>
-                    {isWhiteTurn && isKingOnHomeSquare ?
+                    <div style={{ display: 'flex', gap: `${isMobile ? 1 : 0.5}vw`, alignItems: 'center' }}>
+                        {isWhiteTurn && isKingOnHomeSquare ?
+                            <button
+                                className="pixel-btn"
+                                onClick={() => handleShopButtonClick()}
+                                style={{
+                                    fontSize: `${isMobile ? 1.8 : 0.9}vw`,
+                                    padding: `${isMobile ? 0.6 : 0.3}vw ${isMobile ? 1.5 : 0.75}vw`,
+                                    borderRadius: `${isMobile ? 0.6 : 0.3}vw`
+                                }}
+                            >{toggleShop ? "Close Shop" : "Open Shop"}</button> :
+                            null
+                        }
                         <button
                             className="pixel-btn"
-                            onClick={() => handleShopButtonClick()}
-                            style={{
-                                fontSize: `${isMobile ? 1.8 : 0.9}vw`,
-                                padding: `${isMobile ? 0.6 : 0.3}vw ${isMobile ? 1.5 : 0.75}vw`,
-                                borderRadius: `${isMobile ? 0.6 : 0.3}vw`
+                            onClick={() => {
+                                if (window.confirm("Restart game?")) {
+                                    setToggleShop(false)
+                                    props.setShopPieceSelected(null)
+                                    gameState.restartGame()
+                                }
                             }}
-                        >{toggleShop ? "Close Shop" : "Open Shop"}</button> :
-                        null
-                    }
+                            style={{
+                                fontSize: `${isMobile ? 1.4 : 0.7}vw`,
+                                padding: `${isMobile ? 0.4 : 0.2}vw ${isMobile ? 1 : 0.5}vw`,
+                                borderRadius: `${isMobile ? 0.6 : 0.3}vw`,
+                                opacity: 0.7
+                            }}
+                        >Restart</button>
+                    </div>
                 </div>
                 <div style={{ display: 'flex', gap: `${isMobile ? 3 : 1.5}vw`, alignItems: 'center' }}>
                     <div className="gold-display" style={{ fontSize: `${isMobile ? 2 : 1}vw` }}>

@@ -65,8 +65,9 @@ export function GameStateProvider({children}) {
         })
         .then(jsonResponse => {
             const parsedJsonResponse = {
-                ...convertKeysToCamelCase(jsonResponse), 
-                updateGameState: updateGameState
+                ...convertKeysToCamelCase(jsonResponse),
+                updateGameState: updateGameState,
+                restartGame: restartGame
             }
             setGameState(parsedJsonResponse)
             sessionStorage.setItem("lastUpdated", parsedJsonResponse["lastUpdated"])
@@ -153,8 +154,9 @@ export function GameStateProvider({children}) {
                 console.log(`GET Game ${result["id"]}`)
             }
             const parsedResult = {
-                ...convertKeysToCamelCase(result), 
-                updateGameState: updateGameState
+                ...convertKeysToCamelCase(result),
+                updateGameState: updateGameState,
+                restartGame: restartGame
             }
             setGameState(parsedResult)
             sessionStorage.setItem("gameStateId", parsedResult["id"])
@@ -165,6 +167,14 @@ export function GameStateProvider({children}) {
             console.log(exception);
             fetchInProgress.current = false
         });
+    }
+
+    const restartGame = () => {
+        sessionStorage.removeItem("gameStateId")
+        sessionStorage.removeItem("lastUpdated")
+        setGameState({...initGameState, updateGameState, restartGame})
+        fetchInProgress.current = false
+        fetchGameState()
     }
 
     useEffect(() => {

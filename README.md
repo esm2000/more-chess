@@ -180,7 +180,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
 * checkmate protection status effect ✅
 * shop (with light/normal green square for shop square) ✅
 * Add a "Surrender Piece" button to choose which piece to give up after being marked for death amid five dragon buff stacks for the enemy (remember to add piece to captured pieces array) ✅
-* Allow user to restart game from HUD (small button in corner)
+* Allow user to restart game from HUD (small button in corner) ✅
 * rename game to League of Chess
 * for consistency add recursion to convertKeysToSnakeCase() and convertKeysToCamelCase()
 * provide UI to indicate neutral monster buffs (color tint or small monster icons next to pieces + number for stacked buffs) + (board herld buff spreading to pawn must be handled on frontend)
@@ -192,6 +192,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
 * pawn exchange ✅
 * visual cue for a player being able to go again
 * visual cue for turn being skipped (this might be optional since pieces themselves are stunned and user should be able to parse that all their pieces are stunned and king can't move while CPU goes)
+* Delete old game on restart once data lake for historical records is implemented
 * redo assets for rules
 * settle all TODOs
 

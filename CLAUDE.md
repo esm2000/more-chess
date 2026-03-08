@@ -21,8 +21,8 @@ cd frontend && npm start
 # Tests (from project root)
 source env/bin/activate
 PYTHONPATH="$PWD/backend" pytest -n auto                          # all tests, parallel
-PYTHONPATH="$PWD/backend" pytest backend/tests/unit/              # unit only
-PYTHONPATH="$PWD/backend" pytest backend/tests/integration/       # integration only
+PYTHONPATH="$PWD/backend" pytest -n auto backend/tests/unit/      # unit only, parallel
+PYTHONPATH="$PWD/backend" pytest -n auto backend/tests/integration/ # integration only, parallel
 PYTHONPATH="$PWD/backend" pytest -v -s -x -k "dragon"            # verbose, print, stop-on-fail, filter
 
 # Docker

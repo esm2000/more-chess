@@ -35,7 +35,8 @@ const GameStateContext = createContext({
     neutralBuffLog: {
         white: {dragon: {stacks:0, turn: 0}, boardHerald: {active: false, turn: 0}, baronNashor: {active: false, turn: 0}},
         black: {dragon: {stacks:0, turn: 0}, boardHerald: {active: false, turn: 0}, baronNashor: {active: false, turn: 0}}
-    }
+    },
+    restartGame: () => {}
 })
 
 export function GameStateContextData() {

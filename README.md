@@ -180,7 +180,6 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
 * checkmate protection status effect ✅
 * shop (with light/normal green square for shop square) ✅
 * Add a "Surrender Piece" button to choose which piece to give up after being marked for death amid five dragon buff stacks for the enemy (remember to add piece to captured pieces array) ✅
-* Ensure the player can deselect a selected piece
 * Allow user to restart game from HUD (small button in corner)
 * rename game to League of Chess
 * for consistency add recursion to convertKeysToSnakeCase() and convertKeysToCamelCase()
@@ -220,7 +219,6 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
     - finalize shop and pawn exchange logic (and UI) ✅
     - expand getPossibleMoves() to be able to dynamically take into consideration neutral monster buffs (while finalizing UI) ✅
     - clean up PUT game endpoint for easier readibility and maintainability ✅
-* Ensure player can deselect a selected piece
 * Finishing touches on frontend
 * Enhance instructions with local database setup
 * AI - https://www.chessprogramming.org/Evaluation#Publications

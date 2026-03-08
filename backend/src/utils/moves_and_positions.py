@@ -57,7 +57,7 @@ def determine_possible_moves(old_game_state: GameState, new_game_state: GameStat
             king_moves = moves.get_moves(old_game_state, new_game_state, [start_row, 4], king_piece)
             castle_moves = king_moves.get("castle_moves", [])
         except Exception:
-            pass
+            logger.error(f"Unable to compute castle_moves for {side_to_move} king: {traceback.format_exc()}")
     new_game_state["castle_moves"] = castle_moves
 
     if is_pawn_exchange_required_this_turn:

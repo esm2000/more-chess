@@ -55,6 +55,7 @@ def determine_possible_moves(old_game_state: GameState, new_game_state: GameStat
             and not new_game_state["check"][side_to_move]:
         try:
             king_moves = moves.get_moves(old_game_state, new_game_state, [start_row, 4], king_piece)
+            king_moves = trim_king_moves(king_moves, old_game_state, new_game_state, side_to_move)
             castle_moves = king_moves.get("castle_moves", [])
         except Exception:
             logger.error(f"Unable to compute castle_moves for {side_to_move} king: {traceback.format_exc()}")

@@ -206,9 +206,23 @@ def can_other_pieces_prevent_check(side: str, old_game_state: GameState, new_gam
 
 
 def trim_king_moves(moves_info: MoveResult, old_game_state: GameState, new_game_state: GameState, side: str) -> MoveResult:
-    """Remove king moves that land on unsafe squares."""
+    """Remove king moves that land on unsafe squares, including castle moves through attacked squares."""
     unsafe_positions = get_unsafe_positions_for_kings(old_game_state, new_game_state)
     trimmed_moves_info = trim_moves(moves_info, unsafe_positions[side])
+
+    # Filter castle moves where king passes through or lands on an attacked square
+    unsafe_set = set(tuple(p) for p in unsafe_positions[side])
+    start_row = 7 if side == "white" else 0
+    i = 0
+    while i < len(trimmed_moves_info.get("castle_moves", [])):
+        target_col = trimmed_moves_info["castle_moves"][i][1]
+        is_queenside = target_col == 2
+        transit_cols = [3, 2] if is_queenside else [5, 6]
+        if any((start_row, col) in unsafe_set for col in transit_cols):
+            trimmed_moves_info["castle_moves"].pop(i)
+        else:
+            i += 1
+
     return trimmed_moves_info
 
 

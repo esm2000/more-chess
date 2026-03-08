@@ -596,6 +596,79 @@ def test_queenside_castle_should_be_allowed_with_pieces_in_path_amid_4_or_more_d
         assert not game["board_state"][0][0]
 
 
+def test_castle_should_not_be_allowed_through_attacked_transit_squares(game):
+    # Kingside: black rook on f2 attacks f1 transit square — white can't castle kingside
+    game = clear_game(game)
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["turn_count"] = 20
+    game_on_next_turn["board_state"][7][4] = [{"type": "white_king"}]
+    game_on_next_turn["board_state"][7][7] = [{"type": "white_rook"}]
+
+    game_on_next_turn["board_state"][0][4] = [{"type": "black_king"}]
+    game_on_next_turn["board_state"][6][5] = [{"type": "black_rook"}]  # attacks f1 from f2
+    game_on_next_turn["board_state"][1][0] = [{"type": "black_pawn", "pawn_buff": 0}]
+
+    game_state = api.GameStateRequest(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    with pytest.raises(HTTPException):
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][7][6] = game_on_next_turn["board_state"][7][4]
+        game_on_next_turn["board_state"][7][4] = None
+        game_on_next_turn["board_state"][7][5] = game_on_next_turn["board_state"][7][7]
+        game_on_next_turn["board_state"][7][7] = None
+        game_state = api.GameStateRequest(**game_on_next_turn)
+        api.update_game_state(game["id"], game_state, Response())
+
+    # Queenside: black rook on d2 attacks d1 transit square — white can't castle queenside
+    game = clear_game(game)
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["turn_count"] = 20
+    game_on_next_turn["board_state"][7][4] = [{"type": "white_king"}]
+    game_on_next_turn["board_state"][7][0] = [{"type": "white_rook"}]
+
+    game_on_next_turn["board_state"][0][4] = [{"type": "black_king"}]
+    game_on_next_turn["board_state"][6][3] = [{"type": "black_rook"}]  # attacks d1 from d2
+    game_on_next_turn["board_state"][1][0] = [{"type": "black_pawn", "pawn_buff": 0}]
+
+    game_state = api.GameStateRequest(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    with pytest.raises(HTTPException):
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][7][2] = game_on_next_turn["board_state"][7][4]
+        game_on_next_turn["board_state"][7][4] = None
+        game_on_next_turn["board_state"][7][3] = game_on_next_turn["board_state"][7][0]
+        game_on_next_turn["board_state"][7][0] = None
+        game_state = api.GameStateRequest(**game_on_next_turn)
+        api.update_game_state(game["id"], game_state, Response())
+
+    # Black kingside: white rook on f7 attacks f8 transit square — black can't castle kingside
+    game = clear_game(game)
+
+    game_on_next_turn = copy.deepcopy(game)
+    game_on_next_turn["turn_count"] = 21
+    game_on_next_turn["board_state"][0][4] = [{"type": "black_king"}]
+    game_on_next_turn["board_state"][0][7] = [{"type": "black_rook"}]
+
+    game_on_next_turn["board_state"][7][4] = [{"type": "white_king"}]
+    game_on_next_turn["board_state"][1][5] = [{"type": "white_rook"}]  # attacks f8 from f7
+
+    game_state = api.GameStateRequest(**game_on_next_turn)
+    game = api.update_game_state_no_restrictions(game["id"], game_state, Response())
+
+    with pytest.raises(HTTPException):
+        game_on_next_turn = copy.deepcopy(game)
+        game_on_next_turn["board_state"][0][6] = game_on_next_turn["board_state"][0][4]
+        game_on_next_turn["board_state"][0][4] = None
+        game_on_next_turn["board_state"][0][5] = game_on_next_turn["board_state"][0][7]
+        game_on_next_turn["board_state"][0][7] = None
+        game_state = api.GameStateRequest(**game_on_next_turn)
+        api.update_game_state(game["id"], game_state, Response(), player=False)
+
+
 def test_queenside_castle_should_be_not_allowed_with_pieces_in_path_amid_3_or_less_dragon_stacks(game):
     for dragon_buff in [1, 2, 3]:
         game = clear_game(game)

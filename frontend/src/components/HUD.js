@@ -20,6 +20,19 @@ const HUD = (props) => {
     const isWhiteTurn = turnCount % 2 === 0
     const isKingOnHomeSquare = gameState.boardState[7][4]?.[0]?.type === "white_king"
 
+    const handleConfirmRestart = () => {
+        setShowRestartConfirm(false)
+        setToggleShop(false)
+        props.setShopPieceSelected(null)
+        gameState.restartGame()
+    }
+
+    const confirmBtnStyle = {
+        fontSize: `${isMobile ? 1.4 : 0.7}vw`,
+        padding: `${isMobile ? 0.4 : 0.2}vw ${isMobile ? 1 : 0.5}vw`,
+        borderRadius: `${isMobile ? 0.6 : 0.3}vw`
+    }
+
     useEffect(() => {
         if (!isWhiteTurn || !isKingOnHomeSquare) {
             setToggleShop(false)
@@ -84,37 +97,19 @@ const HUD = (props) => {
                             <span style={{ fontSize: `${isMobile ? 1.4 : 0.7}vw`, opacity: 0.8 }}>Restart?</span>
                             <button
                                 className="pixel-btn"
-                                onClick={() => {
-                                    setShowRestartConfirm(false)
-                                    setToggleShop(false)
-                                    props.setShopPieceSelected(null)
-                                    gameState.restartGame()
-                                }}
-                                style={{
-                                    fontSize: `${isMobile ? 1.4 : 0.7}vw`,
-                                    padding: `${isMobile ? 0.4 : 0.2}vw ${isMobile ? 1 : 0.5}vw`,
-                                    borderRadius: `${isMobile ? 0.6 : 0.3}vw`
-                                }}
+                                onClick={handleConfirmRestart}
+                                style={confirmBtnStyle}
                             >Yes</button>
                             <button
                                 className="pixel-btn"
                                 onClick={() => setShowRestartConfirm(false)}
-                                style={{
-                                    fontSize: `${isMobile ? 1.4 : 0.7}vw`,
-                                    padding: `${isMobile ? 0.4 : 0.2}vw ${isMobile ? 1 : 0.5}vw`,
-                                    borderRadius: `${isMobile ? 0.6 : 0.3}vw`
-                                }}
+                                style={confirmBtnStyle}
                             >No</button>
                         </div> :
                         <button
                             className="pixel-btn"
                             onClick={() => setShowRestartConfirm(true)}
-                            style={{
-                                fontSize: `${isMobile ? 1.4 : 0.7}vw`,
-                                padding: `${isMobile ? 0.4 : 0.2}vw ${isMobile ? 1 : 0.5}vw`,
-                                borderRadius: `${isMobile ? 0.6 : 0.3}vw`,
-                                opacity: 0.7
-                            }}
+                            style={{...confirmBtnStyle, opacity: 0.7}}
                         >Restart</button>
                     }
                 </div>

@@ -3,6 +3,7 @@ import copy
 import src.moves as moves
 from mocks.empty_game import empty_game
 from mocks.starting_game import starting_game
+from src.utils.check_checkmate import trim_king_moves
 
 def test_king_movement():
     ##    0  1  2  3  4  5  6  7
@@ -205,3 +206,44 @@ def test_king_being_allowed_to_move_to_sword_in_stone_square():
 
             possible_moves_and_captures = moves.get_moves_for_king(curr_game_state, prev_game_state, curr_position)
             assert sword_in_the_stone_position in possible_moves_and_captures["possible_moves"]
+
+
+def test_trim_king_moves_filters_castle_through_attacked_transit_squares():
+    # Kingside: black rook on f2 attacks f1 transit square
+    ##    0  1  2  3  4  5  6  7
+    ## 0 |__|##|__|##|bK|##|__|##|
+    ## 6 |__|##|__|##|__|bR|__|##|   <- black rook attacks f1 (col 5, row 7)
+    ## 7 |##|__|##|__|wK|##|__|wR|   <- white king on e1, white rook on h1
+
+    curr_game_state = copy.deepcopy(empty_game)
+    curr_game_state["turn_count"] = 20
+    curr_game_state["board_state"][7][4] = [{"type": "white_king"}]
+    curr_game_state["board_state"][7][7] = [{"type": "white_rook"}]
+    curr_game_state["board_state"][0][4] = [{"type": "black_king"}]
+    curr_game_state["board_state"][6][5] = [{"type": "black_rook"}]  # attacks col 5 on row 7
+
+    prev_game_state = copy.deepcopy(curr_game_state)
+
+    moves_info = moves.get_moves_for_king(curr_game_state, prev_game_state, [7, 4])
+    assert [7, 6] in moves_info.get("castle_moves", [])
+
+    trimmed = trim_king_moves(moves_info, prev_game_state, curr_game_state, "white")
+    # After trimming, kingside castle should be removed (transit square f1 attacked)
+    assert [7, 6] not in trimmed.get("castle_moves", [])
+
+    # Queenside: black rook on d2 attacks d1 transit square
+    curr_game_state = copy.deepcopy(empty_game)
+    curr_game_state["turn_count"] = 20
+    curr_game_state["board_state"][7][4] = [{"type": "white_king"}]
+    curr_game_state["board_state"][7][0] = [{"type": "white_rook"}]
+    curr_game_state["board_state"][0][4] = [{"type": "black_king"}]
+    curr_game_state["board_state"][6][3] = [{"type": "black_rook"}]  # attacks col 3 on row 7
+
+    prev_game_state = copy.deepcopy(curr_game_state)
+
+    moves_info = moves.get_moves_for_king(curr_game_state, prev_game_state, [7, 4])
+    assert [7, 2] in moves_info.get("castle_moves", [])
+
+    trimmed = trim_king_moves(moves_info, prev_game_state, curr_game_state, "white")
+    # After trimming, queenside castle should be removed (transit square d1 attacked)
+    assert [7, 2] not in trimmed.get("castle_moves", [])

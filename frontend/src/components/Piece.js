@@ -124,9 +124,9 @@ const Piece = (props) => {
                 newBoardState[props.row][props.col][i].bishop_debuff = 0
             }
         }
-        
+
         gameState.updateGameState({
-            ...gameState, 
+            ...gameState,
             boardState: newBoardState
         })
     }
@@ -156,7 +156,59 @@ const Piece = (props) => {
             boardState: newBoardState,
             capturedPieces: newCapturedPieces,
         })
-        
+    }
+
+    const handleCastleButtonClick = (castleMove) => {
+        const newBoardState = [...gameState.boardState.map(row => row ? [...row] : row)]
+        const startRow = castleMove[0]
+        const kingCol = props.col
+        const targetKingCol = castleMove[1]
+
+        const isQueenside = targetKingCol === 2
+        const rookFromCol = isQueenside ? 0 : 7
+        const rookToCol = isQueenside ? 3 : 5
+
+        // Move king
+        newBoardState[startRow][targetKingCol] = newBoardState[startRow][kingCol]
+        newBoardState[startRow][kingCol] = null
+
+        // Move rook
+        newBoardState[startRow][rookToCol] = newBoardState[startRow][rookFromCol]
+        newBoardState[startRow][rookFromCol] = null
+
+        gameState.updateGameState({
+            ...gameState,
+            boardState: newBoardState,
+            positionInPlay: [null, null],
+            castleLog: {
+                ...gameState.castleLog,
+                white: {
+                    ...gameState.castleLog.white,
+                    hasKingMoved: true,
+                    hasLeftRookMoved: isQueenside ? true : gameState.castleLog.white.hasLeftRookMoved,
+                    hasRightRookMoved: !isQueenside ? true : gameState.castleLog.white.hasRightRookMoved,
+                }
+            }
+        })
+    }
+
+    const handleSurrenderButtonClick = () => {
+        const newBoardState = [...gameState.boardState.map(row => row ? [...row] : row)]
+        const newCapturedPieces = JSON.parse(JSON.stringify(gameState.capturedPieces))
+
+        for (let i = 0; i < newBoardState[props.row][props.col]?.length; i++) {
+            if (snakeToCamel(newBoardState[props.row][props.col][i]?.type) === props.type) {
+                newCapturedPieces[PLAYERS[1]].push(newBoardState[props.row][props.col][i].type)
+                newBoardState[props.row][props.col].splice(i, 1)
+                break
+            }
+        }
+
+        gameState.updateGameState({
+            ...gameState,
+            boardState: newBoardState,
+            capturedPieces: newCapturedPieces,
+        })
     }
 
     const pickClassName = () => {
@@ -165,6 +217,22 @@ const Piece = (props) => {
         if (props.type.toLowerCase().includes('herald')) return 'herald_piece'
         if (props.type.toLowerCase().includes('nashor')) return 'nashor_piece'
     }
+
+    const pieceActionBtnStyle = (topOffset, leftOffset, borderColor, bgColor) => ({
+        top: `${topPosition + topOffset}vw`,
+        left: `${leftPosition + leftOffset}vw`,
+        borderRadius: `${0.3 * (isMobile ? 2 : 1)}vw`,
+        padding: `${0.1 * (isMobile ? 2 : 1)}vw ${0.3 * (isMobile ? 2 : 1)}vw`,
+        whiteSpace: 'nowrap',
+        position: 'absolute',
+        textAlign: 'center',
+        textDecoration: 'none',
+        outline: 'none',
+        cursor: 'pointer',
+        borderColor,
+        color: 'white',
+        backgroundColor: bgColor,
+    })
 
     const buffedSrc = props.pawnBuff ? props.type + `${props.pawnBuff + 1}` : props.type
     const image_src = IMAGE_MAP[buffedSrc] ? buffedSrc : props.type
@@ -226,57 +294,76 @@ const Piece = (props) => {
                         src={IMAGE_MAP['bishopDebuff']}
                         className={pickClassName()}
                         style={{
-                            width: isMobile ? '2vw': '1vw',
-                            height: isMobile ? '2vw': '1vw',
-                            top: `${topPosition}vw`,
-                            left: `${leftPosition - (isMobile ? 3.5: 1.75) + (count * (isMobile ? 2.5: 1.2))}vw`
+                            width: isMobile ? '1.4vw': '0.7vw',
+                            height: isMobile ? '1.4vw': '0.7vw',
+                            top: `${topPosition + (isMobile ? 5.5 : 2.75)}vw`,
+                            left: `${leftPosition - (isMobile ? 3 : 1.5) + (count * (isMobile ? 2 : 1))}vw`
                         }}
                     />);
                 }): null
             }
             {
-                props.bishopDebuff === 3 && props.side === PLAYERS[1]?
+                props.bishopDebuff === 3 && props.side === PLAYERS[1] ?
                 <div>
                     <button
-                        className={pickClassName()}
                         style={{
-                            top: `${(topPosition + 0.75) * (isMobile ? 1: 1)}vw`,
-                            left: `${(leftPosition + 0) * (isMobile ? 1: 1)}vw`,
-                            borderRadius: `${0.4 * (isMobile ? 2: 1)}vw`,
-                            padding: `${0.15 * (isMobile ? 2: 1)}vw`,
-                            height: `${1.25 * (isMobile ? 2: 1)}vw`,
-                            width: `${4 * (isMobile ? 2: 1)}vw`,
-                            fontSize: `0.5em`,
-                            positon: "absolute",
-                            textAlign: "center",
-                            textDecoration: "none",
-                            outline: "none",
-                            borderColor: "#63bbf2",
-                            color: "white",
-                            backgroundColor: "#24a0ed",
+                            ...pieceActionBtnStyle(-(isMobile ? 2.5 : 1.25), 0, '#63bbf2', '#24a0ed'),
+                            fontSize: `${isMobile ? 1 : 0.5}vw`,
+                            width: `${3.7 * (isMobile ? 2 : 1)}vw`,
+                            boxSizing: 'border-box',
+                            zIndex: 10
                         }}
                         onClick={() => handleCaptureButtonClick()}
                     >Capture</button>
                     <button
-                        className={pickClassName()}
                         style={{
-                            top: `${(topPosition + (isMobile? 3.5: 2.25))}vw`,
-                            left: `${(leftPosition + 0.5) * (isMobile ? 1.005: 1)}vw`,
-                            borderRadius: `${0.4 * (isMobile ? 2: 1)}vw`,
-                            padding: `${0.15 * (isMobile ? 2: 1)}vw`,
-                            height: `${1.25 * (isMobile ? 2: 1)}vw`,
-                            width: `${3 * (isMobile ? 2: 1)}vw`,
-                            fontSize: `0.5em`,
-                            positon: "absolute",
-                            textAlign: "center",
-                            textDecoration: "none",
-                            outline: "none",
-                            borderColor: "#ff4040",
-                            color: "white",
-                            backgroundColor: "#fd0e35",
+                            ...pieceActionBtnStyle(0, 0, '#ff4040', '#fd0e35'),
+                            fontSize: `${isMobile ? 1 : 0.5}vw`,
+                            width: `${3.7 * (isMobile ? 2 : 1)}vw`,
+                            boxSizing: 'border-box',
+                            zIndex: 10
                         }}
                         onClick={() => handleSpareButtonClick()}
                     >Spare</button>
+                </div>
+                : null
+            }
+            {
+                props.markedForDeath && props.side === PLAYERS[0] ?
+                <button
+                    style={{
+                        ...pieceActionBtnStyle(-(isMobile ? 1.5 : 0.75), 0, '#ff4040', '#fd0e35'),
+                        fontSize: `${isMobile ? 1 : 0.5}vw`,
+                        whiteSpace: 'normal',
+                        padding: `${0.1 * (isMobile ? 2 : 1)}vw ${0.1 * (isMobile ? 2 : 1)}vw`,
+                        width: `${3.7 * (isMobile ? 2 : 1)}vw`,
+                        boxSizing: 'border-box',
+                        zIndex: 10
+                    }}
+                    onClick={() => handleSurrenderButtonClick()}
+                >Surrender Piece</button>
+                : null
+            }
+            {
+                props.castleMoves?.length > 0 ?
+                <div>
+                    {props.castleMoves.map((move) => {
+                        const isQueenside = move[1] === 2
+                        return (
+                            <button
+                                key={`castle-${move[1]}`}
+                                style={{
+                                    ...pieceActionBtnStyle(
+                                        -(isMobile ? 2.5 : 1.25),
+                                        isQueenside ? -(isMobile ? 8 : 4) : (isMobile ? 5.5 : 2.75),
+                                        '#63bbf2', '#24a0ed'
+                                    ),
+                                    fontSize: `${isMobile ? 1.4 : 0.7}vw`,
+                                }}
+                                onClick={() => handleCastleButtonClick(move)}
+                            >{isQueenside ? "Castle Left" : "Castle Right"}</button>
+                        )
+                    })}
                 </div>
                 : null
             }

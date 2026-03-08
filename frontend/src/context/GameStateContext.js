@@ -16,6 +16,7 @@ const GameStateContext = createContext({
     ],
     possibleMoves: [],
     possibleCaptures: [],
+    castleMoves: [],
     capturedPieces: [],
     SwordInTheStonePosition: null,
     capturePointAdvantage: null,
@@ -91,6 +92,7 @@ export function GameStateProvider({children}) {
         ],
         possibleMoves: [],
         possibleCaptures: [],
+        castleMoves: [],
         capturedPieces: {
             [PLAYERS[0]]: [],
             [PLAYERS[1]]: []

@@ -43,9 +43,28 @@ def determine_possible_moves(old_game_state: GameState, new_game_state: GameStat
 
         new_game_state["possible_moves"] = moves_info["possible_moves"]
         new_game_state["possible_captures"] = moves_info["possible_captures"]
+
+    # Compute castle_moves for the side about to move, independent of position_in_play
+    side_to_move = "white" if not new_game_state["turn_count"] % 2 else "black"
+    start_row = 7 if side_to_move == "white" else 0
+    king_square = new_game_state["board_state"][start_row][4] or []
+    king_piece = next((p for p in king_square if p.get("type") == f"{side_to_move}_king"), None)
+
+    castle_moves = []
+    if king_piece and not new_game_state["castle_log"][side_to_move]["has_king_moved"] \
+            and not new_game_state["check"][side_to_move]:
+        try:
+            king_moves = moves.get_moves(old_game_state, new_game_state, [start_row, 4], king_piece)
+            king_moves = trim_king_moves(king_moves, old_game_state, new_game_state, side_to_move)
+            castle_moves = king_moves.get("castle_moves", [])
+        except Exception:
+            logger.error(f"Unable to compute castle_moves for {side_to_move} king: {traceback.format_exc()}")
+    new_game_state["castle_moves"] = castle_moves
+
     if is_pawn_exchange_required_this_turn:
         new_game_state["possible_moves"] = []
         new_game_state["possible_captures"] = []
+        new_game_state["castle_moves"] = []
 
 
 def was_a_new_position_in_play_selected(moved_pieces: list[MovedPiece], old_game_state: GameState, new_game_state: GameState) -> bool:

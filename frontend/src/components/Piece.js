@@ -179,7 +179,16 @@ const Piece = (props) => {
         gameState.updateGameState({
             ...gameState,
             boardState: newBoardState,
-            positionInPlay: [null, null]
+            positionInPlay: [null, null],
+            castleLog: {
+                ...gameState.castleLog,
+                white: {
+                    ...gameState.castleLog.white,
+                    hasKingMoved: true,
+                    hasLeftRookMoved: isQueenside ? true : gameState.castleLog.white.hasLeftRookMoved,
+                    hasRightRookMoved: !isQueenside ? true : gameState.castleLog.white.hasRightRookMoved,
+                }
+            }
         })
     }
 

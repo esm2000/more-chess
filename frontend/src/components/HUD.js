@@ -15,6 +15,7 @@ const HUD = (props) => {
     const [turnFlashClass, setTurnFlashClass] = useState('')
     const prevTurnCount = useRef(turnCount)
     const prevQueenReset = useRef(gameState.queenReset)
+    const prevBishopSpecialCaptures = useRef(gameState.bishopSpecialCaptures)
 
     const triggerFlash = (isGoodForPlayer) => {
         const flashClass = isGoodForPlayer ? 'turn-flash-green' : 'turn-flash-red'
@@ -33,6 +34,17 @@ const HUD = (props) => {
             return triggerFlash(isPlayerGoAgain)
         }
     }, [gameState.queenReset])
+
+    // Detect bishop 3-stack go-again (bishopSpecialCaptures goes from empty to non-empty)
+    useEffect(() => {
+        const wasEmpty = prevBishopSpecialCaptures.current.length === 0
+        prevBishopSpecialCaptures.current = gameState.bishopSpecialCaptures
+
+        if (wasEmpty && gameState.bishopSpecialCaptures.length > 0) {
+            const isPlayerGoAgain = turnCount % 2 === 0
+            return triggerFlash(isPlayerGoAgain)
+        }
+    }, [gameState.bishopSpecialCaptures])
 
     // Detect stun-induced turn skip (turnCount changes but parity stays the same)
     useEffect(() => {

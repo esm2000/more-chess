@@ -16,7 +16,8 @@ const Defeat = (props) => {
                         position: "absolute", 
                         top: `${topPosition}vw`, 
                         left: `${leftPosition}vw`,
-                        height: `${height}vw`
+                        height: `${height}vw`,
+                        opacity: 0.7
                     }}
             />
         </div>

@@ -15,7 +15,8 @@ const Victory = (props) => {
                         position: "absolute", 
                         top: `${topPosition}vw`, 
                         left: `${leftPosition}vw`,
-                        height: `${leftPosition}vw`
+                        height: `${leftPosition}vw`,
+                        opacity: 0.7
                     }}
             />
         </div>

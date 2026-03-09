@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import { GameStateContextData } from '../context/GameStateContext';
 import { IMAGE_MAP, PLAYERS, useIsMobile } from '../utility';
 import Shop from './Shop';
@@ -12,6 +12,25 @@ const HUD = (props) => {
     const isMobile = useIsMobile()
     const [toggleShop, setToggleShop] = useState(false)
     const [showRestartConfirm, setShowRestartConfirm] = useState(false)
+    const [turnFlashClass, setTurnFlashClass] = useState('')
+    const prevTurnCount = useRef(turnCount)
+
+    useEffect(() => {
+        const prev = prevTurnCount.current
+        prevTurnCount.current = turnCount
+
+        if (prev === turnCount) return
+
+        const prevIsPlayerTurn = prev % 2 === 0
+        const currIsPlayerTurn = turnCount % 2 === 0
+
+        if (prevIsPlayerTurn === currIsPlayerTurn) {
+            const flashClass = currIsPlayerTurn ? 'turn-flash-green' : 'turn-flash-red'
+            setTurnFlashClass(flashClass)
+            const timer = setTimeout(() => setTurnFlashClass(''), 1000)
+            return () => clearTimeout(timer)
+        }
+    }, [turnCount])
 
     const handleShopButtonClick = () => {
         setToggleShop(!toggleShop)
@@ -57,7 +76,7 @@ const HUD = (props) => {
                     justifyContent: 'space-between',
                     marginBottom: `${isMobile ? 1 : 0.5}vw`
                 }}>
-                    <span style={{ fontSize: `${isMobile ? 2.5 : 1.25}vw` }}>Turn: {turnCount}</span>
+                    <span className={turnFlashClass} style={{ fontSize: `${isMobile ? 2.5 : 1.25}vw`, display: 'inline-block' }}>Turn: {turnCount}</span>
                     {isWhiteTurn && isKingOnHomeSquare ?
                         <button
                             className="pixel-btn"

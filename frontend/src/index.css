@@ -208,6 +208,26 @@ progress {
     font-size: 0.25vw;
 }
 
+@keyframes turn-flash-green {
+    0% { color: white; transform: scale(1); }
+    20% { color: rgb(80, 220, 80); transform: scale(1.4); }
+    100% { color: white; transform: scale(1); }
+}
+
+@keyframes turn-flash-red {
+    0% { color: white; transform: scale(1); }
+    20% { color: rgb(230, 60, 60); transform: scale(1.4); }
+    100% { color: white; transform: scale(1); }
+}
+
+.turn-flash-green {
+    animation: turn-flash-green 1s ease-out;
+}
+
+.turn-flash-red {
+    animation: turn-flash-red 1s ease-out;
+}
+
 /* For Mobile */
 @media screen and (max-width: 1024px) 
               and (orientation: portrait) {

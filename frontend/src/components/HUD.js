@@ -14,21 +14,37 @@ const HUD = (props) => {
     const [showRestartConfirm, setShowRestartConfirm] = useState(false)
     const [turnFlashClass, setTurnFlashClass] = useState('')
     const prevTurnCount = useRef(turnCount)
+    const prevQueenReset = useRef(gameState.queenReset)
 
+    const triggerFlash = (isGoodForPlayer) => {
+        const flashClass = isGoodForPlayer ? 'turn-flash-green' : 'turn-flash-red'
+        setTurnFlashClass(flashClass)
+        const timer = setTimeout(() => setTurnFlashClass(''), 1000)
+        return () => clearTimeout(timer)
+    }
+
+    // Detect queen reset go-again (turnCount stays the same, queenReset flips to true)
+    useEffect(() => {
+        const wasQueenReset = prevQueenReset.current
+        prevQueenReset.current = gameState.queenReset
+
+        if (!wasQueenReset && gameState.queenReset) {
+            const isPlayerGoAgain = turnCount % 2 === 0
+            return triggerFlash(isPlayerGoAgain)
+        }
+    }, [gameState.queenReset])
+
+    // Detect stun-induced turn skip (turnCount changes but parity stays the same)
     useEffect(() => {
         const prev = prevTurnCount.current
         prevTurnCount.current = turnCount
 
         if (prev === turnCount) return
 
-        const prevIsPlayerTurn = prev % 2 === 0
-        const currIsPlayerTurn = turnCount % 2 === 0
-
-        if (prevIsPlayerTurn === currIsPlayerTurn) {
-            const flashClass = currIsPlayerTurn ? 'turn-flash-green' : 'turn-flash-red'
-            setTurnFlashClass(flashClass)
-            const timer = setTimeout(() => setTurnFlashClass(''), 1000)
-            return () => clearTimeout(timer)
+        const parityUnchanged = (prev % 2) === (turnCount % 2)
+        if (parityUnchanged) {
+            const isPlayerTurn = turnCount % 2 === 0
+            return triggerFlash(isPlayerTurn)
         }
     }, [turnCount])
 

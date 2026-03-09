@@ -174,29 +174,39 @@ const camelToSnake = (str) =>
         return `_${letter.toLowerCase()}`;
     });
 
-// TODO: incorporate recursion but keep side effects in mind from the non-recursive implementation with snakeToCamel()
 const convertKeysToCamelCase = (obj) => {
-    let newObj = {};
-    for (let key in obj) {
-        let newKey = key.replace(/([-_][a-z])/gi, (group) => {
-        return group.toUpperCase().replace('-', '').replace('_', '');
-        });
-        newObj[newKey] = obj[key];
+    if (Array.isArray(obj)) {
+        return obj.map(item => convertKeysToCamelCase(item));
     }
-    return newObj;
+    if (obj !== null && typeof obj === 'object') {
+        const newObj = {};
+        for (const key in obj) {
+            const newKey = key.replace(/([-_][a-z])/gi, (group) =>
+                group.toUpperCase().replace('-', '').replace('_', '')
+            );
+            newObj[newKey] = convertKeysToCamelCase(obj[key]);
+        }
+        return newObj;
+    }
+    return obj;
 }
 
-// TODO: incorporate recursion but keep side effects in mind from the non-recursive implementation with camelToSnake()
 function convertKeysToSnakeCase(obj) {
-    const result = {};
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        const newKey = key.replace(/([A-Z])/g, "_$1").toLowerCase();
-        result[newKey] = obj[key];
-      }
+    if (Array.isArray(obj)) {
+        return obj.map(item => convertKeysToSnakeCase(item));
     }
-    return result;
-  }
+    if (obj !== null && typeof obj === 'object') {
+        const result = {};
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                const newKey = key.replace(/([A-Z])/g, "_$1").toLowerCase();
+                result[newKey] = convertKeysToSnakeCase(obj[key]);
+            }
+        }
+        return result;
+    }
+    return obj;
+}
 
 const capitalizeFirstLetter = (string) =>  {
     return string.charAt(0).toUpperCase() + string.slice(1);

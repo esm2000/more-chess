@@ -121,7 +121,7 @@ const Piece = (props) => {
         const newBoardState = [...gameState.boardState]
         for (let i = 0; i < newBoardState[props.row][props.col].length; i++) {
             if (snakeToCamel(newBoardState[props.row][props.col][i]?.type) === props.type) {
-                newBoardState[props.row][props.col][i].bishop_debuff = 0
+                newBoardState[props.row][props.col][i].bishopDebuff = 0
             }
         }
 

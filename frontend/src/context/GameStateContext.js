@@ -27,7 +27,6 @@ const GameStateContext = createContext({
     latestMovement: null,
     queenReset: false,
     check: {white: false, black: false},
-    // TODO: for consistency add recursion to convertKeysToSnakeCase()
     castleLog: {
         white: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false},
         black: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false}
@@ -116,7 +115,6 @@ export function GameStateProvider({children}) {
             [PLAYERS[0]]: false,
             [PLAYERS[1]]: false
         },
-        // for consistency add recursion to convertKeysToSnakeCase()
         castleLog: {
             white: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false},
             black: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false}

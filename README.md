@@ -204,7 +204,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
     - DELETE game ✅
     - PUT game (only an API endpoint that allows for updates to gamestate object) ✅
 * hook up endpoints to backend (at this stage enemy pieces incapable of moving) ✅
-* expand PUT game with game logic, MUST BE DEVELOPED WITH pytest unit tests 
+* expand PUT game with game logic, MUST BE DEVELOPED WITH pytest unit tests ✅
     - getPossibleMoves() (ignore buff logic for now)
         - getPossibleMovesForPawn() ✅
         - getPossibleMovesForKnignt() ✅

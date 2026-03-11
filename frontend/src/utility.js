@@ -181,10 +181,12 @@ const convertKeysToCamelCase = (obj) => {
     if (obj !== null && typeof obj === 'object') {
         const newObj = {};
         for (const key in obj) {
-            const newKey = key.replace(/([-_][a-z])/gi, (group) =>
-                group.toUpperCase().replace('-', '').replace('_', '')
-            );
-            newObj[newKey] = convertKeysToCamelCase(obj[key]);
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                const newKey = key.replace(/([-_][a-z])/gi, (group) =>
+                    group.toUpperCase().replace('-', '').replace('_', '')
+                );
+                newObj[newKey] = convertKeysToCamelCase(obj[key]);
+            }
         }
         return newObj;
     }

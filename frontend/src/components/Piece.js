@@ -28,27 +28,37 @@ const Piece = (props) => {
         }
 
         const capturePiece = (type) => {
-            const newBoardState = [...gameState.boardState]
-            const newPositionInPlay = [null, null]
-            const pieceInPlay = newBoardState[positionInPlay[0]][positionInPlay[1]].find(piece => piece.type.includes(PLAYERS[0]))
-            const newCapturedPieces = {...gameState.capturedPieces}
-
-            for (let i = 0; i < newBoardState[props.row][props.col]?.length; i++) {
-                if (snakeToCamel(newBoardState[props.row][props.col][i]?.type) === type) {
-                    newCapturedPieces[PLAYERS[0]].push(newBoardState[props.row][props.col][i].type)
-                    newBoardState[props.row][props.col].splice(i, 1);
-                }
+            const pieceInPlay = gameState.boardState[positionInPlay[0]][positionInPlay[1]].find(piece => piece.type.includes(PLAYERS[0]))
+            const newCapturedPieces = {
+                ...gameState.capturedPieces,
+                [PLAYERS[0]]: [
+                    ...gameState.capturedPieces[PLAYERS[0]],
+                    ...gameState.boardState[props.row][props.col]
+                        .filter(piece => snakeToCamel(piece?.type) === type)
+                        .map(piece => piece.type)
+                ]
             }
 
-            newBoardState[props.row][props.col] = newBoardState[props.row][props.col].filter(piece => !piece.type.includes(PLAYERS[1]))
-            newBoardState[props.row][props.col].push(pieceInPlay)
-            newBoardState[positionInPlay[0]][positionInPlay[1]] = newBoardState[positionInPlay[0]][positionInPlay[1]]?.filter(piece => piece.type !== pieceInPlay.type)
+            const newBoardState = gameState.boardState.map((row, r) => {
+                if (r !== props.row && r !== positionInPlay[0]) return row;
+                return row.map((square, c) => {
+                    if (!square) return square;
+                    if (r === props.row && c === props.col) {
+                        const filtered = square.filter(piece => !piece.type.includes(PLAYERS[1]) && snakeToCamel(piece?.type) !== type)
+                        return [...filtered, pieceInPlay]
+                    }
+                    if (r === positionInPlay[0] && c === positionInPlay[1]) {
+                        return square.filter(piece => piece.type !== pieceInPlay.type)
+                    }
+                    return square;
+                });
+            });
 
             gameState.updateGameState({
                 ...gameState,
                 capturedPieces: newCapturedPieces,
                 boardState: newBoardState,
-                positionInPlay: newPositionInPlay
+                positionInPlay: [null, null]
             })
         }
         
@@ -78,25 +88,27 @@ const Piece = (props) => {
         }
 
         else if (isNeutralPiecePresent() && positionInPlay?.[0] != null && positionInPlay?.[1] != null) {
-            const newBoardState = [...gameState.boardState]
-            const pieceInPlay = newBoardState[positionInPlay[0]][positionInPlay[1]].find(piece => piece.type.includes(PLAYERS[0]))
-            const newCapturedPieces = {...gameState.capturedPieces}
-            var newGoldCount = {...gameState.goldCount}
+            const pieceInPlay = gameState.boardState[positionInPlay[0]][positionInPlay[1]].find(piece => piece.type.includes(PLAYERS[0]))
 
             // scenario 1 - only a neutral monster is present with greater than 1 health
             // scenario 2 - only a neutral monster is present with 1 health
             if (gameState.boardState[props.row][props.col].length == 1) {
-                for (let i = 0; i < newBoardState[props.row][props.col]?.length; i++) {
-                    if (snakeToCamel(newBoardState[props.row][props.col][i]?.type) === props.type) {
-                        // damage handled by backend
-                        newBoardState[props.row][props.col].push(pieceInPlay)
-                        newBoardState[positionInPlay[0]][positionInPlay[1]] = newBoardState[positionInPlay[0]][positionInPlay[1]].filter(piece => !piece.type.includes(PLAYERS[0]));
-                    }
-                }
+                // damage handled by backend
+                const newBoardState = gameState.boardState.map((row, r) => {
+                    if (r !== props.row && r !== positionInPlay[0]) return row;
+                    return row.map((square, c) => {
+                        if (!square) return square;
+                        if (r === props.row && c === props.col) {
+                            return [...square, pieceInPlay]
+                        }
+                        if (r === positionInPlay[0] && c === positionInPlay[1]) {
+                            return square.filter(piece => !piece.type.includes(PLAYERS[0]))
+                        }
+                        return square;
+                    });
+                });
                 gameState.updateGameState({
-                    ...gameState, 
-                    capturedPieces: newCapturedPieces,
-                    goldCount: newGoldCount,
+                    ...gameState,
                     boardState: newBoardState,
                     positionInPlay: [null, null]
                 })
@@ -118,12 +130,17 @@ const Piece = (props) => {
     }
 
     const handleSpareButtonClick = () => {
-        const newBoardState = [...gameState.boardState]
-        for (let i = 0; i < newBoardState[props.row][props.col].length; i++) {
-            if (snakeToCamel(newBoardState[props.row][props.col][i]?.type) === props.type) {
-                newBoardState[props.row][props.col][i].bishopDebuff = 0
-            }
-        }
+        const newBoardState = gameState.boardState.map((row, r) => {
+            if (r !== props.row) return row;
+            return row.map((square, c) => {
+                if (c !== props.col || !square) return square;
+                return square.map(piece =>
+                    snakeToCamel(piece?.type) === props.type
+                        ? { ...piece, bishopDebuff: 0 }
+                        : piece
+                );
+            });
+        });
 
         gameState.updateGameState({
             ...gameState,
@@ -132,16 +149,20 @@ const Piece = (props) => {
     }
 
     const handleCaptureButtonClick = () => {
-        const newBoardState = [...gameState.boardState]
-        const newCapturedPieces = {...gameState.capturedPieces}
-        var i = 0
-        while (i < newBoardState[props.row][props.col]?.length) {
-            if (snakeToCamel(newBoardState[props.row][props.col][i]?.type) === props.type) {
-                newCapturedPieces[PLAYERS[0]].push(newBoardState[props.row][props.col][i].type)
-                newBoardState[props.row][props.col].splice(i, 1);
-            }
-            i++
+        const square = gameState.boardState[props.row][props.col] || []
+        const captured = square.filter(piece => snakeToCamel(piece?.type) === props.type).map(piece => piece.type)
+        const newCapturedPieces = {
+            ...gameState.capturedPieces,
+            [PLAYERS[0]]: [...gameState.capturedPieces[PLAYERS[0]], ...captured]
         }
+
+        const newBoardState = gameState.boardState.map((row, r) => {
+            if (r !== props.row) return row;
+            return row.map((sq, c) => {
+                if (c !== props.col || !sq) return sq;
+                return sq.filter(piece => snakeToCamel(piece?.type) !== props.type);
+            });
+        });
 
         const newBishopSpecialCaptures = [
             {
@@ -159,7 +180,6 @@ const Piece = (props) => {
     }
 
     const handleCastleButtonClick = (castleMove) => {
-        const newBoardState = [...gameState.boardState.map(row => row ? [...row] : row)]
         const startRow = castleMove[0]
         const kingCol = props.col
         const targetKingCol = castleMove[1]
@@ -168,13 +188,16 @@ const Piece = (props) => {
         const rookFromCol = isQueenside ? 0 : 7
         const rookToCol = isQueenside ? 3 : 5
 
-        // Move king
-        newBoardState[startRow][targetKingCol] = newBoardState[startRow][kingCol]
-        newBoardState[startRow][kingCol] = null
-
-        // Move rook
-        newBoardState[startRow][rookToCol] = newBoardState[startRow][rookFromCol]
-        newBoardState[startRow][rookFromCol] = null
+        const newBoardState = gameState.boardState.map((row, r) => {
+            if (r !== startRow) return row;
+            return row.map((square, c) => {
+                if (c === targetKingCol) return row[kingCol]
+                if (c === kingCol) return null
+                if (c === rookToCol) return row[rookFromCol]
+                if (c === rookFromCol) return null
+                return square;
+            });
+        });
 
         gameState.updateGameState({
             ...gameState,
@@ -193,16 +216,29 @@ const Piece = (props) => {
     }
 
     const handleSurrenderButtonClick = () => {
-        const newBoardState = [...gameState.boardState.map(row => row ? [...row] : row)]
-        const newCapturedPieces = JSON.parse(JSON.stringify(gameState.capturedPieces))
+        const square = gameState.boardState[props.row][props.col] || []
+        const surrendered = square.find(piece => snakeToCamel(piece?.type) === props.type)
+        if (!surrendered) return
 
-        for (let i = 0; i < newBoardState[props.row][props.col]?.length; i++) {
-            if (snakeToCamel(newBoardState[props.row][props.col][i]?.type) === props.type) {
-                newCapturedPieces[PLAYERS[1]].push(newBoardState[props.row][props.col][i].type)
-                newBoardState[props.row][props.col].splice(i, 1)
-                break
-            }
+        const newCapturedPieces = {
+            ...gameState.capturedPieces,
+            [PLAYERS[1]]: [...gameState.capturedPieces[PLAYERS[1]], surrendered.type]
         }
+
+        let removed = false
+        const newBoardState = gameState.boardState.map((row, r) => {
+            if (r !== props.row) return row;
+            return row.map((sq, c) => {
+                if (c !== props.col || !sq) return sq;
+                return sq.filter(piece => {
+                    if (!removed && snakeToCamel(piece?.type) === props.type) {
+                        removed = true
+                        return false
+                    }
+                    return true
+                });
+            });
+        });
 
         gameState.updateGameState({
             ...gameState,

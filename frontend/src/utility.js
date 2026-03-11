@@ -193,14 +193,14 @@ const convertKeysToCamelCase = (obj) => {
     return obj;
 }
 
-function convertKeysToSnakeCase(obj) {
+const convertKeysToSnakeCase = (obj) => {
     if (Array.isArray(obj)) {
         return obj.map(item => convertKeysToSnakeCase(item));
     }
     if (obj !== null && typeof obj === 'object') {
         const result = {};
         for (const key in obj) {
-            if (obj.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
                 const newKey = key.replace(/([A-Z])/g, "_$1").toLowerCase();
                 result[newKey] = convertKeysToSnakeCase(obj[key]);
             }

@@ -27,7 +27,6 @@ const GameStateContext = createContext({
     latestMovement: null,
     queenReset: false,
     check: {white: false, black: false},
-    // TODO: for consistency add recursion to convertKeysToSnakeCase()
     castleLog: {
         white: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false},
         black: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false}
@@ -83,14 +82,14 @@ export function GameStateProvider({children}) {
         turnCount: 0,
         positionInPlay: [null, null],
         boardState: [
-            [[{"type":"black_pawn"}], [{"type":"black_knight"}], [{"type":"black_bishop", "energize_stacks": 0}], [{"type":"black_queen"}], [{"type":"black_king"}], [{"type":"black_bishop", "energize_stacks": 0}], [{"type":"black_knight"}], [{"type":"black_rook"}]],
+            [[{"type":"black_pawn"}], [{"type":"black_knight"}], [{"type":"black_bishop", "energizeStacks": 0}], [{"type":"black_queen"}], [{"type":"black_king"}], [{"type":"black_bishop", "energizeStacks": 0}], [{"type":"black_knight"}], [{"type":"black_rook"}]],
             Array(8).fill([{"type":"black_pawn"}]),
             Array(8).fill(null),
             Array(8).fill(null),
             Array(8).fill(null),
             Array(8).fill(null),
             Array(8).fill([{"type":"white_pawn"}]),
-            [[{"type":"white_rook"}], [{"type":"white_knight"}], [{"type":"white_bishop", "energize_stacks": 0}], [{"type":"white_queen"}], [{"type":"white_king"}], [{"type":"white_bishop", "energize_stacks": 0}], [{"type":"white_knight"}], [{"type":"white_rook"}]],
+            [[{"type":"white_rook"}], [{"type":"white_knight"}], [{"type":"white_bishop", "energizeStacks": 0}], [{"type":"white_queen"}], [{"type":"white_king"}], [{"type":"white_bishop", "energizeStacks": 0}], [{"type":"white_knight"}], [{"type":"white_rook"}]],
         ],
         possibleMoves: [],
         possibleCaptures: [],
@@ -116,7 +115,6 @@ export function GameStateProvider({children}) {
             [PLAYERS[0]]: false,
             [PLAYERS[1]]: false
         },
-        // for consistency add recursion to convertKeysToSnakeCase()
         castleLog: {
             white: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false},
             black: {hasKingMoved: false, hasLeftRookMoved: false, hasRightRookMoved: false}

@@ -195,6 +195,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
 * Delete old game on restart once data lake for historical records is implemented
 * redo assets for rules
 * settle all TODOs
+* handle warnings
 
 ##### Backend 
 * MongoDB database  ✅

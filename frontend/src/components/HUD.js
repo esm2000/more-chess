@@ -14,10 +14,16 @@ const HUD = (props) => {
     const [showRestartConfirm, setShowRestartConfirm] = useState(false)
     const [turnFlashClass, setTurnFlashClass] = useState('')
     const prevTurnCount = useRef(turnCount)
+    const isInitialLoad = useRef(true)
 
     useEffect(() => {
         const prev = prevTurnCount.current
         prevTurnCount.current = turnCount
+
+        if (isInitialLoad.current) {
+            isInitialLoad.current = false
+            return
+        }
 
         if (prev === turnCount) return
 

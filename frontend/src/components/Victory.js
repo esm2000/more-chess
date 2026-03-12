@@ -3,19 +3,20 @@ import { IMAGE_MAP } from '../utility';
 
 const Victory = (props) => {
 
-    const topPosition = props.isMobile ? 22 : 11
-    const leftPosition = props.isMobile ? 13 : 6.5
+    const width = props.isMobile ? 49 : 24.5
 
     return(
         <div>
-            <img 
+            <img
                 src={IMAGE_MAP["victory"]}
                 style={
                     {
-                        position: "absolute", 
-                        top: `${topPosition}vw`, 
-                        left: `${leftPosition}vw`,
-                        height: `${leftPosition}vw`
+                        position: "absolute",
+                        top: "45%",
+                        left: "50%",
+                        width: `${width}vw`,
+                        transform: "translate(-50%, -50%)",
+                        opacity: 0.6
                     }}
             />
         </div>

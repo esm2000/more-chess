@@ -186,7 +186,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
 * provide UI to indicate neutral monster buffs (color tint or small monster icons next to pieces + number for stacked buffs) + (board herld buff spreading to pawn must be handled on frontend)
 * change favicon and website/tab title ✅
 * add castle button ✅
-* make victory and defeat UI transparent
+* make victory and defeat UI transparent ✅
 * add UI for draw
 * shop rework ✅
 * pawn exchange ✅

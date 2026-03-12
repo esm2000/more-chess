@@ -76,8 +76,8 @@ See README.md roadmap for full details.
 
 ## Maintaining This Document
 
-Update CLAUDE.md in the same commit when changing conventions, workflow, or tech stack. For module/structure changes, update [docs/architecture.md](docs/architecture.md) instead. Bump "Last Updated" on changes.
+Update AGENTS.md in the same commit when changing conventions, workflow, or tech stack. For module/structure changes, update [docs/architecture.md](docs/architecture.md) instead. Bump "Last Updated" on changes.
 
-**Keep all agent guide files in sync:** When updating this file, apply the same changes to `AGENTS.md` (Codex) and `GEMINI.md` (Gemini). When updating the roadmap, apply changes to `README.md` as well.
+**Keep all agent guide files in sync:** When updating this file, apply the same changes to `CLAUDE.md` (Claude) and `GEMINI.md` (Gemini). When updating the roadmap, apply changes to `README.md` as well.
 
 Last Updated: 2026-03-10

@@ -79,14 +79,14 @@ const Board = () => {
                                                         col={col}
                                                         inPlay={positionInPlay[0] === row && positionInPlay[1] === col}
                                                         type={snakeToCamel(piece.type)}
-                                                        pawnBuff={piece.pawn_buff}
-                                                        energizeStacks={piece.energize_stacks}
-                                                        isStunned={piece.is_stunned}
-                                                        bishopDebuff={piece.bishop_debuff}
-                                                        checkProtection={piece.check_protection}
+                                                        pawnBuff={piece.pawnBuff}
+                                                        energizeStacks={piece.energizeStacks}
+                                                        isStunned={piece.isStunned}
+                                                        bishopDebuff={piece.bishopDebuff}
+                                                        checkProtection={piece.checkProtection}
                                                         health={piece.health}
                                                         shopPieceSelected={shopPieceSelected}
-                                                        markedForDeath={piece.marked_for_death}
+                                                        markedForDeath={piece.markedForDeath}
                                                         // Only white king gets castle buttons; black castling is handled by AI
                                                         castleMoves={piece.type === "white_king" ? castleMoves : []}
                                                     />

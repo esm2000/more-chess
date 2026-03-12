@@ -182,11 +182,11 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
 * Add a "Surrender Piece" button to choose which piece to give up after being marked for death amid five dragon buff stacks for the enemy (remember to add piece to captured pieces array) ✅
 * Allow user to restart game from HUD (small button in corner) ✅
 * rename game to League of Chess ✅
-* for consistency add recursion to convertKeysToSnakeCase() and convertKeysToCamelCase()
+* for consistency add recursion to convertKeysToSnakeCase() and convertKeysToCamelCase() ✅
 * provide UI to indicate neutral monster buffs (color tint or small monster icons next to pieces + number for stacked buffs) + (board herld buff spreading to pawn must be handled on frontend)
 * change favicon and website/tab title ✅
 * add castle button ✅
-* make victory and defeat UI transparent
+* make victory and defeat UI transparent ✅
 * add UI for draw
 * shop rework ✅
 * pawn exchange ✅

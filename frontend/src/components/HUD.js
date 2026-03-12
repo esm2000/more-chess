@@ -7,6 +7,8 @@ import Shop from './Shop';
 const HUD = (props) => {
     const gameState = GameStateContextData()
     const turnCount = gameState.turnCount
+    const queenReset = gameState.queenReset
+    const bishopSpecialCaptures = gameState.bishopSpecialCaptures
     const goldCount = gameState.goldCount?.[PLAYERS[0]] || 0
     const enemyGoldCount = gameState.goldCount?.[PLAYERS[1]] || 0
     const isMobile = useIsMobile()
@@ -14,7 +16,16 @@ const HUD = (props) => {
     const [showRestartConfirm, setShowRestartConfirm] = useState(false)
     const [turnFlashClass, setTurnFlashClass] = useState('')
     const prevTurnCount = useRef(turnCount)
+    const prevQueenReset = useRef(queenReset)
+    const prevBishopCaptures = useRef(bishopSpecialCaptures?.length ?? 0)
     const isInitialLoad = useRef(true)
+
+    const triggerFlash = (isPlayerTurn) => {
+        const flashClass = isPlayerTurn ? 'turn-flash-green' : 'turn-flash-red'
+        setTurnFlashClass(flashClass)
+        const timer = setTimeout(() => setTurnFlashClass(''), 1000)
+        return () => clearTimeout(timer)
+    }
 
     useEffect(() => {
         const prev = prevTurnCount.current
@@ -31,12 +42,30 @@ const HUD = (props) => {
         const currIsPlayerTurn = turnCount % 2 === 0
 
         if (prevIsPlayerTurn === currIsPlayerTurn) {
-            const flashClass = currIsPlayerTurn ? 'turn-flash-green' : 'turn-flash-red'
-            setTurnFlashClass(flashClass)
-            const timer = setTimeout(() => setTurnFlashClass(''), 1000)
-            return () => clearTimeout(timer)
+            return triggerFlash(currIsPlayerTurn)
         }
     }, [turnCount])
+
+    useEffect(() => {
+        const prev = prevQueenReset.current
+        prevQueenReset.current = queenReset
+
+        if (!prev && queenReset) {
+            const isPlayerTurn = turnCount % 2 === 0
+            return triggerFlash(isPlayerTurn)
+        }
+    }, [queenReset, turnCount])
+
+    useEffect(() => {
+        const prevLen = prevBishopCaptures.current
+        const currLen = bishopSpecialCaptures?.length ?? 0
+        prevBishopCaptures.current = currLen
+
+        if (currLen > prevLen) {
+            const isPlayerTurn = turnCount % 2 === 0
+            return triggerFlash(isPlayerTurn)
+        }
+    }, [bishopSpecialCaptures, turnCount])
 
     const handleShopButtonClick = () => {
         setToggleShop(!toggleShop)

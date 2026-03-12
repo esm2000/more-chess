@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import { GameStateContextData } from '../context/GameStateContext';
 import { IMAGE_MAP, PLAYERS, useIsMobile } from '../utility';
 import Shop from './Shop';
@@ -7,11 +7,65 @@ import Shop from './Shop';
 const HUD = (props) => {
     const gameState = GameStateContextData()
     const turnCount = gameState.turnCount
+    const queenReset = gameState.queenReset
+    const bishopSpecialCaptures = gameState.bishopSpecialCaptures
     const goldCount = gameState.goldCount?.[PLAYERS[0]] || 0
     const enemyGoldCount = gameState.goldCount?.[PLAYERS[1]] || 0
     const isMobile = useIsMobile()
     const [toggleShop, setToggleShop] = useState(false)
     const [showRestartConfirm, setShowRestartConfirm] = useState(false)
+    const [turnFlashClass, setTurnFlashClass] = useState('')
+    const prevTurnCount = useRef(turnCount)
+    const prevQueenReset = useRef(queenReset)
+    const prevBishopCaptures = useRef(bishopSpecialCaptures?.length ?? 0)
+    const isInitialLoad = useRef(true)
+
+    const triggerFlash = (isPlayerTurn) => {
+        const flashClass = isPlayerTurn ? 'turn-flash-green' : 'turn-flash-red'
+        setTurnFlashClass(flashClass)
+        const timer = setTimeout(() => setTurnFlashClass(''), 1000)
+        return () => clearTimeout(timer)
+    }
+
+    useEffect(() => {
+        const prev = prevTurnCount.current
+        prevTurnCount.current = turnCount
+
+        if (isInitialLoad.current) {
+            isInitialLoad.current = false
+            return
+        }
+
+        if (prev === turnCount) return
+
+        const prevIsPlayerTurn = prev % 2 === 0
+        const currIsPlayerTurn = turnCount % 2 === 0
+
+        if (prevIsPlayerTurn === currIsPlayerTurn) {
+            return triggerFlash(currIsPlayerTurn)
+        }
+    }, [turnCount])
+
+    useEffect(() => {
+        const prev = prevQueenReset.current
+        prevQueenReset.current = queenReset
+
+        if (!prev && queenReset) {
+            const isPlayerTurn = turnCount % 2 === 0
+            return triggerFlash(isPlayerTurn)
+        }
+    }, [queenReset, turnCount])
+
+    useEffect(() => {
+        const prevLen = prevBishopCaptures.current
+        const currLen = bishopSpecialCaptures?.length ?? 0
+        prevBishopCaptures.current = currLen
+
+        if (currLen > prevLen) {
+            const isPlayerTurn = turnCount % 2 === 0
+            return triggerFlash(isPlayerTurn)
+        }
+    }, [bishopSpecialCaptures, turnCount])
 
     const handleShopButtonClick = () => {
         setToggleShop(!toggleShop)
@@ -57,7 +111,7 @@ const HUD = (props) => {
                     justifyContent: 'space-between',
                     marginBottom: `${isMobile ? 1 : 0.5}vw`
                 }}>
-                    <span style={{ fontSize: `${isMobile ? 2.5 : 1.25}vw` }}>Turn: {turnCount}</span>
+                    <span className={turnFlashClass} style={{ fontSize: `${isMobile ? 2.5 : 1.25}vw`, display: 'inline-block' }}>Turn: {turnCount}</span>
                     {isWhiteTurn && isKingOnHomeSquare ?
                         <button
                             className="pixel-btn"

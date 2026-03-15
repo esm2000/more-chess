@@ -288,25 +288,6 @@ def finalize_game_state(old_game_state: GameState, new_game_state: GameState, mo
     # Record movement
     utils.record_moved_pieces_this_turn(new_game_state, moved_pieces)
 
-    # Log move to game_moves collection
-    if moved_pieces:
-        move_log = {
-            "game_id": id,
-            "turn": new_game_state["turn_count"],
-            "side": "white" if player else "black",
-            "moved_pieces": [
-                {
-                    "piece_type": mp["piece"]["type"],
-                    "from": mp["previous_position"],
-                    "to": mp["current_position"]
-                }
-                for mp in moved_pieces
-            ],
-            "captured_pieces": new_game_state["captured_pieces"],
-            "timestamp": datetime.datetime.now(datetime.timezone.utc)
-        }
-        mongo_client["game_db"]["game_moves"].insert_one(move_log)
-
     # Position in play logic
     reset_position_in_play_queen = True
     if new_game_state["queen_reset"]:
@@ -326,6 +307,25 @@ def finalize_game_state(old_game_state: GameState, new_game_state: GameState, mo
     # Final management and persistence
     utils.manage_game_state(old_game_state, new_game_state)
     utils.perform_game_state_update(new_game_state, mongo_client, id)
+
+    # Log move to game_moves collection (after persistence to avoid phantom entries)
+    if moved_pieces:
+        move_log = {
+            "game_id": id,
+            "turn": new_game_state["turn_count"],
+            "side": "white" if player else "black",
+            "moved_pieces": [
+                {
+                    "piece_type": mp["piece"]["type"],
+                    "from": mp["previous_position"],
+                    "to": mp["current_position"]
+                }
+                for mp in moved_pieces
+            ],
+            "captured_pieces": new_game_state["captured_pieces"],
+            "timestamp": datetime.datetime.now(datetime.timezone.utc)
+        }
+        mongo_client["game_db"]["game_moves"].insert_one(move_log)
 
 
 def unmark_all_pieces_marked_for_death(new_game_state: GameState) -> None:

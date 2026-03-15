@@ -171,7 +171,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
 * neutral monsters ✅
 * captured pieces ✅
 * piece status effects ✅
-* health points for neutral monsters
+* health points for neutral monsters ✅
 * sword in stone buff ✅
 * rules on click ✅
 * pixel font ✅

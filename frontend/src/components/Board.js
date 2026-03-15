@@ -16,6 +16,12 @@ import { GameStateContextData }  from '../context/GameStateContext';
 
 import { PLAYERS, pickSide, snakeToCamel, useIsMobile } from '../utility';
 
+const FRAME_BG_COLOR = 'rgb(71, 33, 1)'
+const FRAME_BORDER_COLOR = 'rgb(50, 23, 0)'
+const FRAME_BEVEL_LIGHT = 'rgb(125, 59, 2)'
+const FRAME_BEVEL_DARK = 'rgb(40, 18, 0)'
+const LABEL_COLOR = 'rgb(230, 233, 198)'
+
 const Board = () => {
     // positionInPlay used to figure out what piece is being moved by player
     const gameState = GameStateContextData()
@@ -56,8 +62,19 @@ const Board = () => {
     const gutterSize = isMobile ? 2.4 : 1.2
     const borderSize = isMobile ? 0.5 : 0.25
     const bevelSize = isMobile ? 0.3 : 0.15
+    // 8 squares × (3vw width + 2 × 0.35vw padding) = 29.6vw; mobile doubles all values
     const boardSize = isMobile ? 59.2 : 29.6
     const labelFontSize = isMobile ? '1.6vw' : '0.8vw'
+    const labelCellStyle = {
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: LABEL_COLOR,
+        fontSize: labelFontSize,
+        fontFamily: 'Basic',
+        fontWeight: 'bold',
+    }
 
     return(
         <div style={isMobile ? {display: "block", margin: "auto"}: null}>
@@ -68,13 +85,13 @@ const Board = () => {
             </div>
             <div style={{
                 display: 'inline-block',
-                backgroundColor: 'rgb(71, 33, 1)',
-                border: `${borderSize}vw solid rgb(50, 23, 0)`,
+                backgroundColor: FRAME_BG_COLOR,
+                border: `${borderSize}vw solid ${FRAME_BORDER_COLOR}`,
                 padding: `${gutterSize * 0.5}vw ${gutterSize}vw ${gutterSize}vw ${gutterSize}vw`,
                 boxSizing: 'content-box',
                 position: 'relative',
                 imageRendering: 'pixelated',
-                boxShadow: `inset ${bevelSize}vw ${bevelSize}vw 0 rgb(125, 59, 2), inset -${bevelSize}vw -${bevelSize}vw 0 rgb(40, 18, 0)`,
+                boxShadow: `inset ${bevelSize}vw ${bevelSize}vw 0 ${FRAME_BEVEL_LIGHT}, inset -${bevelSize}vw -${bevelSize}vw 0 ${FRAME_BEVEL_DARK}`,
             }}>
                 {/* Row labels (8-1) in the left gutter */}
                 <div style={{
@@ -87,16 +104,7 @@ const Board = () => {
                     flexDirection: 'column',
                 }}>
                     {[8,7,6,5,4,3,2,1].map(num => (
-                        <div key={num} style={{
-                            flex: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'rgb(230, 233, 198)',
-                            fontSize: labelFontSize,
-                            fontFamily: 'Basic',
-                            fontWeight: 'bold',
-                        }}>{num}</div>
+                        <div key={num} style={labelCellStyle}>{num}</div>
                     ))}
                 </div>
                 {/* Column labels (a-h) in the bottom gutter */}
@@ -110,22 +118,13 @@ const Board = () => {
                     flexDirection: 'row',
                 }}>
                     {['a','b','c','d','e','f','g','h'].map(letter => (
-                        <div key={letter} style={{
-                            flex: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'rgb(230, 233, 198)',
-                            fontSize: labelFontSize,
-                            fontFamily: 'Basic',
-                            fontWeight: 'bold',
-                        }}>{letter}</div>
+                        <div key={letter} style={labelCellStyle}>{letter}</div>
                     ))}
                 </div>
                 {/* The board */}
                 <div style={{
                     position: 'relative',
-                    outline: `${isMobile ? 0.2 : 0.1}vw solid rgb(40, 18, 0)`,
+                    outline: `${isMobile ? 0.2 : 0.1}vw solid ${FRAME_BEVEL_DARK}`,
                 }}>
                 <Background 
                     possibleCaptures={possibleCaptures}

@@ -16,7 +16,7 @@ const Draw = (props) => {
                         left: "50%",
                         width: `${width}vw`,
                         transform: "translate(-50%, -50%)",
-                        opacity: 0.6
+                        opacity: 0.7
                     }}
             />
         </div>

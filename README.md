@@ -187,7 +187,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
 * change favicon and website/tab title ✅
 * add castle button ✅
 * make victory and defeat UI transparent ✅
-* add UI for draw
+* add UI for draw ✅
 * shop rework ✅
 * pawn exchange ✅
 * visual cue for a player being able to go again ✅

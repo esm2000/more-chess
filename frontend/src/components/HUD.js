@@ -77,7 +77,7 @@ const HUD = (props) => {
     const handleBugReportButtonClick = () => {
         setToggleBugReport(!toggleBugReport)
         setToggleShop(false)
-        props.setShopPieceSelected(null)
+        props.setShopPieceSelected?.(null)
     }
 
     const isWhiteTurn = turnCount % 2 === 0

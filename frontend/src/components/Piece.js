@@ -477,8 +477,9 @@ const Piece = (props) => {
             }
             {activeNeutralBuffs.length > 0 ?
                 (() => {
-                    const buffIconSize = isMobile ? 3.6 : 1.2
                     const squareSize = 3.7 * (isMobile ? 2 : 1)
+                    const baseBuffIconSize = isMobile ? 3.6 : 1.2
+                    const buffIconSize = Math.min(baseBuffIconSize, (squareSize * 0.85) / activeNeutralBuffs.length)
                     const buffCountFontSize = isMobile ? '1.6vw' : '0.5vw'
 
                     return activeNeutralBuffs.map((buff, i) => (

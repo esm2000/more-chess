@@ -72,15 +72,6 @@ def retrieve_game_state(id: str, response: Response) -> dict:
     return game_state
 
 
-@router.delete("/game/{id}")
-def delete_game(id: str) -> dict:
-    """Delete a game from MongoDB by ID."""
-    query = {"_id": ObjectId(id)}
-    game_database = mongo_client["game_db"]
-    game_database["games"].delete_one(query)
-    return {"message": "Success"}
-
-
 @router.put("/game/{id}", status_code=200)
 def update_game_state(id: str, state: GameStateRequest, response: Response, player: bool = True) -> dict:
     """Validate and apply a full game state update (the main turn pipeline)."""
@@ -142,6 +133,29 @@ def update_game_state(id: str, state: GameStateRequest, response: Response, play
                        is_pawn_exchange_required_this_turn, mongo_client, id)
     
     return retrieve_game_state(id, response)
+
+
+class BugReportRequest(BaseModel):
+    game_id: str
+    turn: int
+    description: str = ""
+    region: str = ""
+
+
+@router.post("/bug-report", status_code=201)
+def create_bug_report(report: BugReportRequest) -> dict:
+    """Submit a bug report and persist to MongoDB."""
+    bug_report = {
+        "game_id": report.game_id,
+        "turn": report.turn,
+        "description": report.description,
+        "region": report.region,
+        "timestamp": datetime.datetime.now(datetime.timezone.utc),
+    }
+    game_database = mongo_client["game_db"]
+    game_database["bug_reports"].insert_one(bug_report)
+    bug_report["id"] = str(bug_report.pop("_id"))
+    return bug_report
 
 
 def update_game_state_no_restrictions(id: str, state: GameStateRequest, response: Response) -> dict:

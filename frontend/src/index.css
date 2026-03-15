@@ -209,6 +209,18 @@ progress {
     font-size: 0.25vw;
 }
 
+.bug-report-textarea {
+    font-family: "Basic";
+    background-color: rgb(71, 33, 1);
+    color: white;
+    border: 0.15vw solid rgb(50, 23, 0);
+    outline: none;
+}
+
+.bug-report-textarea::placeholder {
+    color: rgb(180, 160, 140);
+}
+
 @keyframes turn-flash-green {
     0% { color: white; transform: scale(1); }
     20% { color: rgb(80, 220, 80); transform: scale(1.4); }

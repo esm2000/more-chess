@@ -2,6 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import { GameStateContextData } from '../context/GameStateContext';
 import { IMAGE_MAP, PLAYERS, useIsMobile } from '../utility';
 import Shop from './Shop';
+import BugReportForm from './BugReportForm';
 
 
 const HUD = (props) => {
@@ -13,6 +14,7 @@ const HUD = (props) => {
     const enemyGoldCount = gameState.goldCount?.[PLAYERS[1]] || 0
     const isMobile = useIsMobile()
     const [toggleShop, setToggleShop] = useState(false)
+    const [toggleBugReport, setToggleBugReport] = useState(false)
     const [showRestartConfirm, setShowRestartConfirm] = useState(false)
     const [turnFlashClass, setTurnFlashClass] = useState('')
     const prevTurnCount = useRef(turnCount)
@@ -69,6 +71,13 @@ const HUD = (props) => {
 
     const handleShopButtonClick = () => {
         setToggleShop(!toggleShop)
+        setToggleBugReport(false)
+    }
+
+    const handleBugReportButtonClick = () => {
+        setToggleBugReport(!toggleBugReport)
+        setToggleShop(false)
+        props.setShopPieceSelected?.(null)
     }
 
     const isWhiteTurn = turnCount % 2 === 0
@@ -146,26 +155,33 @@ const HUD = (props) => {
                             <span style={{ color: 'rgb(180, 180, 180)' }}>{enemyGoldCount}</span>
                         </div>
                     </div>
-                    {showRestartConfirm ?
-                        <div style={{ display: 'flex', gap: `${isMobile ? 0.6 : 0.3}vw`, alignItems: 'center' }}>
-                            <span style={{ fontSize: `${isMobile ? 1.4 : 0.7}vw`, opacity: 0.8 }}>Restart?</span>
-                            <button
-                                className="pixel-btn"
-                                onClick={handleConfirmRestart}
-                                style={confirmBtnStyle}
-                            >Yes</button>
-                            <button
-                                className="pixel-btn"
-                                onClick={() => setShowRestartConfirm(false)}
-                                style={confirmBtnStyle}
-                            >No</button>
-                        </div> :
+                    <div style={{ display: 'flex', gap: `${isMobile ? 0.6 : 0.3}vw`, alignItems: 'center' }}>
                         <button
                             className="pixel-btn"
-                            onClick={() => setShowRestartConfirm(true)}
+                            onClick={handleBugReportButtonClick}
                             style={{...confirmBtnStyle, opacity: 0.7}}
-                        >Restart</button>
-                    }
+                        >{toggleBugReport ? "Close" : "Report Bug"}</button>
+                        {showRestartConfirm ?
+                            <>
+                                <span style={{ fontSize: `${isMobile ? 1.4 : 0.7}vw`, opacity: 0.8 }}>Restart?</span>
+                                <button
+                                    className="pixel-btn"
+                                    onClick={handleConfirmRestart}
+                                    style={confirmBtnStyle}
+                                >Yes</button>
+                                <button
+                                    className="pixel-btn"
+                                    onClick={() => setShowRestartConfirm(false)}
+                                    style={confirmBtnStyle}
+                                >No</button>
+                            </> :
+                            <button
+                                className="pixel-btn"
+                                onClick={() => setShowRestartConfirm(true)}
+                                style={{...confirmBtnStyle, opacity: 0.7}}
+                            >Restart</button>
+                        }
+                    </div>
                 </div>
             </div>
             {
@@ -174,6 +190,11 @@ const HUD = (props) => {
                     shopPieceSelected={props.shopPieceSelected}
                     setShopPieceSelected={props.setShopPieceSelected}
                  /> :
+                 null
+            }
+            {
+                toggleBugReport ?
+                 <BugReportForm onClose={() => setToggleBugReport(false)} /> :
                  null
             }
         </div>

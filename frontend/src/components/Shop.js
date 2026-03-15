@@ -17,6 +17,7 @@ const Shop = (props) => {
                 width: `${isMobile ? 65.0 : 32.5}vw`,
                 marginTop: `${isMobile ? 3 : 1.5}vw`,
                 borderWidth: `${isMobile ? 2.5 : 1.25}vw`,
+                borderTopWidth: `${isMobile ? 0.8 : 0.4}vw`,
                 boxSizing: 'border-box',
             }}
         >

@@ -5,6 +5,11 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   test:
     build:
@@ -12,7 +17,8 @@ services:
     environment:
       - MONGODB_URI=mongodb://mongo:27017/game_db
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     command: ["pytest", "-n", "auto"]
 
   backend:
@@ -26,7 +32,7 @@ services:
       test:
         condition: service_completed_successfully
       mongo:
-        condition: service_started
+        condition: service_healthy
 
   frontend:
     build:

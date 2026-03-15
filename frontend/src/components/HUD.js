@@ -102,7 +102,7 @@ const HUD = (props) => {
                 fontFamily: 'Basic',
                 color: 'white',
                 marginTop: `${isMobile ? 1 : 0.5}vw`,
-                width: isMobile ? '59.2vw' : '29.6vw',
+                width: isMobile ? '65.0vw' : '32.5vw',
                 boxSizing: 'border-box'
             }}>
                 <div style={{

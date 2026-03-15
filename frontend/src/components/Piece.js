@@ -272,13 +272,15 @@ const Piece = (props) => {
 
     const buffedSrc = props.pawnBuff ? props.type + `${props.pawnBuff + 1}` : props.type
     const image_src = IMAGE_MAP[buffedSrc] ? buffedSrc : props.type
+    const className = pickClassName()
+    const maxHealth = props.health ? MAX_BOSS_HEALTH[className.replace("_piece", "")] : null
 
     return(
         <div>
-            <img 
-                src={IMAGE_MAP[image_src]} 
-                alt={image_src} 
-                className={pickClassName()}
+            <img
+                src={IMAGE_MAP[image_src]}
+                alt={image_src}
+                className={className}
                 style={{
                     top: `${topPosition}vw`,
                     left: `${leftPosition}vw`
@@ -286,15 +288,23 @@ const Piece = (props) => {
                 onClick={() => handlePieceClick()}
             />
             {props.health ?
-                <progress 
-                    className={pickClassName()}
-                    value={props.health} 
-                    max={MAX_BOSS_HEALTH[pickClassName().replace("_piece", "")]}
-                    style={{
-                        top: `${topPosition + (3.25 * (isMobile ? 2: 1)) }vw`,
-                        left: `${leftPosition + (0.15 * (isMobile ? 2: 1))}vw`
-                    }}
-                /> : null}
+                <div style={{
+                    position: 'absolute',
+                    display: 'flex',
+                    alignItems: 'center',
+                    top: `${topPosition + (3.25 * (isMobile ? 2: 1))}vw`,
+                    left: `${leftPosition + (0.15 * (isMobile ? 2: 1))}vw`
+                }}>
+                    <progress
+                        className={className}
+                        value={props.health}
+                        max={maxHealth}
+                        style={{position: 'static', width: `${isMobile ? 5 : 2.5}vw`}}
+                    />
+                    <span className="hp-label" style={{fontSize: `${isMobile ? 1.8 : 0.9}vw`}}>
+                        {props.health}/{maxHealth}
+                    </span>
+                </div> : null}
             {props.isStunned ?
                 <img
                     src={IMAGE_MAP['stunned']}

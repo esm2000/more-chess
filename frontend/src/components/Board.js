@@ -61,7 +61,7 @@ const Board = () => {
 
     return(
         <div style={isMobile ? {display: "block", margin: "auto"}: null}>
-            <div style={{ marginBottom: `${isMobile ? 1 : 0.5}vw` }}>
+            <div style={{ marginBottom: `${isMobile ? 2 : 1}vw` }}>
                 <CapturedPieces
                     side={PLAYERS[1]}
                 />

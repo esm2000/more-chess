@@ -303,7 +303,7 @@ def finalize_game_state(old_game_state: GameState, new_game_state: GameState, mo
                 for mp in moved_pieces
             ],
             "captured_pieces": new_game_state["captured_pieces"],
-            "timestamp": datetime.datetime.now()
+            "timestamp": datetime.datetime.now(datetime.timezone.utc)
         }
         mongo_client["game_db"]["game_moves"].insert_one(move_log)
 

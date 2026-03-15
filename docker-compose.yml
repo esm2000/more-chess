@@ -1,6 +1,7 @@
 services:
   mongo:
     image: mongo:7
+    command: ["--quiet"]
     ports:
       - "27017:27017"
     volumes:

@@ -135,6 +135,29 @@ def update_game_state(id: str, state: GameStateRequest, response: Response, play
     return retrieve_game_state(id, response)
 
 
+class BugReportRequest(BaseModel):
+    game_id: str
+    turn: int
+    description: str = ""
+    region: str = ""
+
+
+@router.post("/bug-report", status_code=201)
+def create_bug_report(report: BugReportRequest) -> dict:
+    """Submit a bug report and persist to MongoDB."""
+    bug_report = {
+        "game_id": report.game_id,
+        "turn": report.turn,
+        "description": report.description,
+        "region": report.region,
+        "timestamp": datetime.datetime.now(),
+    }
+    game_database = mongo_client["game_db"]
+    game_database["bug_reports"].insert_one(bug_report)
+    bug_report["id"] = str(bug_report.pop("_id"))
+    return bug_report
+
+
 def update_game_state_no_restrictions(id: str, state: GameStateRequest, response: Response) -> dict:
     """Overwrite a game state without validation (testing only, not exposed via API)."""
     new_game_state = dict(state)

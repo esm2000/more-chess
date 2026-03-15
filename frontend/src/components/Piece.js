@@ -367,13 +367,14 @@ const Piece = (props) => {
                 <p 
                     className={pickClassName()}
                     style={{
-                        top: `${topPosition + (2.55 * (isMobile ? 2: 1))}vw`,
+                        top: `${topPosition + (1.5 * (isMobile ? 2: 1))}vw`,
                         left: `${leftPosition - (0.75 * (isMobile ? 2: 1))}vw`,
                         fontWeight: 'bold',
-                        background: '-webkit-linear-gradient(white, blue)',
+                        background: '-webkit-linear-gradient(#00e5ff, #b347ea)',
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
-                        fontSize: isMobile ? '2.4vw': '1.2vw'
+                        filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.8))',
+                        fontSize: isMobile ? '2.4vw': '0.8vw'
                     }}
                 >
                     {props.energizeStacks}
@@ -386,10 +387,10 @@ const Piece = (props) => {
                         src={IMAGE_MAP['bishopDebuff']}
                         className={pickClassName()}
                         style={{
-                            width: isMobile ? '1.4vw': '0.7vw',
-                            height: isMobile ? '1.4vw': '0.7vw',
+                            width: isMobile ? '2.2vw': '0.7vw',
+                            height: isMobile ? '2.2vw': '0.7vw',
                             top: `${topPosition + (isMobile ? 5.5 : 2.75)}vw`,
-                            left: `${leftPosition - (isMobile ? 3 : 1.5) + (count * (isMobile ? 2 : 1))}vw`
+                            left: `${leftPosition - (isMobile ? 4 : 1.5) + (count * (isMobile ? 2.8 : 1))}vw`
                         }}
                     />);
                 }): null
@@ -466,21 +467,19 @@ const Piece = (props) => {
                         src={IMAGE_MAP['checkProtection']}
                         className={pickClassName()}
                         style={{
-                            width: isMobile ? '2.3vw': '1.15vw',
-                            height: isMobile ? '2.3vw': '1.15vw',
+                            width: isMobile ? '2.8vw': '0.9vw',
+                            height: isMobile ? '2.8vw': '0.9vw',
                             top: `${topPosition}vw`,
-                            left: `${leftPosition - (isMobile ? 3.5: 1.75) + (count * (isMobile ? 3.6: 1.2))}vw`
+                            left: `${leftPosition - (isMobile ? 4 : 1.5) + (count * (isMobile ? 3 : 1))}vw`
                         }}
                     />);
                 }): null
             }
             {activeNeutralBuffs.length > 0 ?
                 (() => {
-                    const buffIconSize = isMobile ? 1.6 : 0.8
-                    const buffIconLeftOffset = isMobile ? 1.8 : 0.9
-                    const buffCountBottomOffset = isMobile ? -0.6 : -0.3
-                    const buffCountRightOffset = isMobile ? -0.6 : -0.3
-                    const buffCountFontSize = isMobile ? '1vw' : '0.5vw'
+                    const buffIconSize = isMobile ? 3.6 : 1.2
+                    const squareSize = 3.7 * (isMobile ? 2 : 1)
+                    const buffCountFontSize = isMobile ? '1.6vw' : '0.5vw'
 
                     return activeNeutralBuffs.map((buff, i) => (
                         <div
@@ -489,7 +488,7 @@ const Piece = (props) => {
                             style={{
                                 position: 'absolute',
                                 top: `${topPosition + (i * buffIconSize)}vw`,
-                                left: `${leftPosition - buffIconLeftOffset}vw`,
+                                left: `${leftPosition + squareSize - buffIconSize}vw`,
                                 width: `${buffIconSize}vw`,
                                 height: `${buffIconSize}vw`,
                                 zIndex: 5,
@@ -509,8 +508,8 @@ const Piece = (props) => {
                                 <span
                                     style={{
                                         position: 'absolute',
-                                        bottom: `${buffCountBottomOffset}vw`,
-                                        right: `${buffCountRightOffset}vw`,
+                                        bottom: 0,
+                                        right: 0,
                                         fontSize: buffCountFontSize,
                                         fontWeight: 'bold',
                                         color: 'white',

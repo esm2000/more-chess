@@ -1,14 +1,14 @@
 import React from 'react';
 import { IMAGE_MAP } from '../utility';
 
-const Defeat = ({ isMobile }) => {
+const Draw = ({ isMobile }) => {
 
     const width = isMobile ? 49 : 24.5
 
     return(
         <img
-            src={IMAGE_MAP["defeat"]}
-            alt="Defeat"
+            src={IMAGE_MAP["draw"]}
+            alt="Draw"
             style={
                 {
                     position: "absolute",
@@ -16,10 +16,10 @@ const Defeat = ({ isMobile }) => {
                     left: "50%",
                     width: `${width}vw`,
                     transform: "translate(-50%, -50%)",
-                    opacity: 0.6
+                    opacity: 0.7
                 }}
         />
     );
 }
 
-export default Defeat;
+export default Draw;

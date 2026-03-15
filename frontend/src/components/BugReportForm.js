@@ -8,10 +8,15 @@ const BugReportForm = ({ onClose }) => {
     const isMobile = useIsMobile()
     const [description, setDescription] = useState('')
     const [submitted, setSubmitted] = useState(false)
+    const [submitting, setSubmitting] = useState(false)
+    const [error, setError] = useState(null)
 
     const handleSubmit = () => {
-        const gameId = sessionStorage.getItem("gameStateId")
+        const gameId = sessionStorage.getItem("gameStateId") ?? ""
         const region = Intl.DateTimeFormat().resolvedOptions().timeZone || ""
+
+        setSubmitting(true)
+        setError(null)
 
         fetch(`${BASE_API_URL}/api/bug-report`, {
             method: 'POST',
@@ -28,7 +33,11 @@ const BugReportForm = ({ onClose }) => {
             setSubmitted(true)
             setTimeout(() => onClose(), 1500)
         })
-        .catch(err => console.log(err))
+        .catch(err => {
+            console.log(err)
+            setError('Submission failed. Please try again.')
+            setSubmitting(false)
+        })
     }
 
     return (
@@ -86,28 +95,35 @@ const BugReportForm = ({ onClose }) => {
                     <div style={{
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'flex-end',
+                        justifyContent: 'space-between',
                         padding: `${isMobile ? 1 : 0.5}vw ${isMobile ? 1.5 : 0.75}vw`,
-                        gap: `${isMobile ? 1 : 0.5}vw`
                     }}>
-                        <button
-                            className="pixel-btn"
-                            onClick={onClose}
-                            style={{
-                                fontSize: `${isMobile ? 1.5 : 0.75}vw`,
-                                padding: `${isMobile ? 0.5 : 0.25}vw ${isMobile ? 1 : 0.5}vw`,
-                                borderRadius: `${isMobile ? 0.6 : 0.3}vw`
-                            }}
-                        >Cancel</button>
-                        <button
-                            className="pixel-btn"
-                            onClick={handleSubmit}
-                            style={{
-                                fontSize: `${isMobile ? 1.5 : 0.75}vw`,
-                                padding: `${isMobile ? 0.5 : 0.25}vw ${isMobile ? 1 : 0.5}vw`,
-                                borderRadius: `${isMobile ? 0.6 : 0.3}vw`
-                            }}
-                        >Submit</button>
+                        {error ?
+                            <span style={{ fontSize: `${isMobile ? 1.4 : 0.7}vw`, color: 'rgb(230, 60, 60)' }}>{error}</span> :
+                            <span />
+                        }
+                        <div style={{ display: 'flex', gap: `${isMobile ? 1 : 0.5}vw` }}>
+                            <button
+                                className="pixel-btn"
+                                onClick={onClose}
+                                style={{
+                                    fontSize: `${isMobile ? 1.5 : 0.75}vw`,
+                                    padding: `${isMobile ? 0.5 : 0.25}vw ${isMobile ? 1 : 0.5}vw`,
+                                    borderRadius: `${isMobile ? 0.6 : 0.3}vw`
+                                }}
+                            >Cancel</button>
+                            <button
+                                className="pixel-btn"
+                                onClick={handleSubmit}
+                                disabled={submitting}
+                                style={{
+                                    fontSize: `${isMobile ? 1.5 : 0.75}vw`,
+                                    padding: `${isMobile ? 0.5 : 0.25}vw ${isMobile ? 1 : 0.5}vw`,
+                                    borderRadius: `${isMobile ? 0.6 : 0.3}vw`,
+                                    opacity: submitting ? 0.5 : 1
+                                }}
+                            >{submitting ? "Sending..." : "Submit"}</button>
+                        </div>
                     </div>
                 </>
             )}

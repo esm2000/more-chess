@@ -60,7 +60,7 @@ more-chess/
 │   ├── Dockerfile               # Frontend container (multi-stage with nginx)
 │   └── nginx.conf               # Nginx config with /api/ proxy to backend
 │
-├── docker-compose.yml          # Full stack orchestration (mongo + backend + frontend)
+├── docker compose.yml          # Full stack orchestration (mongo + backend + frontend)
 ├── .env                        # Local env vars (gitignored)
 ├── .env.example                # Env var template
 └── README.md

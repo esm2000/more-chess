@@ -26,10 +26,10 @@ PYTHONPATH="$PWD/backend" pytest -n auto backend/tests/integration/ # integratio
 PYTHONPATH="$PWD/backend" pytest -v -s -x -k "dragon"            # verbose, print, stop-on-fail, filter
 
 # Docker Compose (full stack with local MongoDB)
-docker-compose up --build
+docker compose up --build
 
 # Docker Compose (MongoDB only, for local dev)
-docker-compose up mongo
+docker compose up mongo
 ```
 
 ## API Endpoints

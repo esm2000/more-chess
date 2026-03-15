@@ -20,7 +20,7 @@ The easiest way to run the full stack. No need to install Python, Node.js, or Mo
 ```bash
 git clone <repo-url>
 cd league-of-chess
-docker-compose up --build
+docker compose up --build
 ```
 
 Open http://localhost in your browser. The API is available at http://localhost/api/.
@@ -29,8 +29,8 @@ Backend tests run automatically before the server starts. If tests fail, the bac
 
 To stop:
 ```bash
-docker-compose down        # keeps database data
-docker-compose down -v     # removes database data too
+docker compose down        # keeps database data
+docker compose down -v     # removes database data too
 ```
 
 ---
@@ -40,7 +40,7 @@ docker-compose down -v     # removes database data too
 #### Prerequisites
 - Python 3.12 with a virtual environment
 - Node.js / npm
-- A running MongoDB instance (easiest: `docker-compose up mongo` from the project root)
+- A running MongoDB instance (easiest: `docker compose up mongo` from the project root)
 
 #### Setup (first time only)
 ```bash
@@ -60,7 +60,7 @@ Configure the database connection by copying `.env.example` to `.env`:
 cp .env.example .env
 ```
 
-The default `MONGODB_URI=mongodb://localhost:27017/game_db` works if you started MongoDB via `docker-compose up mongo`.
+The default `MONGODB_URI=mongodb://localhost:27017/game_db` works if you started MongoDB via `docker compose up mongo`.
 
 #### Running
 

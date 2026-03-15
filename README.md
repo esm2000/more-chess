@@ -194,7 +194,6 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
 * visual cue for turn being skipped (this might be optional since pieces themselves are stunned and user should be able to parse that all their pieces are stunned and king can't move while CPU goes) ✅
 * Delete old game on restart once data lake for historical records is implemented
 * redo assets for rules
-* settle all TODOs
 * handle warnings
 
 ##### Backend 

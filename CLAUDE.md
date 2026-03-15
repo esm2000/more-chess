@@ -39,7 +39,6 @@ docker compose up mongo
 | POST | `/api/game` | Create new game |
 | GET | `/api/game/{id}` | Get game state |
 | PUT | `/api/game/{id}` | Submit move (update game state) |
-| DELETE | `/api/game/{id}` | Delete game |
 
 ## Conventions
 

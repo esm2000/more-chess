@@ -72,15 +72,6 @@ def retrieve_game_state(id: str, response: Response) -> dict:
     return game_state
 
 
-@router.delete("/game/{id}")
-def delete_game(id: str) -> dict:
-    """Delete a game from MongoDB by ID."""
-    query = {"_id": ObjectId(id)}
-    game_database = mongo_client["game_db"]
-    game_database["games"].delete_one(query)
-    return {"message": "Success"}
-
-
 @router.put("/game/{id}", status_code=200)
 def update_game_state(id: str, state: GameStateRequest, response: Response, player: bool = True) -> dict:
     """Validate and apply a full game state update (the main turn pipeline)."""

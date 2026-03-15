@@ -207,7 +207,6 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
 * pawn exchange ✅
 * visual cue for a player being able to go again ✅
 * visual cue for turn being skipped (this might be optional since pieces themselves are stunned and user should be able to parse that all their pieces are stunned and king can't move while CPU goes) ✅
-* Delete old game on restart once data lake for historical records is implemented
 * redo assets for rules
 
 ##### Backend 
@@ -240,7 +239,6 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
     - rudimentary EASY enemy AI (chooses random moves from possible moves)
     - ADVANCED enemy AI that plays as well as possible
     - MEDIUM enemy AI
-* create a data lake for long term storage of game data
 * provide mechanism for user bug reports (frontend sends game id and user feedback to backend and backend records info)
 
 ##### Production-Ready Development

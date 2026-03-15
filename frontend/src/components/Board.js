@@ -53,12 +53,80 @@ const Board = () => {
         setPawnExchangePosition(null)
     }, [boardState, possibleMoves, possibleCaptures, turnCount])
 
+    const gutterSize = isMobile ? 2.4 : 1.2
+    const borderSize = isMobile ? 0.5 : 0.25
+    const bevelSize = isMobile ? 0.3 : 0.15
+    const boardSize = isMobile ? 59.2 : 29.6
+    const labelFontSize = isMobile ? '1.6vw' : '0.8vw'
+
     return(
         <div style={isMobile ? {display: "block", margin: "auto"}: null}>
-            <CapturedPieces 
-                side={PLAYERS[1]}
-            />
-            <div style={{position: 'relative'}}>
+            <div style={{ marginBottom: `${isMobile ? 1 : 0.5}vw` }}>
+                <CapturedPieces
+                    side={PLAYERS[1]}
+                />
+            </div>
+            <div style={{
+                display: 'inline-block',
+                backgroundColor: 'rgb(71, 33, 1)',
+                border: `${borderSize}vw solid rgb(50, 23, 0)`,
+                padding: `${gutterSize * 0.5}vw ${gutterSize}vw ${gutterSize}vw ${gutterSize}vw`,
+                boxSizing: 'content-box',
+                position: 'relative',
+                imageRendering: 'pixelated',
+                boxShadow: `inset ${bevelSize}vw ${bevelSize}vw 0 rgb(125, 59, 2), inset -${bevelSize}vw -${bevelSize}vw 0 rgb(40, 18, 0)`,
+            }}>
+                {/* Row labels (8-1) in the left gutter */}
+                <div style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: `${gutterSize * 0.5}vw`,
+                    width: `${gutterSize}vw`,
+                    height: `${boardSize}vw`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}>
+                    {[8,7,6,5,4,3,2,1].map(num => (
+                        <div key={num} style={{
+                            flex: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'rgb(230, 233, 198)',
+                            fontSize: labelFontSize,
+                            fontFamily: 'Basic',
+                            fontWeight: 'bold',
+                        }}>{num}</div>
+                    ))}
+                </div>
+                {/* Column labels (a-h) in the bottom gutter */}
+                <div style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: `${gutterSize}vw`,
+                    width: `${boardSize}vw`,
+                    height: `${gutterSize}vw`,
+                    display: 'flex',
+                    flexDirection: 'row',
+                }}>
+                    {['a','b','c','d','e','f','g','h'].map(letter => (
+                        <div key={letter} style={{
+                            flex: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'rgb(230, 233, 198)',
+                            fontSize: labelFontSize,
+                            fontFamily: 'Basic',
+                            fontWeight: 'bold',
+                        }}>{letter}</div>
+                    ))}
+                </div>
+                {/* The board */}
+                <div style={{
+                    position: 'relative',
+                    outline: `${isMobile ? 0.2 : 0.1}vw solid rgb(40, 18, 0)`,
+                }}>
                 <Background 
                     possibleCaptures={possibleCaptures}
                     shopPieceSelected={shopPieceSelected}
@@ -134,6 +202,7 @@ const Board = () => {
                         onExchange={() => setPawnExchangePosition(null)}
                     />
                 )}
+                </div>
             </div>
             <HUD
                 shopPieceSelected={shopPieceSelected}

@@ -111,18 +111,6 @@ const Square = (props) => {
             className="square"
             onClick={() => handleSquareClick()}
         >
-            <p
-                style={{ color, fontSize: "1vw", opacity: col === 0 ? 1 : 0 }}
-                className='label' >{8-row}</p>
-            <p
-                style={{
-                    color,
-                    alignSelf: "flex-end",
-                    fontSize: "1vw",
-                    opacity: row === 7 ? 1 : 0
-                }}
-                className='label'
-            >{String.fromCharCode(97 + col)}</p>
             {showHighlight && (
                 <div
                     className="valid-square-highlight"

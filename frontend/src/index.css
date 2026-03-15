@@ -38,12 +38,6 @@
     justify-content: space-between;
 }
 
-.label {
-    margin: 0;
-    font-weight: 1000;
-    font-size: 1.5vw;
-}
-
 .regular_piece {
     position: absolute;
     width: 1.8vw;
@@ -247,12 +241,6 @@ progress {
         justify-content: space-between;
     }
 
-    .label {
-        margin: 0;
-        font-weight: 1000;
-        font-size: 3vw;
-    }
-    
     .regular_piece {
         position: absolute;
         width: 3.6vw;

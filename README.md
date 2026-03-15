@@ -240,8 +240,5 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
 * Create a Kubernetes deployment script and a configuration file
 * Deploy
 
-##### Miscellaneous
-* Music (looping track with gameplay triggers) - something like https://www.instagram.com/reel/CtKyXtBo8Qm/?igshid=MzRlODBiNWFlZA==
-
 ##### Known Bugs (to be addressed later)
 * "auto dark mode for web contents" experimental chrome feature (chrome://flags) messes up the color scheme

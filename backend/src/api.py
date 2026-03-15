@@ -150,7 +150,7 @@ def create_bug_report(report: BugReportRequest) -> dict:
         "turn": report.turn,
         "description": report.description,
         "region": report.region,
-        "timestamp": datetime.datetime.now(),
+        "timestamp": datetime.datetime.now(datetime.timezone.utc),
     }
     game_database = mongo_client["game_db"]
     game_database["bug_reports"].insert_one(bug_report)

@@ -475,45 +475,53 @@ const Piece = (props) => {
                 }): null
             }
             {activeNeutralBuffs.length > 0 ?
-                activeNeutralBuffs.map((buff, i) => (
-                    <div
-                        key={`buff-${buff.key}`}
-                        className="neutral-buff-indicator"
-                        style={{
-                            position: 'absolute',
-                            top: `${topPosition + (i * (isMobile ? 1.6 : 0.8))}vw`,
-                            left: `${leftPosition - (isMobile ? 1.8 : 0.9)}vw`,
-                            width: isMobile ? '1.6vw' : '0.8vw',
-                            height: isMobile ? '1.6vw' : '0.8vw',
-                            zIndex: 5,
-                            pointerEvents: 'none'
-                        }}
-                    >
-                        <img
-                            src={IMAGE_MAP[buff.icon]}
-                            alt={buff.key}
+                (() => {
+                    const buffIconSize = isMobile ? 1.6 : 0.8
+                    const buffIconLeftOffset = isMobile ? 1.8 : 0.9
+                    const buffCountBottomOffset = isMobile ? -0.6 : -0.3
+                    const buffCountRightOffset = isMobile ? -0.6 : -0.3
+                    const buffCountFontSize = isMobile ? '1vw' : '0.5vw'
+
+                    return activeNeutralBuffs.map((buff, i) => (
+                        <div
+                            key={`buff-${buff.key}`}
+                            className="neutral-buff-indicator"
                             style={{
-                                width: '100%',
-                                height: '100%',
-                                imageRendering: 'pixelated'
+                                position: 'absolute',
+                                top: `${topPosition + (i * buffIconSize)}vw`,
+                                left: `${leftPosition - buffIconLeftOffset}vw`,
+                                width: `${buffIconSize}vw`,
+                                height: `${buffIconSize}vw`,
+                                zIndex: 5,
+                                pointerEvents: 'none'
                             }}
-                        />
-                        {buff.count !== null ?
-                            <span
+                        >
+                            <img
+                                src={IMAGE_MAP[buff.icon]}
+                                alt={buff.key}
                                 style={{
-                                    position: 'absolute',
-                                    bottom: isMobile ? '-0.6vw' : '-0.3vw',
-                                    right: isMobile ? '-0.6vw' : '-0.3vw',
-                                    fontSize: isMobile ? '1vw' : '0.5vw',
-                                    fontWeight: 'bold',
-                                    color: 'white',
-                                    textShadow: '1px 1px 1px black, -1px -1px 1px black, 1px -1px 1px black, -1px 1px 1px black',
-                                    lineHeight: 1
+                                    width: '100%',
+                                    height: '100%',
+                                    imageRendering: 'pixelated'
                                 }}
-                            >{buff.count}</span>
-                        : null}
-                    </div>
-                )) : null
+                            />
+                            {buff.count !== null ?
+                                <span
+                                    style={{
+                                        position: 'absolute',
+                                        bottom: `${buffCountBottomOffset}vw`,
+                                        right: `${buffCountRightOffset}vw`,
+                                        fontSize: buffCountFontSize,
+                                        fontWeight: 'bold',
+                                        color: 'white',
+                                        textShadow: '1px 1px 1px black, -1px -1px 1px black, 1px -1px 1px black, -1px 1px 1px black',
+                                        lineHeight: 1
+                                    }}
+                                >{buff.count}</span>
+                            : null}
+                        </div>
+                    ))
+                })() : null
             }
         </div>
     );

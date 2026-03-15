@@ -270,6 +270,52 @@ const Piece = (props) => {
         backgroundColor: bgColor,
     })
 
+    const isAdjacentToHeraldBuffedPiece = () => {
+        if (!props.type.toLowerCase().includes('pawn')) return false
+        const boardState = gameState.boardState
+        for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+                if (dr === 0 && dc === 0) continue
+                const r = props.row + dr
+                const c = props.col + dc
+                if (r < 0 || r > 7 || c < 0 || c > 7) continue
+                const square = boardState[r]?.[c]
+                if (square?.some(piece => piece.type.includes(props.side) && piece.boardHeraldBuff)) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    const getActiveNeutralBuffs = () => {
+        if (!props.neutralBuffLog || props.side === 'neutral') return []
+        const playerBuffs = props.neutralBuffLog[props.side]
+        if (!playerBuffs) return []
+
+        const buffs = []
+        const isPawn = props.type.toLowerCase().includes('pawn')
+
+        // Dragon: team-wide buff, show on all pieces
+        if (playerBuffs.dragon?.stacks > 0) {
+            buffs.push({ key: 'dragon', icon: 'neutralDragon', count: playerBuffs.dragon.stacks })
+        }
+
+        // Board Herald: show on the piece that captured it, and on adjacent allied pawns
+        if (props.boardHeraldBuff || (playerBuffs.boardHerald?.active && isAdjacentToHeraldBuffedPiece())) {
+            buffs.push({ key: 'herald', icon: 'neutralBoardHerald', count: null })
+        }
+
+        // Baron Nashor: pawn buff, show on pawns only
+        if (playerBuffs.baronNashor?.active && isPawn) {
+            buffs.push({ key: 'baron', icon: 'neutralBaronNashor', count: null })
+        }
+
+        return buffs
+    }
+
+    const activeNeutralBuffs = getActiveNeutralBuffs()
+
     const buffedSrc = props.pawnBuff ? props.type + `${props.pawnBuff + 1}` : props.type
     const image_src = IMAGE_MAP[buffedSrc] ? buffedSrc : props.type
     const className = pickClassName()
@@ -321,13 +367,14 @@ const Piece = (props) => {
                 <p 
                     className={pickClassName()}
                     style={{
-                        top: `${topPosition + (2.55 * (isMobile ? 2: 1))}vw`,
+                        top: `${topPosition + (1.5 * (isMobile ? 2: 1))}vw`,
                         left: `${leftPosition - (0.75 * (isMobile ? 2: 1))}vw`,
                         fontWeight: 'bold',
-                        background: '-webkit-linear-gradient(white, blue)',
+                        background: '-webkit-linear-gradient(#00e5ff, #b347ea)',
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
-                        fontSize: isMobile ? '2.4vw': '1.2vw'
+                        filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.8))',
+                        fontSize: isMobile ? '2.4vw': '0.8vw'
                     }}
                 >
                     {props.energizeStacks}
@@ -340,10 +387,10 @@ const Piece = (props) => {
                         src={IMAGE_MAP['bishopDebuff']}
                         className={pickClassName()}
                         style={{
-                            width: isMobile ? '1.4vw': '0.7vw',
-                            height: isMobile ? '1.4vw': '0.7vw',
+                            width: isMobile ? '2.2vw': '0.7vw',
+                            height: isMobile ? '2.2vw': '0.7vw',
                             top: `${topPosition + (isMobile ? 5.5 : 2.75)}vw`,
-                            left: `${leftPosition - (isMobile ? 3 : 1.5) + (count * (isMobile ? 2 : 1))}vw`
+                            left: `${leftPosition - (isMobile ? 4 : 1.5) + (count * (isMobile ? 2.8 : 1))}vw`
                         }}
                     />);
                 }): null
@@ -416,17 +463,65 @@ const Piece = (props) => {
             {props.checkProtection ?
                 Array.from({length: props.checkProtection}, (_, i) => i + 1).map((count) => {
                     return(
-                    <img 
+                    <img
                         src={IMAGE_MAP['checkProtection']}
                         className={pickClassName()}
                         style={{
-                            width: isMobile ? '2.3vw': '1.15vw',
-                            height: isMobile ? '2.3vw': '1.15vw',
+                            width: isMobile ? '2.8vw': '0.9vw',
+                            height: isMobile ? '2.8vw': '0.9vw',
                             top: `${topPosition}vw`,
-                            left: `${leftPosition - (isMobile ? 3.5: 1.75) + (count * (isMobile ? 3.6: 1.2))}vw`
+                            left: `${leftPosition - (isMobile ? 4 : 1.5) + (count * (isMobile ? 3 : 1))}vw`
                         }}
                     />);
                 }): null
+            }
+            {activeNeutralBuffs.length > 0 ?
+                (() => {
+                    const squareSize = 3.7 * (isMobile ? 2 : 1)
+                    const baseBuffIconSize = isMobile ? 3.6 : 1.2
+                    const buffIconSize = Math.min(baseBuffIconSize, (squareSize * 0.85) / activeNeutralBuffs.length)
+                    const buffCountFontSize = isMobile ? '1.6vw' : '0.5vw'
+
+                    return activeNeutralBuffs.map((buff, i) => (
+                        <div
+                            key={`buff-${buff.key}`}
+                            className="neutral-buff-indicator"
+                            style={{
+                                position: 'absolute',
+                                top: `${topPosition + (i * buffIconSize)}vw`,
+                                left: `${leftPosition + squareSize - buffIconSize}vw`,
+                                width: `${buffIconSize}vw`,
+                                height: `${buffIconSize}vw`,
+                                zIndex: 5,
+                                pointerEvents: 'none'
+                            }}
+                        >
+                            <img
+                                src={IMAGE_MAP[buff.icon]}
+                                alt={buff.key}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    imageRendering: 'pixelated'
+                                }}
+                            />
+                            {buff.count !== null ?
+                                <span
+                                    style={{
+                                        position: 'absolute',
+                                        bottom: 0,
+                                        right: 0,
+                                        fontSize: buffCountFontSize,
+                                        fontWeight: 'bold',
+                                        color: 'white',
+                                        textShadow: '1px 1px 1px black, -1px -1px 1px black, 1px -1px 1px black, -1px 1px 1px black',
+                                        lineHeight: 1
+                                    }}
+                                >{buff.count}</span>
+                            : null}
+                        </div>
+                    ))
+                })() : null
             }
         </div>
     );

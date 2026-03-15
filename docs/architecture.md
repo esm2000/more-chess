@@ -1,6 +1,6 @@
 # Architecture Reference
 
-Last Updated: 2026-03-05
+Last Updated: 2026-03-15
 
 Detailed module and structure reference for League of Chess. For conventions and workflow, see [CLAUDE.md](../CLAUDE.md). For game rules, see [README.md](../README.md).
 
@@ -46,7 +46,8 @@ more-chess/
 │   │   └── test_utils.py
 │   ├── mocks/                   # Test mock game states
 │   ├── server.py                # Entry point
-│   └── requirements.txt
+│   ├── requirements.txt
+│   └── Dockerfile               # Backend container
 │
 ├── frontend/
 │   ├── src/
@@ -55,12 +56,13 @@ more-chess/
 │   │   ├── assets/              # Images (pieces, rules, statuses)
 │   │   ├── index.js             # Entry point
 │   │   └── utility.js           # Helper functions
-│   └── package.json
+│   ├── package.json
+│   ├── Dockerfile               # Frontend container (multi-stage with nginx)
+│   └── nginx.conf               # Nginx config with /api/ proxy to backend
 │
-├── Dockerfile
-├── nginx.conf
-├── run.sh
-├── .env
+├── docker compose.yml          # Full stack orchestration (mongo + backend + frontend)
+├── .env                        # Local env vars (gitignored)
+├── .env.example                # Env var template
 └── README.md
 ```
 

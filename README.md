@@ -8,12 +8,39 @@ Roadmap is included in its own section below
 
 ## Quickstart
 
+### Docker Compose (Recommended)
+
+The easiest way to run the full stack. No need to install Python, Node.js, or MongoDB — just Docker.
+
+#### Prerequisites
+- [Docker Desktop](https://docker.com) installed and running
+
+#### Instructions
+
+```bash
+git clone <repo-url>
+cd league-of-chess
+docker compose up --build
+```
+
+Open http://localhost in your browser. The API is available at http://localhost/api/.
+
+Backend tests run automatically before the server starts. If tests fail, the backend will not start.
+
+To stop:
+```bash
+docker compose down        # keeps database data
+docker compose down -v     # removes database data too
+```
+
+---
+
 ### Local Development (without Docker)
 
 #### Prerequisites
 - Python 3.12 with a virtual environment
 - Node.js / npm
-- A running MongoDB instance (default: `localhost:27017`)
+- A running MongoDB instance (easiest: `docker compose up mongo` from the project root)
 
 #### Setup (first time only)
 ```bash
@@ -28,6 +55,13 @@ Create `frontend/.env.local` to point the frontend at the local backend:
 REACT_APP_LOCAL=true
 ```
 
+Configure the database connection by copying `.env.example` to `.env`:
+```bash
+cp .env.example .env
+```
+
+The default `MONGODB_URI=mongodb://localhost:27017/game_db` works if you started MongoDB via `docker compose up mongo`.
+
 #### Running
 
 Start the backend (port 8080):
@@ -41,25 +75,6 @@ cd frontend && npm start
 ```
 
 Open http://localhost:3000 in your browser.
-
----
-
-### Docker
-
-#### Prerequisites
-Ensure you have [Docker Desktop](docker.com) installed and opened.
-
-#### Instructions
-
-(Database setup instructions to be added later...)
-
-To run locally open your terminal, navigate to the root directory of the project, and run
-
-```
-docker build . -t league-of-chess && docker run  -p 80:80 -p 8080:8080 league-of-chess
-```
-
-You can access the game at `0.0.0.0:80` in your browser.
 
 ### Unit Tests
 
@@ -220,7 +235,7 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
     - expand getPossibleMoves() to be able to dynamically take into consideration neutral monster buffs (while finalizing UI) ✅
     - clean up PUT game endpoint for easier readibility and maintainability ✅
 * Finishing touches on frontend
-* Enhance instructions with local database setup
+* Enhance instructions with local database setup ✅
 * AI - https://www.chessprogramming.org/Evaluation#Publications
     - rudimentary EASY enemy AI (chooses random moves from possible moves)
     - ADVANCED enemy AI that plays as well as possible
@@ -230,8 +245,8 @@ Spawns on the a5 square every 15 turns after the 20th turn. Grants a 4-turn buff
 
 ##### Production-Ready Development
 * Restructure project for deployment ✅
-* Dockerize project with Dockerfile ✅
-* Add database setup to instructions in README
+* Dockerize project with Docker Compose ✅
+* Add database setup to instructions in README ✅
 * change backend code to only use "pure functions" and remove side effects
 * Un-nest the code (extraction and inversion) - https://www.youtube.com/watch?v=CFRhGnuXG-4&t=40s
 * Clean up and refactor code

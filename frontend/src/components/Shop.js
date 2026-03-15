@@ -14,7 +14,7 @@ const Shop = (props) => {
         <div
             className="pixel-panel"
             style={{
-                width: `${isMobile ? 59.2 : 29.6}vw`,
+                width: `${isMobile ? 65.0 : 32.5}vw`,
                 marginTop: `${isMobile ? 3 : 1.5}vw`,
                 borderWidth: `${isMobile ? 2.5 : 1.25}vw`,
                 boxSizing: 'border-box',

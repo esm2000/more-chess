@@ -6,7 +6,7 @@ Chess variant with MOBA-style mechanics (modified pieces, neutral monsters, buff
 
 - **Backend:** Python 3.12, FastAPI 0.89.1, MongoDB (PyMongo 4.3.3), Pytest 7.2.1 + pytest-xdist
 - **Frontend:** React 18, CRA (React Scripts 5.0.1)
-- **Deploy:** Docker (multi-stage), Nginx for static files
+- **Deploy:** Docker Compose (MongoDB + backend + frontend), Nginx for static files
 
 ## Quick Commands
 
@@ -25,8 +25,11 @@ PYTHONPATH="$PWD/backend" pytest -n auto backend/tests/unit/      # unit only, p
 PYTHONPATH="$PWD/backend" pytest -n auto backend/tests/integration/ # integration only, parallel
 PYTHONPATH="$PWD/backend" pytest -v -s -x -k "dragon"            # verbose, print, stop-on-fail, filter
 
-# Docker
-docker build . -t league-of-chess && docker run -p 80:80 -p 8080:8080 league-of-chess
+# Docker Compose (full stack with local MongoDB)
+docker compose up --build
+
+# Docker Compose (MongoDB only, for local dev)
+docker compose up mongo
 ```
 
 ## API Endpoints
@@ -80,4 +83,4 @@ Update GEMINI.md in the same commit when changing conventions, workflow, or tech
 
 **Keep all agent guide files in sync:** When updating this file, apply the same changes to `CLAUDE.md` (Claude) and `AGENTS.md` (Codex). When updating the roadmap, apply changes to `README.md` as well.
 
-Last Updated: 2026-03-10
+Last Updated: 2026-03-15
